@@ -1,58 +1,60 @@
-type StringConcat<
-  T1 extends string | number | bigint | boolean,
-  T2 extends string | number | bigint | boolean,
-> = `${T1}${T2}`;
 
-type MutableMethod =
-  | 'push'
-  | 'slice'
-  | 'sort'
-  | 'unshift'
-  | 'shift'
-  | 'copyWithin'
-  | 'pop'
-  | 'fill'
-  | 'splice'
-  | 'reverse';
-
-type ImplementedMethod =
-  | 'indexOf'
-  | 'lastIndexOf'
-  | 'mutable'
-  | 'concat'
-  | 'at'
-  | 'withPrefix'
-  | 'withSuffix'
-  | 'toReversed'
-  | 'toSorted';
-
-type SupportedMethod =
-  | 'includes'
-  | 'toSpliced'
-  | 'length'
-  | 'find'
-  | 'findIndex'
-  | 'some'
-  | 'every'
-  | 'filter';
-
-type SupportedMethodWithNativeType =
-  | 'map'
-  | 'reduce'
-  | 'reduceRight'
-  | 'entries'
-  | 'keys'
-  | 'values'
-  | 'toLocaleString'
-  | 'toString'
-  | 'forEach'
-  | 'flat'
-  | 'flatMap'
-  | 'join';
 
 declare global {
-  namespace isl {
-    interface ISL<T = string | unknown>
+  export namespace isl {
+    type StringConcat<
+      T1 extends string | number | bigint | boolean,
+      T2 extends string | number | bigint | boolean,
+    > = `${T1}${T2}`;
+
+    type MutableMethod =
+      | 'push'
+      | 'slice'
+      | 'sort'
+      | 'unshift'
+      | 'shift'
+      | 'copyWithin'
+      | 'pop'
+      | 'fill'
+      | 'splice'
+      | 'reverse';
+
+    type ImplementedMethod =
+      | 'indexOf'
+      | 'lastIndexOf'
+      | 'mutable'
+      | 'concat'
+      | 'at'
+      | 'withPrefix'
+      | 'withSuffix'
+      | 'toReversed'
+      | 'toSorted';
+
+    type SupportedMethod =
+      | 'includes'
+      | 'toSpliced'
+      | 'length'
+      | 'find'
+      | 'findIndex'
+      | 'some'
+      | 'every'
+      | 'filter';
+
+    type SupportedMethodWithNativeType =
+      | 'map'
+      | 'reduce'
+      | 'reduceRight'
+      | 'entries'
+      | 'keys'
+      | 'values'
+      | 'toLocaleString'
+      | 'toString'
+      | 'forEach'
+      | 'flat'
+      | 'flatMap'
+      | 'join';
+
+    export interface ISL<T = string | unknown>
       extends Omit<
         Array<T>,
         ImplementedMethod | MutableMethod | SupportedMethod
@@ -70,7 +72,7 @@ declare global {
       ): T extends string ? ISL<StringConcat<T, P>> : never;
       mutable(): string[];
 
-      at(n: number): T?;
+      at(n: number): T;
       readonly length: number;
       readonly [n: number]: T | undefined;
 
@@ -83,17 +85,17 @@ declare global {
 
       find<PP = T>(
         predictate: (
-          val: PP extends T ? PP : string,
+          val: PP extends T ? T : PP,
           i: number,
           obj: ISL<T>,
-        ) => val is PP,
+        ) => val is (PP extends T ? T : PP),
       ): T;
-      find(predictate: (val?: string, i: number, obj: ISL<T>) => boolean): T;
+      find(predictate: (val: string | undefined, i: number, obj: ISL<T>) => boolean): T;
       findIndex<PP = T>(
         predictate: (val: PP extends T ? PP : string) => boolean,
       ): number;
       findIndex(
-        predictate: (val?: string, i: number, obj: ISL<T>) => boolean,
+        predictate: (val: string | undefined, i: number, obj: ISL<T>) => boolean,
       ): number;
 
       some<PP = T>(

@@ -1,4 +1,4 @@
-import stringList from './index.js';
+import { stringList } from './stringList.js';
 
 let d = stringList('foo', 'bar');
 if (d[0] !== 'foo') {
