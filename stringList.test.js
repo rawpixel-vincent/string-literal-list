@@ -1,5 +1,3 @@
-'use strict';
-
 import stringList from './index.js';
 
 let d = stringList('foo', 'bar');

@@ -1,4 +1,4 @@
-'use strict';
+/// <reference path="./types.d.ts" />
 
 /**
  * @type {Readonly<isl.ISL>}
