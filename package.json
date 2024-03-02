@@ -5,14 +5,12 @@
   "main": "index.js",
   "exports": {
     ".": {
-      "import": "./index.js",
-      "require": "./index.cjs"
+      "import": "./index.js"
     }
   },
   "license": "MIT",
   "scripts": {
-    "test": "node stringList.test.js && tsc --project ./jsconfig.json",
-    "build": "esbuild --target=esnext --keep-names --format=cjs ./index.js --outfile=./index.cjs"
+    "test": "node stringList.test.js && tsc --project ./jsconfig.json"
   },
   "author": "Vincent Baronnet",
   "type": "module",
@@ -21,7 +19,6 @@
     "url": "https://github.com/rawpixel-vincent/string-list.git"
   },
   "devDependencies": {
-    "esbuild": "latest",
     "typescript": "latest"
   }
 }
