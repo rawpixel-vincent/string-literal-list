@@ -1,23 +1,21 @@
-#
-
-## Array for string literals
+# Array for string literals
 
 For runtime type safe array of string literal without compilation.
 
 *If you code in typescript, you probably don't need any of this.*
 
-### Why?
+## Why?
 
 The javascript Array interface is not designed to work with constant string literal.
 
 The methods like concat, or includes will expect only the constants as argument, which makes a method like includes() useless, and others build method annoying to type when constructing the constants.
 
-#### The js workarounds
+### The js workarounds
 
 - includes(): using mapped object in your code instead of the array, e.g. `!!MY_LIST_AS_unnecessary_MAP[val]`, but if you want type safety this means no .concat(), no .includes(), no iteration without creating new variables.
 - concat(): just concatenate your workarounds into a single type. e.g. `/** @type {((keyof typeof MAP_A) | MAPPED_FROM_MAP_B)[]} */` not solving any issues with the underlying unusable array methods.
 
-#### Code demonstrating the problem
+### Code demonstrating the problem
 
 ```js
 // Not typed.
@@ -65,7 +63,7 @@ lit.concat(val);
 //     Argument of type 'string' is not assignable to parameter of type '"foo" | "bar" | ConcatArray<"foo" | "bar">'.ts(2769)
 ```
 
-### The "solution"
+## The "solution"
 
 stringList extends the native Array types to works with string literals.
 it omits the methods that mutate the array in place like push, pop, shift, unshift, splice.
@@ -85,16 +83,20 @@ v.concat('zing', 'boom') => StringList<"foo" | "bar" | "zing" | "boom">
 
 ```
 
-### Installation
+## Installation
 
-Copy the content of stringList.js and types.d.ts in your project.
+```bash
+npm install --save string-literal-list
+```
 
-typescript and a valid jsConfig.json / tsConfig.json is required to enable static types.
+```bash
+yarn add string-literal-list
+```
 
-### Demo
+### Usage
 
 ```js
-import stringList from './index.js';
+import stringList from 'string-literal-list';
 
 const list = stringList(
   'foo',
