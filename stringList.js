@@ -54,6 +54,10 @@ class SL extends Array {
     const mut = this.mutable();
     return mut.flatMap.apply(mut, arguments);
   }
+  toSpliced() {
+    const mut = this.mutable();
+    return mut.toSpliced.apply(mut, arguments);
+  }
 }
 SL.prototype.slice = undefined;
 SL.prototype.reverse = undefined;
