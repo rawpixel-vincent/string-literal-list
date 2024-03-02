@@ -27,31 +27,17 @@ class SL extends Array {
   mutable() {
     return Array.from(this);
   }
-
-  slice = undefined;
-
-  sort = undefined;
-
-  reverse = undefined;
-
-  unshift = undefined;
-
-  pop = undefined;
-
-  shift = undefined;
-
-  fill = undefined;
-
-  splice = undefined;
-
-  copyWithin = undefined;
-
-  push = undefined;
-
-  flat = undefined;
-
-  flatMap = undefined;
 }
+
+SL.prototype.slice = undefined;
+SL.prototype.reverse = undefined;
+SL.prototype.unshift = undefined;
+SL.prototype.pop = undefined;
+SL.prototype.shift = undefined;
+SL.prototype.fill = undefined;
+SL.prototype.splice = undefined;
+SL.prototype.copyWithin = undefined;
+SL.prototype.push = undefined;
 
 /**
  * @template {string} T

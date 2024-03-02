@@ -211,7 +211,7 @@ thrown = false;
 
 try {
   // @ts-expect-error
-  a.slice();
+  const d = a.slice();
 } catch (error) {
   thrown = true;
 }
@@ -267,6 +267,13 @@ thrown = false;
 arr.push('success');
 if (arr.pop() !== 'success') {
   throw new Error('arr.pop() failed');
+}
+const val = arr.splice(0, 1);
+if (val.length !== 1 || val[0] !== 'foo') {
+  throw new Error('arr.splice failed');
+}
+if (arr.reverse().pop() !== 'bar') {
+  throw new Error('arr.reverse.pop failed');
 }
 
 a.includes('asda');
@@ -327,5 +334,32 @@ if (a.length + 1 !== aRC.length || aRC.length !== aConcat.length) {
 a.concat(['a']);
 // @ts-expect-error
 a.concat(1);
+
+if (
+  JSON.stringify(
+    stringList(
+      'foo',
+      'bar',
+      'prefix.foo',
+      'prefix.bar',
+      'foo.suffix',
+      'bar.suffix',
+      'prefix.foo.suffix',
+      'prefix.bar.suffix',
+    ).mutable(),
+  ) !==
+  JSON.stringify([
+    'foo',
+    'bar',
+    'prefix.foo',
+    'prefix.bar',
+    'foo.suffix',
+    'bar.suffix',
+    'prefix.foo.suffix',
+    'prefix.bar.suffix',
+  ])
+) {
+  throw new Error('a.mutable() failed');
+}
 
 console.log('Test passed');
