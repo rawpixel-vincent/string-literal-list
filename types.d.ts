@@ -1,5 +1,3 @@
-
-
 declare global {
   export namespace isl {
     type StringConcat<
@@ -7,58 +5,65 @@ declare global {
       T2 extends string | number | bigint | boolean,
     > = `${T1}${T2}`;
 
-    type MutableMethod =
-      | 'push'
-      | 'slice'
-      | 'sort'
-      | 'unshift'
-      | 'shift'
-      | 'copyWithin'
-      | 'pop'
-      | 'fill'
-      | 'splice'
-      | 'reverse';
+    namespace doc {
+      type MutableMethodOmited =
+        | 'push'
+        | 'slice'
+        | 'sort'
+        | 'unshift'
+        | 'shift'
+        | 'copyWithin'
+        | 'pop'
+        | 'fill'
+        | 'splice'
+        | 'reverse';
 
-    type ImplementedMethod =
-      | 'indexOf'
-      | 'lastIndexOf'
-      | 'mutable'
-      | 'concat'
-      | 'at'
-      | 'withPrefix'
-      | 'withSuffix'
-      | 'toReversed'
-      | 'toSorted';
+      type ImplementedForReadOnly =
+        | 'concat'
+        | 'withPrefix'
+        | 'withSuffix'
+        | 'toReversed'
+        | 'toSorted';
 
-    type SupportedMethod =
-      | 'includes'
-      | 'toSpliced'
-      | 'length'
-      | 'find'
-      | 'findIndex'
-      | 'some'
-      | 'every'
-      | 'filter';
+      type SupportedMethodWithTypeFix =
+        | 'at'
+        | 'indexOf'
+        | 'lastIndexOf'
+        | 'includes'
+        | 'toSpliced'
+        | 'length'
+        | 'find'
+        | 'findIndex'
+        | 'some'
+        | 'every'
+        | 'filter';
 
-    type SupportedMethodWithNativeType =
-      | 'map'
-      | 'reduce'
-      | 'reduceRight'
-      | 'entries'
-      | 'keys'
-      | 'values'
-      | 'toLocaleString'
-      | 'toString'
-      | 'forEach'
-      | 'flat'
-      | 'flatMap'
-      | 'join';
+      type SupportedMethodWithNativeType =
+        | 'map'
+        | 'reduce'
+        | 'reduceRight'
+        | 'flat'
+        | 'flatMap';
+
+      type SupportedNativeMethod =
+        | 'join'
+        | 'toLocaleString'
+        | 'toString'
+        | 'entries'
+        | 'keys'
+        | 'values'
+        | 'forEach';
+    }
 
     export interface ISL<T = string | unknown>
       extends Omit<
         Array<T>,
-        ImplementedMethod | MutableMethod | SupportedMethod
+        | doc.ImplementedForReadOnly
+        | doc.MutableMethodOmited
+        | doc.SupportedMethodWithTypeFix
+        | doc.SupportedNativeMethod
       > {
+      // Implemented methods to return the frozen array, typed as ISL.
       toSorted(compareFn?: (a: T, b: T) => number): ISL<T>;
       toReversed(): ISL<T>;
       concat<PP = T, P extends string = string>(
@@ -72,11 +77,12 @@ declare global {
       ): T extends string ? ISL<StringConcat<T, P>> : never;
       mutable(): string[];
 
-      at(n: number): T;
+      // Readonly overrides
       readonly length: number;
       readonly [n: number]: T | undefined;
 
       // Supported Methods
+      at(n: number): T;
 
       // Type override to prevent string not in type T issue
       includes<PP = T>(val: PP, fromIndex?: number): boolean;
@@ -88,14 +94,24 @@ declare global {
           val: PP extends T ? T : PP,
           i: number,
           obj: ISL<T>,
-        ) => val is (PP extends T ? T : PP),
+        ) => val is PP extends T ? T : PP,
       ): T;
-      find(predictate: (val: string | undefined, i: number, obj: ISL<T>) => boolean): T;
+      find(
+        predictate: (
+          val: string | undefined,
+          i: number,
+          obj: ISL<T>,
+        ) => boolean,
+      ): T;
       findIndex<PP = T>(
         predictate: (val: PP extends T ? PP : string) => boolean,
       ): number;
       findIndex(
-        predictate: (val: string | undefined, i: number, obj: ISL<T>) => boolean,
+        predictate: (
+          val: string | undefined,
+          i: number,
+          obj: ISL<T>,
+        ) => boolean,
       ): number;
 
       some<PP = T>(

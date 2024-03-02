@@ -362,4 +362,26 @@ if (
   throw new Error('a.mutable() failed');
 }
 
+if (a.toReversed().constructor.name !== 'SL') {
+  throw new Error('a.toReversed() failed reference');
+}
+if (a.withPrefix('d').constructor.name !== 'SL') {
+  throw new Error('a.withPrefix() failed reference');
+}
+if (a.withSuffix('b').constructor.name !== 'SL') {
+  throw new Error('a.withSuffix() failed reference');
+}
+if (a.concat('a').withPrefix('b.').withSuffix('.c').constructor.name !== 'SL') {
+  throw new Error(
+    `a.concat('a').withPrefix('b.').withSuffix('.c') failed reference`,
+  );
+}
+if (a.mutable().constructor.name !== 'Array') {
+  throw new Error('a.mutable() failed reference');
+}
+if (a.map((x) => x).constructor.name !== 'Array') {
+  console.log(a.map((x) => x).constructor.name);
+  throw new Error('a.map() failed reference');
+}
+
 console.log('Test passed');

@@ -32,7 +32,7 @@ const O = {
 };
 /** @type { (keyof typeof O)[] } */
 // @ts-expect-error "Type 'string' is not assignable to type '"foo" | "bar"'
-const lit = Object.keys(jsEnum);
+const lit = Object.keys(O);
 // or just
 /** @type {('foo' | 'bar')[]} */
 const lit = new Array('foo', 'bar'); // OK
@@ -139,4 +139,60 @@ list.concat(['zing', 'foo']);
 
 ### filter / map / reduce and other array methods
 
-The results of those methods will result in type loose `string[]` or `U[]` for map / reduce.
+The results of those methods will result in type loose `string[]` or returned `U[]` for map / reduce.
+
+### References
+
+See the global namespace `isl.doc` for information about the array overloads.
+
+```js
+namespace doc {
+  type MutableMethodOmited =
+    | 'push'
+    | 'slice'
+    | 'sort'
+    | 'unshift'
+    | 'shift'
+    | 'copyWithin'
+    | 'pop'
+    | 'fill'
+    | 'splice'
+    | 'reverse';
+
+  type ImplementedForReadOnly =
+    | 'concat'
+    | 'withPrefix'
+    | 'withSuffix'
+    | 'toReversed'
+    | 'toSorted';
+
+  type SupportedMethodWithTypeFix =
+    | 'at'
+    | 'indexOf'
+    | 'lastIndexOf'
+    | 'includes'
+    | 'toSpliced'
+    | 'length'
+    | 'find'
+    | 'findIndex'
+    | 'some'
+    | 'every'
+    | 'filter';
+
+  type SupportedMethodWithNativeType =
+    | 'map'
+    | 'reduce'
+    | 'reduceRight'
+    | 'flat'
+    | 'flatMap';
+
+  type SupportedNativeMethod =
+    | 'join'
+    | 'toLocaleString'
+    | 'toString'
+    | 'entries'
+    | 'keys'
+    | 'values'
+    | 'forEach';
+}
+```
