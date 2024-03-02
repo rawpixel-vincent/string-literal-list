@@ -68,6 +68,7 @@ SL.prototype.fill = undefined;
 SL.prototype.splice = undefined;
 SL.prototype.copyWithin = undefined;
 SL.prototype.push = undefined;
+SL.prototype.sort = undefined;
 
 /**
  * @template {string} T
