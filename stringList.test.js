@@ -384,4 +384,11 @@ if (a.map((x) => x).constructor.name !== 'Array') {
   throw new Error('a.map() failed reference');
 }
 
+if (a.toSpliced(0, 1, 'splicedEL')[0] !== 'splicedEL') {
+  throw new Error('toSpliced failed');
+}
+if (a.toSpliced(0, 1, 'splicedEL').constructor.name !== 'Array') {
+  throw new Error('toSpliced failed reference');
+}
+
 console.log('Test passed');
