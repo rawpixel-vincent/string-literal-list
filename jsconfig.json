@@ -8,7 +8,7 @@
     "resolveJsonModule": false,
     "esModuleInterop": true,
     "checkJs": true,
-    "skipLibCheck": true,
+    "skipLibCheck": false,
     "maxNodeModuleJsDepth": 0,
     "allowJs": true,
     "traceResolution": false

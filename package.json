@@ -3,6 +3,7 @@
   "version": "1.0.4",
   "description": "an array for strings",
   "main": "index.js",
+  "types": "index.d.ts",
   "exports": {
     ".": {
       "import": "./index.js"
@@ -10,7 +11,10 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "node stringList.test.js && tsc --project ./jsconfig.json"
+    "test": "node stringList.test.js && tsc --project ./jsconfig.json",
+    "build": "tsc --declaration --emitDeclarationOnly --allowJs index.js",
+    "precommit": "npm test && npm run build && git add ./index.*",
+    "prepare": "husky"
   },
   "author": "Vincent Baronnet",
   "type": "module",
@@ -19,6 +23,7 @@
     "url": "https://github.com/rawpixel-vincent/string-list.git"
   },
   "devDependencies": {
+    "husky": "^9.0.11",
     "typescript": "latest"
   }
 }
