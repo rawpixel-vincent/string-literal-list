@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "rootDir": ".",
+    "module": "NodeNext",
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "moduleResolution": "nodenext",
+    "resolveJsonModule": false,
+    "esModuleInterop": true,
+    "checkJs": true,
+    "skipLibCheck": true,
+    "maxNodeModuleJsDepth": 0,
+    "allowJs": true,
+    "traceResolution": false
+  },
+  "include": ["types.d.ts", "stringList.js", "stringList.test.js"]
+}

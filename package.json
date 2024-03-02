@@ -1,0 +1,28 @@
+{
+  "name": "string-literal-list",
+  "version": "1.0.0",
+  "description": "an array for strings",
+  "main": "index.js",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "types": "types.d.ts",
+  "license": "MIT",
+  "scripts": {
+    "test": "node stringList.test.js && tsc --project ./jsconfig.json",
+    "build": "esbuild --target=esnext --keep-names --format=cjs index.js --outfile=dist/index.cjs"
+  },
+  "author": "Vincent Baronnet",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rawpixel-vincent/string-list.git"
+  },
+  "devDependencies": {
+    "esbuild": "latest",
+    "typescript": "latest"
+  }
+}
