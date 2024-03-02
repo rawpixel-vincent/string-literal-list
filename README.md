@@ -71,6 +71,8 @@ it omits the methods that mutate the array in place like push, pop, shift, unshi
 ### Overview
 
 ```js
+import { stringList } from 'string-literal-list';
+
 let v = stringList("foo", "bar", ...) => StringList<"foo" | "bar">;
 
 v.includes(anyValue) => boolean;
@@ -96,7 +98,7 @@ yarn add string-literal-list
 ### Usage
 
 ```js
-import stringList from 'string-literal-list';
+import { stringList } from 'string-literal-list';
 
 const list = stringList(
   'foo',
