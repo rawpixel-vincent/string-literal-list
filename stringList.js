@@ -51,7 +51,3 @@ export const stringList = (...strings) => {
   // @ts-expect-error[2322]
   return new SL(...strings);
 };
-
-export default {
-  stringList,
-};

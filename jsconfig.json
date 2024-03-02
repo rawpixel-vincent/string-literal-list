@@ -13,5 +13,5 @@
     "allowJs": true,
     "traceResolution": false
   },
-  "include": ["types.d.ts", "stringList.js", "stringList.test.js"]
+  "include": ["types.d.ts", "stringList.js", "stringList.test.js", "index.js"]
 }
