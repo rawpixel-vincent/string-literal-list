@@ -1,4 +1,5 @@
 [![tests](https://github.com/rawpixel-vincent/string-list/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/rawpixel-vincent/string-list/actions/workflows/tests.yml)
+[![npm](https://img.shields.io/npm/v/string-literal-list)](https://www.npmjs.com/package/string-literal-list)
 
 # Array for string literals
 
