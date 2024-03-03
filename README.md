@@ -1,3 +1,5 @@
+[![tests](https://github.com/rawpixel-vincent/string-list/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/rawpixel-vincent/string-list/actions/workflows/tests.yml)
+
 # Array for string literals
 
 Typed array of string literals working at runtime without typescript compilation.
