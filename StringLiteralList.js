@@ -4,7 +4,7 @@ import 'core-js/actual/array/to-spliced.js';
 import 'core-js/actual/array/with.js';
 
 export class SL extends Array {
-  internal = undefined;
+  literal = undefined;
   concat(...args) {
     return Object.freeze(new SL(...super.concat.apply(this, args.flat())));
   }
