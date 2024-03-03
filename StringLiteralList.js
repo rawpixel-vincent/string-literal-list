@@ -1,32 +1,28 @@
-export class StringLiteralList extends Array {
-  concat() {
-    return Object.freeze(
-      new StringLiteralList(...super.concat.apply(this, arguments)),
-    );
+import 'core-js/actual/array/to-reversed.js';
+import 'core-js/actual/array/to-sorted.js';
+import 'core-js/actual/array/to-spliced.js';
+import 'core-js/actual/array/with.js';
+
+export class SL extends Array {
+  internal = undefined;
+  concat(...args) {
+    return Object.freeze(new SL(...super.concat.apply(this, args.flat())));
   }
 
   toSorted() {
-    return Object.freeze(
-      new StringLiteralList(...super.toSorted.apply(this, arguments)),
-    );
+    return Object.freeze(new SL(...super.toSorted.apply(this, arguments)));
   }
 
   toReversed() {
-    return Object.freeze(
-      new StringLiteralList(...super.toReversed.apply(this, arguments)),
-    );
+    return Object.freeze(new SL(...super.toReversed.apply(this, arguments)));
   }
 
   withPrefix(prefix) {
-    return Object.freeze(
-      new StringLiteralList(...super.map((e) => `${prefix}${e}`)),
-    );
+    return Object.freeze(new SL(...super.map((e) => `${prefix}${e}`)));
   }
 
   withSuffix(suffix) {
-    return Object.freeze(
-      new StringLiteralList(...super.map((e) => `${e}${suffix}`)),
-    );
+    return Object.freeze(new SL(...super.map((e) => `${e}${suffix}`)));
   }
 
   // Get the native array
@@ -63,6 +59,10 @@ export class StringLiteralList extends Array {
     const mut = this.mutable();
     return mut.toSpliced.apply(mut, arguments);
   }
+  with() {
+    const mut = this.mutable();
+    return mut.with.apply(mut, arguments);
+  }
 }
 
 export const ARRAY_IN_PLACE_MUTATION = Object.freeze({
@@ -78,7 +78,7 @@ export const ARRAY_IN_PLACE_MUTATION = Object.freeze({
   reverse: 'reverse',
 });
 Object.values(ARRAY_IN_PLACE_MUTATION).forEach((el) => {
-  StringLiteralList.prototype[el] = () => {
+  SL.prototype[el] = () => {
     throw new Error(`Array method ${el} is not supported by StringLiteralList`);
   };
 });

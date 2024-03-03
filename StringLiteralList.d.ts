@@ -1,12 +1,16 @@
 import { sl } from './types.js';
 
+interface ILiterals<T extends unknown = null> {
+  readonly literal: T;
+}
+
 export interface IStringList<T extends unknown>
   extends Omit<
     Array<T>,
     | sl.specs.ImplementedMethod
     | sl.specs.OmitedMutableMethod
     | sl.specs.NativeMethodWithTypeOverride
-  > {
+  >, ILiterals<T> {
   // Custom Methods
   withPrefix<P extends string>(
     prefix: P,
@@ -19,9 +23,8 @@ export interface IStringList<T extends unknown>
   // Implemented methods to return the frozen array, typed as IStringList.
   toSorted(compareFn?: (a: T, b: T) => number): IStringList<T>;
   toReversed(): IStringList<T>;
-  concat<PP extends T, P extends string = string>(
-    ...arg: P[]
-  ): IStringList<Record<P, P>[keyof Record<P, P>] | PP>;
+
+  concat<PP extends T, S extends string>(...arg: (ILiterals<S> | S)[]): Readonly<IStringList<PP | S>>;
 
   // Readonly overrides
   readonly length: number;
@@ -68,6 +71,7 @@ export interface IStringList<T extends unknown>
   ): boolean;
 
   // Return Type overrides
+  with(index: number, value: any): string[];
   filter<S extends T>(
     predicate: (value: T, index: number, array: IStringList<T>) => value is S,
     thisArg?: any,
@@ -79,7 +83,7 @@ export interface IStringList<T extends unknown>
   toSpliced(start: number, deleteCount: number, ...items: string[]): string[];
 }
 
-export class StringLiteralList<T extends string> {
+export class SL<T extends string> {
   constructor(...list: T[]);
 }
 

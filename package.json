@@ -1,6 +1,6 @@
 {
   "name": "string-literal-list",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "an array for string literal",
   "main": "stringList.js",
   "types": "stringList.d.ts",
@@ -10,17 +10,18 @@
     }
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=16"
   },
-  "packageManager": "npm@10.5.0+sha256.17ca6e08e7633b624e8f870db81a78f46afe119de62bcaf0a7407574139198fc",
+  "packageManager": "npm@10.5.0",
   "license": "MIT",
   "scripts": {
     "test": "npm run lint:ci && npm run test:checkJs && npm run test:unit",
-    "test:unit": "tap run && tap report --show-full-coverage",
+    "test:unit": "tap run -R terse && tap report --show-full-coverage",
     "test:checkJs": "tsc --checkJs --project ./jsconfig.json",
     "prettier": "prettier --write \"**/*.{js,ts}\"",
     "lint": "eslint --fix \"./*.js\"",
-    "lint:ci": "eslint . --ext .js"
+    "lint:ci": "eslint . --ext .js",
+    "prepare": "husky"
   },
   "author": "Vincent Baronnet",
   "type": "module",
@@ -29,12 +30,16 @@
     "url": "https://github.com/rawpixel-vincent/string-list.git"
   },
   "devDependencies": {
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "prettier": "^3.2.5",
-    "tap": "^18.7.0",
+    "eslint": "latest",
+    "eslint-config-prettier": "latest",
+    "eslint-config-standard": "latest",
+    "eslint-plugin-import": "latest",
+    "husky": "latest",
+    "prettier": "latest",
+    "tap": "latest",
     "typescript": "latest"
+  },
+  "dependencies": {
+    "core-js": "^3.36.0"
   }
 }
