@@ -143,11 +143,11 @@ The results of those methods will result in type loose `string[]` or returned `U
 
 ### References
 
-See the global namespace `isl.doc` for information about the array overloads.
+See the namespace `sl.specs` (./types.d.ts) to know which methods are available and specific type overrides.
 
 ```js
-namespace doc {
-  type MutableMethodOmited =
+namespace specs {
+  export type OmitedMutableMethod =
     | 'push'
     | 'slice'
     | 'sort'
@@ -159,14 +159,23 @@ namespace doc {
     | 'splice'
     | 'reverse';
 
-  type ImplementedForReadOnly =
+  /**
+   * @description
+   * These methods are implemented in StringList class to change the returned type to IStringList.
+   * The execution is delegated to the Array instance and the result is used to construct the returned IStringList.
+   */
+  type ImplementedMethod =
     | 'concat'
     | 'withPrefix'
     | 'withSuffix'
     | 'toReversed'
     | 'toSorted';
 
-  type SupportedMethodWithTypeFix =
+  /**
+   * @description
+   * These methods only get a type override to fix the comparison between `T` and `string`.
+   */
+  type NativeMethodWithTypeOverride =
     | 'at'
     | 'indexOf'
     | 'lastIndexOf'
@@ -179,20 +188,24 @@ namespace doc {
     | 'every'
     | 'filter';
 
-  type SupportedMethodWithNativeType =
-    | 'map'
-    | 'reduce'
-    | 'reduceRight'
-    | 'flat'
-    | 'flatMap';
-
-  type SupportedNativeMethod =
+  /**
+   * @description
+   * These methods are the same are coming from the Array instance.
+   * No type overrides here.
+   * They will return the original type, (e.g. mutable array in case of map / reduce and other transforming methods.)
+   */
+  type NativeMethod =
     | 'join'
     | 'toLocaleString'
     | 'toString'
     | 'entries'
     | 'keys'
     | 'values'
-    | 'forEach';
+    | 'forEach'
+    | 'map'
+    | 'reduce'
+    | 'reduceRight'
+    | 'flat'
+    | 'flatMap';
 }
 ```
