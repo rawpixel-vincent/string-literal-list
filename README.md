@@ -15,7 +15,7 @@ The StringList class extends the Array interface types to work with string liter
 - inference: concat, toReversed and toSorted methods are implemented to return a new frozen instance and will infer the new values.
   - the concat method parameters types has been updated to accept strings literals and/or instances of StringList.
 
-- search methods: includes, indexOf, find, every, .. and others search methods types are updated to prevent type errors when comparing with non-literals strings.
+- search methods: includes, indexOf, find, every, some, filter, etc... types are updated to prevent type errors when comparing with non-literals strings.
 
 - not chainable or iterator: map / filter / reduce / flat / values / keys / entries are the same as the native Array, and will return the type defined by the native method.
 
