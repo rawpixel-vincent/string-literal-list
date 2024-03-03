@@ -45,7 +45,8 @@ export namespace sl {
       | 'findIndex'
       | 'some'
       | 'every'
-      | 'filter';
+      | 'filter'
+      | 'with';
 
     /**
      * @description
@@ -69,4 +70,4 @@ export namespace sl {
   }
 }
 
-export {};
+export { };
