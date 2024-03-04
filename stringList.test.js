@@ -148,6 +148,29 @@ t.test('empty stringList', (t) => {
   t.end();
 });
 
+t.test('enum object', (t) => {
+  const list = stringList('foo', 'bar');
+  t.match(list.enum, {
+    foo: 'foo',
+    bar: 'bar',
+  });
+
+  const list2 = list.concat('doink', 'bleep');
+
+  t.match(list.enum, {
+    foo: 'foo',
+    bar: 'bar',
+  });
+
+  t.match(list2.enum, {
+    foo: 'foo',
+    bar: 'bar',
+    doink: 'doink',
+    bleep: 'bleep',
+  });
+  t.end();
+});
+
 t.test("stringList('foo')", (t) => {
   const list = stringList('foo');
   testExpectedArrayValues(t, list, 'foo');
@@ -166,6 +189,53 @@ t.test("withPrefix('prefix.')", (t) => {
   const list = stringList('foo', 'bar').withPrefix('prefix.');
   testExpectedArrayValues(t, list, 'prefix.foo', 'prefix.bar');
   testEscapingFromStringList(t, list, 'prefix.foo', 'prefix.bar');
+  t.end();
+});
+
+t.test("withDerivatedSuffix('s')", (t) => {
+  const list = stringList('food', 'bars', 'pasta', 'meatballs')
+    .withDerivatedSuffix('s')
+    .toSorted((a, b) => a.localeCompare(b));
+  testExpectedArrayValues(
+    t,
+    list,
+    'bar',
+    'bars',
+    'food',
+    'foods',
+    'meatball',
+    'meatballs',
+    'pasta',
+    'pastas',
+  );
+  testEscapingFromStringList(
+    t,
+    list,
+    'bar',
+    'bars',
+    'food',
+    'foods',
+    'meatball',
+    'meatballs',
+    'pasta',
+    'pastas',
+  );
+  t.end();
+});
+
+t.test("withDerivatedPrefix('#')", (t) => {
+  const list = stringList('#trending', 'stuff')
+    .withDerivatedPrefix('#')
+    .toSorted((a, b) => a.localeCompare(b));
+  testExpectedArrayValues(t, list, '#stuff', '#trending', 'stuff', 'trending');
+  testEscapingFromStringList(
+    t,
+    list,
+    '#stuff',
+    '#trending',
+    'stuff',
+    'trending',
+  );
   t.end();
 });
 
@@ -239,6 +309,13 @@ t.test('toReversed()', (t) => {
   t.end();
 });
 
+t.test('slice()', (t) => {
+  const list = stringList('foo', 'bar', 'baz').slice(1, 3);
+  testExpectedArrayValues(t, list, 'bar', 'baz');
+  testEscapingFromStringList(t, list, 'bar', 'baz');
+  t.end();
+});
+
 t.test('all chained', (t) => {
   const list = stringList('foo', 'bar')
     .concat('doink', 'bleep')
@@ -284,5 +361,45 @@ t.test('stringList mutable', (t) => {
     // @ts-expect-error
     t.ok(list.mutable()[el]());
   });
+  t.end();
+});
+
+t.test('search methods', (t) => {
+  const values = 'abcdefghij'.split('');
+  const list = stringList('foo', 'bar', 'baz')
+    .withPrefix('a.')
+    .withSuffix('.z');
+
+  t.ok(!list.includes('bar'));
+  t.ok(!list.includes(values[1]));
+  t.ok(!list.includes(null));
+  t.ok(!list.includes(undefined));
+  t.ok(!list.includes(0));
+  t.ok(!list.includes(/foo/i));
+  t.ok(!list.some((el) => el === values[1]));
+  t.ok(!list.some((el) => el === null));
+  t.ok(!list.some((el) => el === undefined));
+  // @ts-expect-error
+  t.ok(!list.some((el) => el === 0));
+  t.ok(list.indexOf('bar') === -1);
+  t.ok(list.indexOf(null) === -1);
+  t.ok(list.indexOf(undefined) === -1);
+  t.ok(list.indexOf(values[1]) === -1);
+  t.ok(!list.every((el) => el === values[1]));
+  t.ok(!list.every((e) => e === null));
+  t.ok(!list.every((e) => e === undefined));
+  // @ts-expect-error
+  t.ok(!list.every((e) => e === 0));
+  t.ok(!list.find((el) => el === values[1]));
+  t.ok(!list.find((el) => el === null));
+  t.ok(!list.find((el) => el === undefined));
+  // @ts-expect-error
+  t.ok(!list.find((el) => el === 0));
+  t.ok(list.findIndex((el) => el === values[1]) === -1);
+  t.ok(list.findIndex((el) => el === null) === -1);
+  t.ok(list.findIndex((el) => el === undefined) === -1);
+  // @ts-expect-error
+  t.ok(list.findIndex((el) => el === 0) === -1);
+
   t.end();
 });

@@ -13,10 +13,11 @@ Useful for types constructs that can be used at runtime.
 
 The StringList class extends the Array interface types to work with string literals.
 
-- immutable: methods that mutate the array in place like push, pop, shift, unshift, splice are omitted.
+- immutable: methods that mutate the array in place like push, pop, shift, unshift, splice are not working, it's possible to escape the list to a mutable array with the method `mutable()`
 
-- inference: concat, toReversed and toSorted methods are implemented to return a new frozen instance and will infer the new values.
+- inference: concat, toReversed, toSorted and slice methods are implemented to return a new frozen instance and will infer the new values.
   - the concat method parameters types has been updated to accept strings literals and/or instances of StringList.
+  - slice method will not infer the missing terms, but is exposed for compatibility.
 
 - search methods: includes, indexOf, find, every, some, filter, etc... types are updated to prevent type errors when comparing with non-literals strings.
 
@@ -26,12 +27,32 @@ The StringList class extends the Array interface types to work with string liter
 
 - `mutable():string[]` has been implemented to return a copy of the underlying array as string[].
 
-- more methods relevants to string literals and type constructs could be added along the way.
+- an `enum` property is available to access the string literals. It's a frozen object built from the array values, it's used as a lookup instead of the array, but the primary intent is for convenience. This construct is not meant to manipulate millions of strings.
+
+- then additional methods for string literals and type constructs are implemented:
+  - `withPrefix($)`: add prefix to all the words.
+  - `withSuffix($)`: add suffix to all the words.
+  - `withDerivatedPrefix($)` and `withDerivatedSuffix($)`: Generate words variants with or without the given suffix/prefix depending on their presence.
+  - `value($)`: similar to enum but throws an error if the value doesn't exists.
+
+## Installation
+
+```bash
+npm install --save string-literal-list
+```
+
+```bash
+yarn add string-literal-list
+```
+
+### Code
 
 ```js
 import { stringList } from 'string-literal-list';
 
 let v = stringList("foo", "bar", ...) => SL<"foo" | "bar">;
+
+v.enum.foo => "foo"
 
 v.includes(anyValue) => boolean;
 
@@ -44,19 +65,10 @@ v.concat('zing', 'boom', stringList('zig', 'zag')) => SL<"foo" | "bar" | "zing" 
 v.value('foo') => 'foo';
 
 v.value('not') => throws;
+
+v.withDerivatedSuffix('s') => SL<"foo" | "foos" | "bars" "bar">;
+v.withDerivatedPrefix('#') => SL<"foo" | "#foo" | "bar" | "#bar">;
 ```
-
-## Installation
-
-```bash
-npm install --save string-literal-list
-```
-
-```bash
-yarn add string-literal-list
-```
-
-### Usage
 
 ```js
 import { stringList } from 'string-literal-list';
@@ -66,6 +78,10 @@ const list = stringList(
   'bar',
 );
 // SL<"foo" | "bar">;
+
+list.enum;
+// => { foo: "foo", bar: "bar" };
+
 
 const prefixed = list.withPrefix('prefix.');
 // SL<"prefix.foo" | "prefix.bar">;
@@ -90,6 +106,13 @@ const arr = list.mutable(); // => ["foo", "bar"]
 // access a value in the list
 list.value('foo'); // 'foo'
 list.value('n'); // throws error
+
+// Generate words variants with or without the given suffix/prefix depending on their presence.
+const foods = stringList('food', 'bars', 'pasta', 'meatballs');
+foods.withDerivatedSuffix('s'); => SL<"food" | "bars" | "pasta" | "meatballs" | "foods" | "bar" | "pasta" | "meatball">
+
+const tags = stringList('spring', '#boot', '#typescript', 'fundamentals');
+tags.withDerivatedPrefix('#'); => SL<"#spring" | "#boot" | "#typescript" | "#fundamentals" | "spring" | "boot" | "typescript" | "fundamentals">
 ```
 
 #### list.concat(...(string|StringList)[])
@@ -113,72 +136,7 @@ The results of those methods will result in type loose `string[]` or returned `U
 
 ### References
 
-See the namespace `sl.specs` (./types.d.ts) to know which methods are available and specific type overrides.
-
-```js
-namespace specs {
-  export type OmitedMutableMethod =
-    | 'push'
-    | 'sort'
-    | 'unshift'
-    | 'shift'
-    | 'copyWithin'
-    | 'pop'
-    | 'fill'
-    | 'splice'
-    | 'reverse';
-
-  /**
-   * @description
-   * The execution is delegated to the Array instance methods.
-   * The implementation uses the result to return a new readonly list instance.
-   */
-  type ImplementedMethod =
-    | 'concat'
-    | 'withPrefix'
-    | 'withSuffix'
-    | 'toReversed'
-    | 'toSorted';
-
-  /**
-   * @description
-   * The type of these methods are updated to fix ts value comparison between `T` and `string`.
-   */
-  type NativeMethodWithTypeOverride =
-    | 'at'
-    | 'indexOf'
-    | 'lastIndexOf'
-    | 'includes'
-    | 'toSpliced'
-    | 'length'
-    | 'find'
-    | 'findIndex'
-    | 'some'
-    | 'every'
-    | 'filter'
-    | 'with';
-
-  /**
-   * @description
-   * No type or any overrides.
-   * filter, map, flatMap, flat will result in the original array type.
-   */
-  type NativeMethod =
-    | 'join'
-    | 'toLocaleString'
-    | 'toString'
-    | 'entries'
-    | 'keys'
-    | 'values'
-    | 'forEach'
-    | 'map'
-    | 'slice'
-    | 'reduce'
-    | 'reduceRight'
-    | 'flat'
-    | 'flatMap';
-}
-```
+See ./types.d.ts and ./StringLiteralList.d.ts for more info on the methods which methods are available and specific type overrides.
 
 ## Why?
 

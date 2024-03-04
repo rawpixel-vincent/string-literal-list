@@ -15,6 +15,15 @@ export namespace sl {
       : sentence extends `${infer rest}${suffix}`
       ? rest
       : sentence;
+
+    export type DropPrefix<
+      sentence extends string,
+      prefix extends string,
+    > = string extends sentence | prefix
+      ? string
+      : sentence extends `${prefix}${infer rest}`
+      ? rest
+      : sentence;
   }
 
   export namespace specs {
@@ -36,11 +45,15 @@ export namespace sl {
       | 'concat'
       | 'withPrefix'
       | 'withSuffix'
+      | 'withDerivatedSuffix'
+      | 'withDerivatedPrefix'
       | 'toReversed'
       | 'toSorted'
       | 'sort'
       | 'reverse'
-      | 'value';
+      | 'slice'
+      | 'value'
+      | 'includes';
 
     /**
      * @description
