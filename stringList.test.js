@@ -286,5 +286,3 @@ t.test('stringList mutable', (t) => {
   });
   t.end();
 });
-
-stringList('d').value('d');
