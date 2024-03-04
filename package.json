@@ -27,7 +27,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rawpixel-vincent/string-list.git"
+    "url": "https://github.com/rawpixel-vincent/string-literal-list.git"
   },
   "devDependencies": {
     "eslint": "latest",
