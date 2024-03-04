@@ -6,6 +6,15 @@ export namespace sl {
       T1 extends string | number | bigint | boolean,
       T2 extends string | number | bigint | boolean,
     > = `${T1}${T2}`;
+
+    export type DropSuffix<
+      sentence extends string,
+      suffix extends string,
+    > = string extends sentence | suffix
+      ? string
+      : sentence extends `${infer rest}${suffix}`
+      ? rest
+      : sentence;
   }
 
   export namespace specs {

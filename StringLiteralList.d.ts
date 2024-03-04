@@ -1,7 +1,7 @@
 import { sl } from './types.js';
 
 interface ILiterals<T extends unknown = null> {
-  readonly literal: T;
+  literal: T;
 }
 
 export interface IStringList<T extends unknown>
@@ -19,13 +19,13 @@ export interface IStringList<T extends unknown>
     suffix: P,
   ): IStringList<sl.utils.StringConcat<T extends string ? T : string, P>>;
   value<V = T>(val: V): V extends T ? V : never;
-  mutable(): string[];
+  mutable(): T & string[];
 
   // Implemented methods to return the frozen array, typed as IStringList.
   toSorted(compareFn?: (a: T, b: T) => number): IStringList<T>;
   toReversed(): IStringList<T>;
 
-  concat<PP extends T, S extends string>(...arg: (ILiterals<S> | S)[]): Readonly<IStringList<PP | S>>;
+  concat<PP extends T, S extends string>(...arg: (ILiterals<S> | S)[]): IStringList<PP | S>;
 
   // Readonly overrides
   readonly length: number;
