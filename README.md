@@ -41,6 +41,9 @@ v.withSuffix('.suffix') => SL<"foo.suffix" | "bar.suffix">
 
 v.concat('zing', 'boom', stringList('zig', 'zag')) => SL<"foo" | "bar" | "zing" | "boom" | "zig" | "zag">;
 
+v.value('foo') => 'foo';
+
+v.value('not') => throws;
 ```
 
 ## Installation
@@ -80,6 +83,13 @@ const bothWay = list.withPrefix('data.').withSuffix('.ext');
 let val;
 list.includes(val); // No type error just boolean result.
 // list implements similar fix for indexOf, lastIndexOf, filter, some, every, findIndex and find methods.
+
+// Get a copy of the underlying array -> string[]
+const arr = list.mutable(); // => ["foo", "bar"]
+
+// access a value in the list
+list.value('foo'); // 'foo'
+list.value('n'); // throws error
 ```
 
 #### list.concat(...(string|StringList)[])

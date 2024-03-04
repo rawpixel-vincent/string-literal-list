@@ -18,6 +18,7 @@ export interface IStringList<T extends unknown>
   withSuffix<P extends string>(
     suffix: P,
   ): IStringList<sl.utils.StringConcat<T extends string ? T : string, P>>;
+  value<V extends T & string>(val: V): V extends T ? T : never;
   mutable(): string[];
 
   // Implemented methods to return the frozen array, typed as IStringList.

@@ -25,6 +25,13 @@ export class SL extends Array {
     return Object.freeze(new SL(...super.map((e) => `${e}${suffix}`)));
   }
 
+  value(value) {
+    if (this.includes(value)) {
+      return value;
+    }
+    throw new Error(`Invalid value ${value}`);
+  }
+
   // Get the native array
   mutable() {
     return Array.from(this);
