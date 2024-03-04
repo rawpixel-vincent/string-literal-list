@@ -74,7 +74,6 @@ export class SL extends Array {
 
 export const ARRAY_IN_PLACE_MUTATION = Object.freeze({
   push: 'push',
-  slice: 'slice',
   sort: 'sort',
   unshift: 'unshift',
   shift: 'shift',

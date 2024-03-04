@@ -89,7 +89,6 @@ export class SL<T extends string> {
 
 export interface ArrayInPlaceMutation {
   push: 'push';
-  slice: 'slice';
   sort: 'sort';
   unshift: 'unshift';
   shift: 'shift';

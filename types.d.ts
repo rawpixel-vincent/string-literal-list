@@ -66,6 +66,7 @@ export namespace sl {
      */
     export type NativeMethod =
       | 'join'
+      | 'slice'
       | 'toLocaleString'
       | 'toString'
       | 'entries'

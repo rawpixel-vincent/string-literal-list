@@ -84,7 +84,7 @@ let val;
 list.includes(val); // No type error just boolean result.
 // list implements similar fix for indexOf, lastIndexOf, filter, some, every, findIndex and find methods.
 
-// Get a copy of the underlying array -> string[]
+// Get a copy of the underlying array -> T[]
 const arr = list.mutable(); // => ["foo", "bar"]
 
 // access a value in the list
@@ -107,7 +107,7 @@ list.concat('zing', 'foo', ['boom', 'bar']);
 // => Argument of type '"foo"' is not assignable to parameter of type '"zing" | ILiterals<"zing">'.ts(2345)
 ```
 
-### filter / map / reduce and other array methods
+### filter / map / reduce / slice and other array methods
 
 The results of those methods will result in type loose `string[]` or returned `U[]` for map / reduce.
 
@@ -119,7 +119,6 @@ See the namespace `sl.specs` (./types.d.ts) to know which methods are available 
 namespace specs {
   export type OmitedMutableMethod =
     | 'push'
-    | 'slice'
     | 'sort'
     | 'unshift'
     | 'shift'
@@ -173,6 +172,7 @@ namespace specs {
     | 'values'
     | 'forEach'
     | 'map'
+    | 'slice'
     | 'reduce'
     | 'reduceRight'
     | 'flat'
