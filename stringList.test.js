@@ -32,7 +32,10 @@ const testExpectedArrayValues = (st, list, ...values) => {
     st.ok(list.findIndex((v) => v === value) === i);
     st.ok(list.some((v) => v === value) === true);
     st.ok(list.every((v) => v === value) === (list.length === 1));
+    st.ok(list.value(value) === value);
   }
+
+  st.throws(() => list.value(`${Math.random() * 100000}!`));
 
   st.notOk(list.includes(null));
   st.ok(list.at(values.length) === undefined);
@@ -283,3 +286,5 @@ t.test('stringList mutable', (t) => {
   });
   t.end();
 });
+
+stringList('d').value('d');
