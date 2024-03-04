@@ -1,6 +1,6 @@
 import { sl } from './types.js';
 
-interface ILiterals<T extends unknown = null> {
+interface ILiterals<T extends unknown> {
   literal: T;
 }
 
@@ -8,7 +8,6 @@ export interface IStringList<T extends unknown>
   extends Omit<
     Array<T>,
     | sl.specs.ImplementedMethod
-    | sl.specs.OmitedMutableMethod
     | sl.specs.NativeMethodWithTypeOverride
   >, ILiterals<T> {
   // Custom Methods
