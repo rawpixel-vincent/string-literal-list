@@ -34,7 +34,7 @@ export class SL extends Array {
 
   // Get the native array
   mutable() {
-    return Array.from(this);
+    return Array.from(this.values());
   }
 
   // Methods returning the native array
@@ -70,21 +70,43 @@ export class SL extends Array {
     const mut = this.mutable();
     return mut.with.apply(mut, arguments);
   }
+
+  enum = new Proxy(
+    {
+      self: this,
+    },
+    {
+      get(target, property) {
+        if (typeof property !== 'string' || !target.self.includes(property)) {
+          return undefined;
+        }
+        return target.self.value(property);
+      },
+    },
+  );
 }
 
 export const ARRAY_IN_PLACE_MUTATION = Object.freeze({
   push: 'push',
-  sort: 'sort',
   unshift: 'unshift',
   shift: 'shift',
   copyWithin: 'copyWithin',
   pop: 'pop',
   fill: 'fill',
   splice: 'splice',
-  reverse: 'reverse',
 });
+
 Object.values(ARRAY_IN_PLACE_MUTATION).forEach((el) => {
-  SL.prototype[el] = () => {
-    throw new Error(`Array method ${el} is not supported by StringLiteralList`);
+  SL.prototype[el] = function () {
+    /* c8 ignore start */
+    if (
+      typeof window === 'undefined' &&
+      process?.env?.NODE_ENV !== 'production' &&
+      process?.env?.NODE_ENV !== 'test'
+    ) {
+      console && console.debug(`Array method ${el} is not supported`);
+    }
+    /* c8 ignore stop */
+    return Array.prototype[el].apply(this.mutable(), arguments);
   };
 });

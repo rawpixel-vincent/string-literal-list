@@ -1,14 +1,14 @@
 import { sl } from './types.js';
 
-interface ILiterals<T extends unknown> {
+interface ILiterals<T extends string> {
   literal: T;
 }
 
-export interface IStringList<T extends unknown>
+export interface IStringList<T extends string>
   extends Omit<
     Array<T>,
-    | sl.specs.ImplementedMethod
-    | sl.specs.NativeMethodWithTypeOverride
+    sl.specs.ImplementedMethod
+  // | sl.specs.NativeMethodWithTypeOverride
   >, ILiterals<T> {
   // Custom Methods
   withPrefix<P extends string>(
@@ -19,6 +19,8 @@ export interface IStringList<T extends unknown>
   ): IStringList<sl.utils.StringConcat<T extends string ? T : string, P>>;
   value<V = T>(val: V): V extends T ? V : never;
   mutable(): T & string[];
+  sort<P1 = T, P2 = T>(compareFn?: (a: P1, b: P2) => number): this;
+  reverse(): this;
 
   // Implemented methods to return the frozen array, typed as IStringList.
   toSorted(compareFn?: (a: T, b: T) => number): IStringList<T>;
@@ -29,6 +31,7 @@ export interface IStringList<T extends unknown>
   // Readonly overrides
   readonly length: number;
   readonly [n: number]: T | undefined;
+  readonly enum: { [P in T & string]: P };
 
   // Supported Methods
   at(n: number): T;
@@ -38,49 +41,40 @@ export interface IStringList<T extends unknown>
   indexOf<PP = T>(searchElement: PP, fromIndex?: number): number;
   lastIndexOf<PP = T>(searchElement: PP, fromIndex?: number): number;
 
-  find<PP = T>(
+  find<PP = T & string>(
     predictate: (
-      val: PP extends T ? T : PP,
+      val: PP extends T & string ? T : PP,
       i: number,
-      obj: IStringList<T>,
-    ) => val is PP extends T ? T : PP,
+      obj: T[]
+    ) => val is PP extends T & string ? T : PP,
   ): T;
   find(
     predictate: (
       val: string | undefined,
       i: number,
-      obj: IStringList<T>,
+      obj: T[]
     ) => boolean,
   ): T;
-  findIndex<PP = T>(
-    predictate: (val: PP extends T ? PP : string) => boolean,
-  ): number;
-  findIndex(
-    predictate: (
-      val: string | undefined,
-      i: number,
-      obj: IStringList<T>,
-    ) => boolean,
-  ): number;
+  findIndex<S = T & string>(predicate: (value: S & string, index: number, obj: T[]) => unknown, thisArg?: any): number;
 
-  some<PP = T>(
-    predictate: (val: PP extends T ? PP : string) => boolean,
-  ): boolean;
-  every<PP = T>(
-    predictate: (val: PP extends T ? PP : string) => boolean,
-  ): boolean;
+
+  some<S = T & string>(predicate: (value: S & string, index: number, array: T[]) => unknown, thisArg?: any): boolean;
+  every<S = T & string>(predicate: (value: S & string, index: number, array: T[]) => value is S & string, thisArg?: any): this is S[];
+  every(predicate: (value: T & string, index: number, array: T[]) => unknown, thisArg?: any): boolean;
+
 
   // Return Type overrides
-  with(index: number, value: any): string[];
-  filter<S extends T>(
-    predicate: (value: T, index: number, array: IStringList<T>) => value is S,
+  with<V extends string>(index: number, value: V): (T | V)[];
+  filter<S = T & string>(
+    predicate: (value: S & string, index: number, array: T[]) => value is S & string,
     thisArg?: any,
   ): S[];
   filter(
-    predicate: (value: string, index: number, array: IStringList<T>) => boolean,
+    predicate: (value: string, index: number, array: T[]) => boolean,
     thisArg?: any,
-  ): string[];
-  toSpliced(start: number, deleteCount: number, ...items: string[]): string[];
+  ): T & string[];
+  toSpliced<S = T & string>(start: number, deleteCount: number, ...items: string[]): (S & string)[];
+  pop(): T;
 }
 
 export class SL<T extends string> {
@@ -89,14 +83,12 @@ export class SL<T extends string> {
 
 export interface ArrayInPlaceMutation {
   push: 'push';
-  sort: 'sort';
   unshift: 'unshift';
   shift: 'shift';
   copyWithin: 'copyWithin';
   pop: 'pop';
   fill: 'fill';
   splice: 'splice';
-  reverse: 'reverse';
 }
 
 export const ARRAY_IN_PLACE_MUTATION: ArrayInPlaceMutation;

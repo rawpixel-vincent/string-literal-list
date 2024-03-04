@@ -38,6 +38,8 @@ export namespace sl {
       | 'withSuffix'
       | 'toReversed'
       | 'toSorted'
+      | 'sort'
+      | 'reverse'
       | 'value';
 
     /**

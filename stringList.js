@@ -4,9 +4,31 @@ import { SL } from './StringLiteralList.js';
 
 /** @type {import('./stringList.js').stringList} */
 export function stringList(...strings) {
-  if (strings.some((el) => typeof el !== 'string')) {
-    throw new Error(`Not a string in stringList ${strings[0]}`);
+  if (strings.length && strings.some((el) => typeof el !== 'string')) {
+    /* c8 ignore start */
+    if (
+      typeof window === 'undefined' &&
+      process?.env?.NODE_ENV !== 'production' &&
+      process?.env?.NODE_ENV !== 'test'
+    ) {
+      console.debug(
+        'Unexpected type in stringList(). Casting all arguments to string type.',
+      );
+    }
+    /* c8 ignore stop */
+    return Object.freeze(
+      new SL(
+        ...strings.flatMap((el) =>
+          Array.isArray(el)
+            ? el.filter((s) => typeof s === 'string').map((s) => s)
+            : typeof el === 'string'
+              ? [el]
+              : [],
+        ),
+      ),
+    );
   }
+
   // @ts-expect-error[2322]
   return Object.freeze(new SL(...strings));
 }

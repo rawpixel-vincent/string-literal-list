@@ -23,6 +23,7 @@ const testExpectedArrayValues = (st, list, ...values) => {
   st.match([...list.entries()], [...values.entries()]);
   for (const [i, value] of list.entries()) {
     st.match(value, values[i]);
+    st.match(list.enum[value], value);
     st.ok(list.includes(value));
     st.ok(list.indexOf(values[i]) === i);
     st.ok(list.at(i) === value);
@@ -35,7 +36,9 @@ const testExpectedArrayValues = (st, list, ...values) => {
     st.ok(list.value(value) === value);
   }
 
-  st.throws(() => list.value(`${Math.random() * 100000}!`));
+  st.ok(list.enum[`${Math.random() * 100000}!`] === undefined);
+  st.ok(list.enum[Math.random() * 100000] === undefined);
+  st.throws(() => list.value(`${Math.random() * 100000}`));
 
   st.notOk(list.includes(null));
   st.ok(list.at(values.length) === undefined);
@@ -263,10 +266,9 @@ t.test('all chained', (t) => {
 });
 
 t.test('stringList(invalid arguments) throws', (t) => {
-  t.throws(
+  t.doesNotThrow(
     // @ts-expect-error[incompatible-call]
-    () => stringList(4, 'foo'),
-    new Error('Not a string in stringList 4'),
+    () => stringList(4, 'foo', ['d', 45], undefined),
   );
 
   t.end();
@@ -275,12 +277,10 @@ t.test('stringList(invalid arguments) throws', (t) => {
 t.test('stringList mutable', (t) => {
   const list = stringList('foo');
   Object.values(ARRAY_IN_PLACE_MUTATION).forEach((el) => {
-    t.throws(
-      () =>
-        // @ts-expect-error
-        list[el](),
-      new Error(`Array method ${el} is not supported by StringLiteralList`),
-    );
+    t.doesNotThrow(() => {
+      // @ts-expect-error
+      list[el](0);
+    });
     // @ts-expect-error
     t.ok(list.mutable()[el]());
   });
