@@ -32,11 +32,12 @@ The StringList class extends the Array interface types to work with string liter
 - an `enum` property is available to access the string literals. It's a frozen object built from the array values, it's used as a lookup instead of the array, but the primary intent is for convenience. This construct is not meant to manipulate millions of strings.
 
 - then additional methods for string literals and type constructs are implemented:
+  - `without(...$)`: opposite of concat, accept string / list parameters.
   - `withPrefix($)`: add prefix to all the words.
   - `withSuffix($)`: add suffix to all the words.
   - `withDerivatedPrefix($)` and `withDerivatedSuffix($)`: Generate words variants with or without the given suffix/prefix depending on their presence.
   - `value($)`: similar to enum but throws an error if the value doesn't exists.
-  - `enum` Object is exposed as readonly.
+  - `enum[$]:$` Object is exposed as readonly.
   - `withTrim()`: trim all the words.
   - `withReplace(search, replacement)`: call the String.prototype.replace on all the words.
   - `withReplaceAll(search, replacement)`: call the String.prototype.replaceAll on all the words.
@@ -78,6 +79,8 @@ v.withDerivatedPrefix('#') => SL<"foo" | "#foo" | "bar" | "#bar">;
 v.withTrim() => SL<"foo" | "bar">;
 v.withReplace('a', 'e') => SL<"foo" | "ber">;
 v.withReplaceAll('o', 'e') => SL<"fee" | "bar">;
+
+v.without('foo') => SL<"bar">;
 ```
 
 ```js
@@ -101,6 +104,9 @@ const suffixed = list.withSuffix('.suffix');
 
 const concat = prefixed.concat(...suffixed);
 // SL<"prefix.foo" | "prefix.bar" | "foo.suffix" | "bar.suffix">;
+
+const without = concat.without('prefix.foo').without('bar.suffix');
+// SL<"prefix.bar" | "foo.suffix">;
 
 const bothWay = list.withPrefix('data.').withSuffix('.ext');
 // SL<"data.foo.ext" | "data.bar.ext">;

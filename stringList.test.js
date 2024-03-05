@@ -276,7 +276,34 @@ t.test('withTrim().withReplaceAll("_")', (t) => {
     .withReplaceAll(' ', '_');
   testExpectedArrayValues(t, list, 'has_spaces', 'has_more_spaces');
   testEscapingFromStringList(t, list, 'has_spaces', 'has_more_spaces');
+  t.end();
+});
 
+t.test('without()', (t) => {
+  const list = stringList('foo', 'bar').without('bar');
+  testExpectedArrayValues(t, list, 'foo');
+  testEscapingFromStringList(t, list, 'foo');
+
+  const list2 = stringList(
+    'foo',
+    'bar',
+    'bar2',
+    'foo2',
+    'bar3',
+    'foo3',
+    'bar4',
+    'foo4',
+  ).without(
+    stringList('bar', 'foo'),
+    // @ts-expect-error (because of null/object in the parameters - added to cover the case)
+    'bar2',
+    stringList('bar3', 'foo3'),
+    'foo4',
+    null,
+    { foo2: 'bar4' },
+  );
+  testExpectedArrayValues(t, list2, 'foo2', 'bar4');
+  testEscapingFromStringList(t, list2, 'foo2', 'bar4');
   t.end();
 });
 

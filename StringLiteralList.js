@@ -40,6 +40,17 @@ export class SL extends Array {
     return Object.freeze(new SL(...super.slice.apply(this, arguments)));
   }
 
+  without() {
+    const values = Array.from(arguments).flatMap((el) =>
+      Array.isArray(el)
+        ? el.filter((s) => typeof s === 'string')
+        : typeof el === 'string'
+          ? [el]
+          : [],
+    );
+    return Object.freeze(new SL(...this.filter((e) => !values.includes(e))));
+  }
+
   withTrim() {
     return Object.freeze(new SL(...super.map((e) => e.trim())));
   }

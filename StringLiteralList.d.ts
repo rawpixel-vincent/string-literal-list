@@ -35,13 +35,13 @@ export interface IStringList<T extends string>
   mutable(): T & string[];
   sort<P1 = T, P2 = T>(compareFn?: (a: P1, b: P2) => number): this;
   reverse(): this;
+  without<PP extends T & string, S extends string>(...arg: (ILiterals<S> | S)[]): IStringList<Exclude<PP | S, S>>;
 
   // Implemented methods to return the frozen array, typed as IStringList.
   toSorted(compareFn?: (a: T, b: T) => number): IStringList<T>;
   toReversed(): IStringList<T>;
 
   concat<PP extends T, S extends string>(...arg: (ILiterals<S> | S)[]): IStringList<PP | S>;
-
   // Readonly overrides
   readonly length: number;
   readonly [n: number]: T | undefined;

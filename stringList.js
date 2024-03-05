@@ -6,7 +6,8 @@ import { SL } from './StringLiteralList.js';
 /** @type {import('./stringList.js').stringList} */
 export function stringList(...strings) {
   let values = strings;
-  if (strings.length && strings.some((el) => typeof el !== 'string')) {
+  let invalid = strings.some((el) => typeof el !== 'string');
+  if (strings.length && invalid) {
     /* c8 ignore start */
     if (
       typeof window === 'undefined' &&
@@ -14,16 +15,18 @@ export function stringList(...strings) {
       process?.env?.NODE_ENV !== 'test'
     ) {
       console.debug(
-        'Unexpected type in stringList(). Casting all arguments to string type.',
+        `Unexpected type in stringList(${typeof invalid}). Casting all arguments to string type.`,
       );
     }
     /* c8 ignore stop */
     values = strings.flatMap((el) =>
       Array.isArray(el)
-        ? el.filter((s) => typeof s === 'string').map((s) => s)
+        ? el.filter((s) => typeof s === 'string')
         : typeof el === 'string'
           ? [el]
-          : [],
+          : typeof el === 'number'
+            ? [String(el)]
+            : [],
     );
   }
 
