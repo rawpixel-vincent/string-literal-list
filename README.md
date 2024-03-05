@@ -9,7 +9,7 @@ Useful for types constructs that can be used at runtime.
 
 *If you code in typescript, you probably don't need any of this.*
 
-Thanks to @gustavoguichard and his work on https://github.com/gustavoguichard/string-ts that teaches me how to work with string literals.
+Thanks to @gustavoguichard and his work on https://github.com/gustavoguichard/string-ts that taught me how to work with string literals.
 
 ## Overview
 
