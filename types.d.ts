@@ -2,6 +2,9 @@ import { ArrayInPlaceMutation } from './StringLiteralList.js';
 
 export namespace sl {
   export namespace utils {
+    /**
+     * @credit @gustavoguichard
+     */
     type IsStringLiteral<T extends string> = [T] extends [string] ? [string] extends [T] ? false : Uppercase<T> extends Uppercase<Lowercase<T>> ? Lowercase<T> extends Lowercase<Uppercase<T>> ? true : false : false : false;
 
     export type StringConcat<
