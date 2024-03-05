@@ -6,9 +6,22 @@ import 'core-js/actual/array/with.js';
 export class SL extends Array {
   literal = undefined;
   enum;
+  hasEmpty = false;
   constructor(...args) {
     super(...args);
-    this.enum = Object.freeze(Object.fromEntries(this.map((v) => [v, v])));
+    this.enum = Object.fromEntries(
+      this.map((v) => {
+        if (v === '') {
+          this.hasEmpty = true;
+        }
+        return [v, v];
+      }),
+    );
+
+    if (this.hasEmpty) {
+      this.enum[''] = '';
+    }
+    Object.freeze(this.enum);
   }
 
   concat(...args) {
@@ -27,15 +40,19 @@ export class SL extends Array {
     return Object.freeze(new SL(...super.slice.apply(this, arguments)));
   }
 
-  withPrefix(prefix) {
+  withTrim() {
+    return Object.freeze(new SL(...super.map((e) => e.trim())));
+  }
+
+  withPrefix(prefix = '') {
     return Object.freeze(new SL(...super.map((e) => `${prefix}${e}`)));
   }
 
-  withSuffix(suffix) {
+  withSuffix(suffix = '') {
     return Object.freeze(new SL(...super.map((e) => `${e}${suffix}`)));
   }
 
-  withDerivatedSuffix(chars) {
+  withDerivatedSuffix(chars = '') {
     return Object.freeze(
       new SL(
         ...super.flatMap((t) => [
@@ -48,7 +65,7 @@ export class SL extends Array {
     );
   }
 
-  withDerivatedPrefix(chars) {
+  withDerivatedPrefix(chars = '') {
     return Object.freeze(
       new SL(
         ...super.flatMap((t) => [
@@ -61,8 +78,23 @@ export class SL extends Array {
     );
   }
 
+  withReplace(string, replacement = '') {
+    return Object.freeze(
+      new SL(...super.map((e) => e.replace(string, replacement))),
+    );
+  }
+
+  withReplaceAll(string, replacement = '') {
+    return Object.freeze(
+      new SL(...super.map((e) => e.replaceAll(string, replacement))),
+    );
+  }
+
   value(value) {
-    if (this.enum[value]) {
+    if (
+      typeof value === 'string' &&
+      (this.enum[value] || (this.hasEmpty && value === ''))
+    ) {
       return value;
     }
     throw new Error(`Invalid value ${value}`);

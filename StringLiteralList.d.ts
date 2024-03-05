@@ -22,7 +22,16 @@ export interface IStringList<T extends string>
   withDerivatedPrefix<S extends string>(
     chars: S
   ): IStringList<T | sl.utils.DropPrefix<sl.utils.DropPrefix<sl.utils.StringConcat<sl.utils.StringConcat<S, S>, T>, S>, sl.utils.StringConcat<S, S>>>;
-  value<V = T>(val: V): V extends T ? V : never;
+  withReplace<
+    S extends string | RegExp,
+    D extends string
+  >(searchValue: S, replaceValue: D): IStringList<sl.utils.Replace<T, S, D>>;
+  withReplaceAll<
+    S extends string | RegExp,
+    D extends string
+  >(searchValue: S, replaceValue: D): IStringList<sl.utils.ReplaceAll<T, S, D>>;
+  withTrim(): IStringList<sl.utils.Trim<T>>;
+  value(val): T;
   mutable(): T & string[];
   sort<P1 = T, P2 = T>(compareFn?: (a: P1, b: P2) => number): this;
   reverse(): this;
@@ -36,7 +45,7 @@ export interface IStringList<T extends string>
   // Readonly overrides
   readonly length: number;
   readonly [n: number]: T | undefined;
-  readonly enum: { [P in T & string]: P };
+  readonly enum: { [P in T & string]: P } & Omit<{ [P in number | string | symbol]: P extends number | symbol ? never : T | undefined | null }, T>;
 
   // Supported Methods
   at(n: number): T | undefined;

@@ -2,6 +2,8 @@ import { ArrayInPlaceMutation } from './StringLiteralList.js';
 
 export namespace sl {
   export namespace utils {
+    type IsStringLiteral<T extends string> = [T] extends [string] ? [string] extends [T] ? false : Uppercase<T> extends Uppercase<Lowercase<T>> ? Lowercase<T> extends Lowercase<Uppercase<T>> ? true : false : false : false;
+
     export type StringConcat<
       T1 extends string | number | bigint | boolean,
       T2 extends string | number | bigint | boolean,
@@ -24,6 +26,17 @@ export namespace sl {
       : sentence extends `${prefix}${infer rest}`
       ? rest
       : sentence;
+
+
+    type TrimStart<T extends string> = IsStringLiteral<T> extends true ? T extends ` ${infer rest}` ? TrimStart<rest> : T : string;
+
+    type TrimEnd<T extends string> = IsStringLiteral<T> extends true ? T extends `${infer rest} ` ? TrimEnd<rest> : T : string;
+
+    type Trim<T extends string> = TrimEnd<TrimStart<T>>;
+
+    type Replace<sentence extends string, lookup extends string | RegExp, replacement extends string = ''> = lookup extends string ? IsStringLiteral<lookup | sentence | replacement> extends true ? sentence extends `${infer rest}${lookup}${infer rest2}` ? `${rest}${replacement}${rest2}` : sentence : string : string;
+
+    type ReplaceAll<sentence extends string, lookup extends string | RegExp, replacement extends string = ''> = lookup extends string ? IsStringLiteral<lookup | sentence | replacement> extends true ? sentence extends `${infer rest}${lookup}${infer rest2}` ? `${rest}${replacement}${ReplaceAll<rest2, lookup, replacement>}` : sentence : string : string;
   }
 
   export namespace specs {

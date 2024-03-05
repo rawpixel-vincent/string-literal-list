@@ -34,6 +34,10 @@ The StringList class extends the Array interface types to work with string liter
   - `withSuffix($)`: add suffix to all the words.
   - `withDerivatedPrefix($)` and `withDerivatedSuffix($)`: Generate words variants with or without the given suffix/prefix depending on their presence.
   - `value($)`: similar to enum but throws an error if the value doesn't exists.
+  - `enum` Object is exposed as readonly.
+  - `withTrim()`: trim all the words.
+  - `withReplace(search, replacement)`: call the String.prototype.replace on all the words.
+  - `withReplaceAll(search, replacement)`: call the String.prototype.replaceAll on all the words.
 
 ## Installation
 
@@ -68,6 +72,10 @@ v.value('not') => throws;
 
 v.withDerivatedSuffix('s') => SL<"foo" | "foos" | "bars" "bar">;
 v.withDerivatedPrefix('#') => SL<"foo" | "#foo" | "bar" | "#bar">;
+
+v.withTrim() => SL<"foo" | "bar">;
+v.withReplace('a', 'e') => SL<"foo" | "ber">;
+v.withReplaceAll('o', 'e') => SL<"fee" | "bar">;
 ```
 
 ```js
@@ -113,6 +121,8 @@ foods.withDerivatedSuffix('s'); => SL<"food" | "bars" | "pasta" | "meatballs" | 
 
 const tags = stringList('spring', '#boot', '#typescript', 'fundamentals');
 tags.withDerivatedPrefix('#'); => SL<"#spring" | "#boot" | "#typescript" | "#fundamentals" | "spring" | "boot" | "typescript" | "fundamentals">
+
+const scored = stringList('if has ', 'spaces', ' between ', ' o r', 'into the words').withTrim().withReplaceAll(' ', '_') => SL<"if_has" | "spaces" | "between" | "o_r" |"into_the_words">
 ```
 
 #### list.concat(...(string|StringList)[])

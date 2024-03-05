@@ -246,6 +246,40 @@ t.test("withSuffix('.suffix')", (t) => {
   t.end();
 });
 
+t.test('withReplace("1")', (t) => {
+  const list = stringList('f1oo', 'b1ar').withReplace('1', '');
+  testExpectedArrayValues(t, list, 'foo', 'bar');
+  testEscapingFromStringList(t, list, 'foo', 'bar');
+  t.end();
+});
+
+t.test('withReplaceAll("z")', (t) => {
+  const list = stringList('foo', 'azzztiv', 'zzz', 'z1').withReplaceAll(
+    'z',
+    '',
+  );
+  testExpectedArrayValues(t, list, 'foo', 'ativ', '', '1');
+  testEscapingFromStringList(t, list, 'foo', 'ativ', '', '1');
+  t.end();
+});
+
+t.test('withTrim()', (t) => {
+  const list = stringList('   foo  ', ' bar    ').withTrim();
+  testExpectedArrayValues(t, list, 'foo', 'bar');
+  testEscapingFromStringList(t, list, 'foo', 'bar');
+  t.end();
+});
+
+t.test('withTrim().withReplaceAll("_")', (t) => {
+  const list = stringList('has spaces ', ' has more_spaces')
+    .withTrim()
+    .withReplaceAll(' ', '_');
+  testExpectedArrayValues(t, list, 'has_spaces', 'has_more_spaces');
+  testEscapingFromStringList(t, list, 'has_spaces', 'has_more_spaces');
+
+  t.end();
+});
+
 t.test("concat('zing', 'boom')", (t) => {
   const list = stringList('foo', 'bar').concat('zing', 'boom');
   testExpectedArrayValues(t, list, 'foo', 'bar', 'zing', 'boom');
