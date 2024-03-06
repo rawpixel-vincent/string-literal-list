@@ -3,20 +3,33 @@ import 'core-js/actual/array/to-sorted.js';
 import 'core-js/actual/array/to-spliced.js';
 import 'core-js/actual/array/with.js';
 
+const freezeIfImmutable = (source, target) => {
+  if (Object.isFrozen(source)) {
+    return Object.freeze(target);
+  }
+  return target;
+};
+
 export class SL extends Array {
   literal = undefined;
   enum;
   hasEmpty = false;
   constructor(...args) {
-    super(...args);
-    this.enum = Object.fromEntries(
-      this.map((v) => {
-        if (v === '') {
-          this.hasEmpty = true;
+    const entries = [];
+    const arr = [];
+    let emptyFound = false;
+    for (const str of args.flat()) {
+      if (typeof str === 'string') {
+        if (str === '') {
+          emptyFound = true;
         }
-        return [v, v];
-      }),
-    );
+        entries.push([str, str]);
+        arr.push(str);
+      }
+    }
+    super(...arr);
+    this.hasEmpty = emptyFound;
+    this.enum = Object.fromEntries(entries);
 
     if (this.hasEmpty) {
       this.enum[''] = '';
@@ -25,19 +38,31 @@ export class SL extends Array {
   }
 
   concat(...args) {
-    return Object.freeze(new SL(...super.concat.apply(this, args.flat())));
+    return freezeIfImmutable(
+      this,
+      new SL(...super.concat.apply(this, args.flat())),
+    );
   }
 
   toSorted() {
-    return Object.freeze(new SL(...super.toSorted.apply(this, arguments)));
+    return freezeIfImmutable(
+      this,
+      new SL(...super.toSorted.apply(this, arguments)),
+    );
   }
 
   toReversed() {
-    return Object.freeze(new SL(...super.toReversed.apply(this, arguments)));
+    return freezeIfImmutable(
+      this,
+      new SL(...super.toReversed.apply(this, arguments)),
+    );
   }
 
   slice() {
-    return Object.freeze(new SL(...super.slice.apply(this, arguments)));
+    return freezeIfImmutable(
+      this,
+      new SL(...super.slice.apply(this, arguments)),
+    );
   }
 
   without() {
@@ -48,23 +73,33 @@ export class SL extends Array {
           ? [el]
           : [],
     );
-    return Object.freeze(new SL(...this.filter((e) => !values.includes(e))));
+    return freezeIfImmutable(
+      this,
+      new SL(...this.filter((e) => !values.includes(e))),
+    );
   }
 
   withTrim() {
-    return Object.freeze(new SL(...super.map((e) => e.trim())));
+    return freezeIfImmutable(this, new SL(...super.map((e) => e.trim())));
   }
 
   withPrefix(prefix = '') {
-    return Object.freeze(new SL(...super.map((e) => `${prefix}${e}`)));
+    return freezeIfImmutable(
+      this,
+      new SL(...super.map((e) => `${prefix}${e}`)),
+    );
   }
 
   withSuffix(suffix = '') {
-    return Object.freeze(new SL(...super.map((e) => `${e}${suffix}`)));
+    return freezeIfImmutable(
+      this,
+      new SL(...super.map((e) => `${e}${suffix}`)),
+    );
   }
 
   withDerivatedSuffix(chars = '') {
-    return Object.freeze(
+    return freezeIfImmutable(
+      this,
       new SL(
         ...super.flatMap((t) => [
           t,
@@ -77,7 +112,8 @@ export class SL extends Array {
   }
 
   withDerivatedPrefix(chars = '') {
-    return Object.freeze(
+    return freezeIfImmutable(
+      this,
       new SL(
         ...super.flatMap((t) => [
           t,
@@ -90,13 +126,15 @@ export class SL extends Array {
   }
 
   withReplace(string, replacement = '') {
-    return Object.freeze(
+    return freezeIfImmutable(
+      this,
       new SL(...super.map((e) => e.replace(string, replacement))),
     );
   }
 
   withReplaceAll(string, replacement = '') {
-    return Object.freeze(
+    return freezeIfImmutable(
+      this,
       new SL(...super.map((e) => e.replaceAll(string, replacement))),
     );
   }
@@ -113,7 +151,7 @@ export class SL extends Array {
 
   // Get the native array
   mutable() {
-    return Array.from(this.values());
+    return Array.from(this);
   }
 
   // Methods returning the native array
@@ -168,17 +206,4 @@ export const ARRAY_IN_PLACE_MUTATION = Object.freeze({
   splice: 'splice',
 });
 
-Object.values(ARRAY_IN_PLACE_MUTATION).forEach((el) => {
-  SL.prototype[el] = function () {
-    /* c8 ignore start */
-    if (
-      typeof window === 'undefined' &&
-      process?.env?.NODE_ENV !== 'production' &&
-      process?.env?.NODE_ENV !== 'test'
-    ) {
-      console && console.debug(`Array method ${el} is not supported`);
-    }
-    /* c8 ignore stop */
-    return Array.prototype[el].apply(this.mutable(), arguments);
-  };
-});
+export class SLS extends SL {}

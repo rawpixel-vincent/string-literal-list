@@ -9,13 +9,11 @@ Useful for types constructs that can be used at runtime.
 
 *If you code in typescript, you probably don't need any of this.*
 
-Thanks to @gustavoguichard and his work on https://github.com/gustavoguichard/string-ts that taught me how to work with string literals.
-
 ## Overview
 
 The StringList class extends the Array interface types to work with string literals.
 
-- immutable: methods that mutate the array in place like push, pop, shift, unshift, splice are not working, it's possible to escape the list to a mutable array with the method `mutable()`
+- immutable: methods that mutate the array in place like push, pop, shift, unshift, splice should not be used, there is a strict export that enforce this by freezing the instance when constructed.
 
 - inference: concat, toReversed, toSorted and slice methods are implemented to return a new frozen instance and will infer the new values.
   - the concat method parameters types has been updated to accept strings literals and/or instances of StringList.
@@ -56,6 +54,7 @@ yarn add string-literal-list
 
 ```js
 import { stringList } from 'string-literal-list';
+// Or import { stringList } from 'string-literal-list/strict.js'; with frozen array.
 
 let v = stringList("foo", "bar", ...) => SL<"foo" | "bar">;
 
@@ -214,3 +213,7 @@ lit.concat(val);
 //   Overload 2 of 2, '(...items: ("foo" | "bar" | ConcatArray<"foo" | "bar">)[]): ("foo" | "bar")[]', gave the following error.
 //     Argument of type 'string' is not assignable to parameter of type '"foo" | "bar" | ConcatArray<"foo" | "bar">'.ts(2769)
 ```
+
+## Credits
+
+Thanks to @gustavoguichard and his work on https://github.com/gustavoguichard/string-ts that taught me how to work with string literals.

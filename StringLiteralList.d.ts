@@ -1,47 +1,86 @@
 import { sl } from './types.js';
 
+export type ArrayInPlaceMutation = {
+  push: 'push';
+  unshift: 'unshift';
+  shift: 'shift';
+  copyWithin: 'copyWithin';
+  pop: 'pop';
+  fill: 'fill';
+  splice: 'splice';
+};
+
+export const ARRAY_IN_PLACE_MUTATION: ArrayInPlaceMutation;
+
+
 interface ILiterals<T extends string> {
   literal: T;
 }
 
-export interface IStringList<T extends string>
+export type MaybeReadonly<T extends boolean, A> = [T] extends [true] ? Readonly<A> : A;
+
+export interface IStringList<T extends string, Mut extends boolean = false>
   extends Omit<
     Array<T>,
     sl.specs.ImplementedMethod
   >, ILiterals<T> {
+
   // Custom Methods
   withPrefix<P extends string>(
     prefix: P,
-  ): IStringList<sl.utils.StringConcat<P, T extends string ? T : string>>;
+  ): MaybeReadonly<Mut, IStringList<sl.utils.StringConcat<P, T extends string ? T : string>, Mut>>;
   withSuffix<P extends string>(
     suffix: P,
-  ): IStringList<sl.utils.StringConcat<T extends string ? T : string, P>>;
+  ): MaybeReadonly<Mut, IStringList<sl.utils.StringConcat<T extends string ? T : string, P>, Mut>>;
+
   withDerivatedSuffix<S extends string>(
     chars: S
-  ): IStringList<T | sl.utils.DropSuffix<sl.utils.DropSuffix<sl.utils.StringConcat<T, sl.utils.StringConcat<S, S>>, S>, sl.utils.StringConcat<S, S>>>;
+  ): MaybeReadonly<Mut, IStringList<
+    | T
+    | sl.utils.DropSuffix<
+      sl.utils.DropSuffix<
+        `${T}${S}${S}`,
+        S
+      >,
+      `${S}${S}`
+    >,
+    Mut>>;
+
   withDerivatedPrefix<S extends string>(
     chars: S
-  ): IStringList<T | sl.utils.DropPrefix<sl.utils.DropPrefix<sl.utils.StringConcat<sl.utils.StringConcat<S, S>, T>, S>, sl.utils.StringConcat<S, S>>>;
-  withReplace<
-    S extends string | RegExp,
-    D extends string
-  >(searchValue: S, replaceValue: D): IStringList<sl.utils.Replace<T, S, D>>;
-  withReplaceAll<
-    S extends string | RegExp,
-    D extends string
-  >(searchValue: S, replaceValue: D): IStringList<sl.utils.ReplaceAll<T, S, D>>;
-  withTrim(): IStringList<sl.utils.Trim<T>>;
+  ): MaybeReadonly<Mut, IStringList<
+    T |
+    sl.utils.DropPrefix<
+      sl.utils.DropPrefix<
+        `${S}${S}${T}`,
+        S
+      >,
+      `${S}${S}`
+    >,
+    Mut>>;
+
+  withReplace<S extends string | RegExp, D extends string>(
+    searchValue: S,
+    replaceValue: D
+  ): MaybeReadonly<Mut, IStringList<sl.utils.Replace<T, S, D>, Mut>>;
+
+  withReplaceAll<S extends string | RegExp, D extends string>(
+    searchValue: S,
+    replaceValue: D
+  ): MaybeReadonly<Mut, IStringList<sl.utils.ReplaceAll<T, S, D>, Mut>>;
+
+  withTrim(): MaybeReadonly<Mut, IStringList<sl.utils.Trim<T>, Mut>>;
   value(val): T;
   mutable(): T & string[];
   sort<P1 = T, P2 = T>(compareFn?: (a: P1, b: P2) => number): this;
   reverse(): this;
-  without<PP extends T & string, S extends string>(...arg: (ILiterals<S> | S)[]): IStringList<Exclude<PP | S, S>>;
+  without<PP extends T & string, S extends string>(...arg: (ILiterals<S> | S)[]): MaybeReadonly<Mut, IStringList<Exclude<PP | S, S>, Mut>>;
 
   // Implemented methods to return the frozen array, typed as IStringList.
-  toSorted(compareFn?: (a: T, b: T) => number): IStringList<T>;
-  toReversed(): IStringList<T>;
+  toSorted(compareFn?: (a: T, b: T) => number): MaybeReadonly<Mut, IStringList<T, Mut>>;
+  toReversed(): IStringList<T, Mut>;
 
-  concat<PP extends T, S extends string>(...arg: (ILiterals<S> | S)[]): IStringList<PP | S>;
+  concat<PP extends T, S extends string>(...arg: (ILiterals<S> | S)[]): MaybeReadonly<Mut, IStringList<PP | S, Mut>>;
   // Readonly overrides
   readonly length: number;
   readonly [n: number]: T | undefined;
@@ -71,7 +110,7 @@ export interface IStringList<T extends string>
   ): T;
   findIndex<S = T & string>(predicate: (value: S & string, index: number, obj: T[]) => unknown, thisArg?: any): number;
 
-  slice(start?: number, end?: number): IStringList<T>;
+  slice(start?: number, end?: number): MaybeReadonly<Mut, IStringList<T, Mut>>;
 
   some<S = T & string>(predicate: (value: S & string, index: number, array: T[]) => unknown, thisArg?: any): boolean;
   every<S = T & string>(predicate: (value: S & string, index: number, array: T[]) => value is S & string, thisArg?: any): this is S[];
@@ -89,21 +128,30 @@ export interface IStringList<T extends string>
     thisArg?: any,
   ): T & string[];
   toSpliced<S = T & string>(start: number, deleteCount: number, ...items: string[]): (S & string)[];
-  pop(): T;
+  pop(): [Mut] extends [true] ? T : never;
+  shift(): [Mut] extends [true] ? T : never;
+  unshift<S = T & string>(...newElement: S[]): [Mut] extends [true] ? number : never;
+  push<S = T & string>(...items: S[]): [Mut] extends [true] ? number : never;
+  splice(start: number, deleteCount?: number): [Mut] extends [true]
+    ? T[]
+    : never;
+  copyWithin<S = T & string>(target: number, start: number, end?: number): [Mut] extends [true] ? S[] : never;
+  fill<S = T, U = T & string>(
+    value: (U | undefined)[],
+    start?: number,
+    end?: number,
+  ): [Mut] extends [true] ? U[] : never;
+  fill<U = T & string>(
+    value: U,
+    start?: number,
+    end?: number,
+  ): [Mut] extends [true] ? U[] : never;
+  // join<D extends string = ''>(delimiter?: D): sl.utils.Join<SS, D>;
 }
 
-export class SL<T extends string> {
-  constructor(...list: T[]);
-}
 
-export interface ArrayInPlaceMutation {
-  push: 'push';
-  unshift: 'unshift';
-  shift: 'shift';
-  copyWithin: 'copyWithin';
-  pop: 'pop';
-  fill: 'fill';
-  splice: 'splice';
+export class SL {
+  literal: undefined;
+  constructor(...list: string[]);
+  mutable(): string[];
 }
-
-export const ARRAY_IN_PLACE_MUTATION: ArrayInPlaceMutation;
