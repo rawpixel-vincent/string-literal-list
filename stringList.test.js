@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 'use strict';
 import t from 'tap';
 
@@ -153,6 +154,7 @@ for (const { type, stringList } of functions) {
       t.ok(list.toSorted().length === 0);
       t.ok(list.toReversed().length === 0);
     });
+
     const notEmpty = list.concat('a', 'b', 'c');
     t.ok(notEmpty.length === 3);
     t.ok(list.length === 0);
@@ -210,6 +212,7 @@ for (const { type, stringList } of functions) {
     const list = stringList('food', 'bars', 'pasta', 'meatballs')
       .withDerivatedSuffix('s')
       .toSorted((a, b) => a.localeCompare(b));
+
     testExpectedArrayValues(
       t,
       list,
@@ -271,6 +274,14 @@ for (const { type, stringList } of functions) {
     const list = stringList('f1oo', 'b1ar').withReplace('1', '');
     testExpectedArrayValues(t, list, 'foo', 'bar');
     testEscapingFromStringList(t, list, 'foo', 'bar');
+
+    /**
+     * @type {"foo::bar"}
+     */
+    // @ts-expect-error
+    const d = list.join('::');
+    t.match(d, 'foo::bar');
+
     t.end();
   });
 
@@ -281,6 +292,14 @@ for (const { type, stringList } of functions) {
     );
     testExpectedArrayValues(t, list, 'foo', 'ativ', '', '1');
     testEscapingFromStringList(t, list, 'foo', 'ativ', '', '1');
+
+    /**
+     * @type {"foo::::1::ativ"}
+     */
+    // @ts-expect-error
+    const d = list.join('::');
+    t.match(d, 'foo::ativ::::1');
+
     t.end();
   });
 
@@ -405,6 +424,7 @@ for (const { type, stringList } of functions) {
       .withSuffix('.suffix')
       .toSorted()
       .toReversed();
+
     testExpectedArrayValues(
       t,
       list,
@@ -424,9 +444,111 @@ for (const { type, stringList } of functions) {
     t.end();
   });
 
+  t.test(type + ': join()', (t) => {
+    /**
+     * Expected type
+     * @type {string}
+     */
+    const joinUnsorted = stringList('foo', 'bar')
+      .concat('doink', 'bleep')
+      .withPrefix('prefix.')
+      .withSuffix('.suffix')
+      .toSorted()
+      .toReversed()
+      .join('::');
+
+    t.match(
+      joinUnsorted,
+      'prefix.foo.suffix::prefix.doink.suffix::prefix.bleep.suffix::prefix.bar.suffix',
+    );
+
+    /**
+     * Expected type
+     * @type {'foo::bar'}
+     */
+    const joinSorted = stringList('foo', 'bar').join('::');
+    t.match(joinSorted, 'foo::bar');
+
+    /**
+     * Expected type
+     * @type {'foo::bar'}
+     */
+    const emptyConcat = stringList().concat('foo', 'bar').join('::');
+    t.match(emptyConcat, 'foo::bar');
+
+    /**
+     * Expected type
+     * @type {'data.foo::data.bar'}
+     */
+    const withPrefix = stringList('foo', 'bar').withPrefix('data.').join('::');
+    t.match(withPrefix, 'data.foo::data.bar');
+
+    /**
+     * Expected type
+     * @type {'foo.json::bar.json'}
+     */
+    const withSuffix = stringList('foo', 'bar').withSuffix('.json').join('::');
+    t.match(withSuffix, 'foo.json::bar.json');
+
+    /**
+     * Expected type
+     * @type {'data.foo.json::data.bar.json'}
+     */
+    const withBoth = stringList('foo', 'bar')
+      .withPrefix('data.')
+      .withSuffix('.json')
+      .join('::');
+    t.match(withBoth, 'data.foo.json::data.bar.json');
+
+    /**
+     * Expected type
+     * @type {'data.foo::data.bar::foo.json::bar.json'}
+     */
+    const listConcat = stringList()
+      .concat(
+        stringList('foo', 'bar').withPrefix('data.'),
+        stringList('foo', 'bar').withSuffix('.json'),
+      )
+      .join('::');
+
+    t.match(listConcat, 'data.foo::data.bar::foo.json::bar.json');
+
+    /**
+     * Expected type
+     * @type {string}
+     */
+    const listConcatWithout = stringList()
+      .concat(
+        stringList('foo', 'bar').withPrefix('data.'),
+        stringList('foo', 'bar').withSuffix('.json'),
+      )
+      .without('data.bar', 'bar.json')
+      .concat('foo', 'bar')
+      .without('bar', 'foo.json')
+      .join('::');
+    t.match(listConcatWithout, 'data.foo::foo');
+
+    /**
+     * Expected type
+     * @type {string}
+     */
+    const list = stringList('foo')
+      .withPrefix('z.')
+      .concat('foo')
+      .withPrefix('a.')
+      .join('::');
+
+    /** @type {'a.z.foo::a.foo'|'a.foo::a.z.foo'} */
+    // @ts-expect-error should infer to string until tupple is sorted
+    const d = list;
+
+    t.match(list, 'a.z.foo::a.foo');
+
+    t.end();
+  });
+
   t.test(type + ': stringList(invalid arguments) throws', (t) => {
     t.doesNotThrow(() => stringList(4, 'foo', ['d', 45], undefined));
-
     t.end();
   });
 

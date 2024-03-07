@@ -6,6 +6,23 @@ export namespace sl {
      * @credit @gustavoguichard
      */
     /**
+ * Returns a tuple of the given length with the given type.
+ */
+    type TupleOf<
+      L extends number,
+      T = unknown,
+      result extends any[] = [],
+    > = result['length'] extends L ? result : TupleOf<L, T, [...result, T]>
+
+    export type Subtract<A extends number, B extends number> = number extends
+      | A
+      | B
+      ? number
+      : TupleOf<A> extends [...infer U, ...TupleOf<B>]
+      ? U['length']
+      : 0
+
+    /**
      * Returns true if input number type is a literal
      */
     type IsNumberLiteral<T extends number> = [T] extends [number]
@@ -19,6 +36,12 @@ export namespace sl {
       ? false
       : true
       : false;
+
+    export type IsNegative<T extends number> = number extends T
+      ? boolean
+      : `${T}` extends `-${number}`
+      ? true
+      : false
 
     /**
     * Returns true if any elements in boolean array are the literal true (not false or boolean)
@@ -49,6 +72,31 @@ export namespace sl {
 
     type IsStringLiteralArray<Arr extends string[] | readonly string[]> =
       IsStringLiteral<Arr[number]> extends true ? true : false;
+
+    type UnionToIntersection<U> = (
+      U extends never ? never : (arg: U) => never
+    ) extends (arg: infer I) => void
+      ? I
+      : never;
+
+    type UnionToTuple<T extends string> = UnionToIntersection<
+      T extends never ? never : T extends string ? (t: T) => T : never
+    > extends (_: never) => infer W
+      ? readonly [...UnionToTuple<Exclude<T, W>>, W]
+      : [];
+
+    type TupleSplit<T, N extends number, O extends readonly any[] = readonly []> =
+      O['length'] extends N ? [O, T] : T extends readonly [infer F, ...infer R] ?
+      TupleSplit<readonly [...R], N, readonly [...O, F]> : [O, T]
+
+    type TakeFirst<T extends readonly any[], N extends number> =
+      TupleSplit<T, N>[0];
+
+    type SkipFirst<T extends readonly any[], N extends number> =
+      TupleSplit<T, N>[1];
+
+    type TupleSlice<T extends readonly any[], S extends number, E extends number> =
+      SkipFirst<TakeFirst<T, E>, S>
 
     export type StringConcat<
       T1 extends string | number | bigint | boolean,
@@ -85,9 +133,11 @@ export namespace sl {
     type ReplaceAll<sentence extends string, lookup extends string | RegExp, replacement extends string = ''> = lookup extends string ? IsStringLiteral<lookup | sentence | replacement> extends true ? sentence extends `${infer rest}${lookup}${infer rest2}` ? `${rest}${replacement}${ReplaceAll<rest2, lookup, replacement>}` : sentence : string : string;
 
     type Join<
-      T extends readonly string[],
+      T extends readonly unknown[],
       delimiter extends string = '',
-    > = All<[IsStringLiteralArray<T>, IsStringLiteral<delimiter>]> extends true
+    > =
+      T extends readonly string[] ?
+      All<[IsStringLiteralArray<T>, IsStringLiteral<delimiter>]> extends true
       ? T extends readonly [
         infer first extends string,
         ...infer rest extends string[],
@@ -96,7 +146,7 @@ export namespace sl {
       ? first
       : `${first}${delimiter}${Join<rest, delimiter>}`
       : ''
-      : string
+      : string : never;
   }
 
   export namespace specs {
