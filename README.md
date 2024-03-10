@@ -19,7 +19,7 @@ The StringList class extends the Array with new methods and supercharges the arr
 
 - then additional methods for string literals and type constructs are implemented:
 
-  - `without(...$)`: opposite of concat, accept string / list parameters.
+  - `without(...$)`: filter out the given values, accept string and StringList.
   - `withPrefix($)`: add prefix to all the words.
   - `withSuffix($)`: add suffix to all the words.
   - `withDerivatedPrefix($)` and `withDerivatedSuffix($)`: Generate words variants with or without the given suffix/prefix depending on their presence.
