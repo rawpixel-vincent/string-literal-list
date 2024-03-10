@@ -1,5 +1,6 @@
 // @ts-check
-/// <reference path="types.d.ts" />
+/// <reference path="./types/index.d.ts" />
+/// <reference path="./types/list.d.ts" />
 
 import { SL } from './StringLiteralList.js';
 

@@ -10,7 +10,8 @@
     "checkJs": true,
     "skipLibCheck": false,
     "allowJs": true,
-    "traceResolution": false
+    "traceResolution": false,
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["*.js", "*.d.ts"]
+  "include": ["*.js", "*.d.ts", "*.ts", "types/*"]
 }

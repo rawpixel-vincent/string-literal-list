@@ -3,33 +3,22 @@
 
 # Array for string literals
 
-Typed array of string literals working at runtime without typescript compilation.
+Array of string literals for the runtime.
 
-Useful for types constructs that can be used at runtime.
-
-*If you code in typescript, you probably don't need any of this.*
+_If you code in typescript, you probably don't need any of this._
 
 ## Overview
 
-The StringList class extends the Array interface types to work with string literals.
+The StringList class extends the Array with new methods and supercharges the array interface to infer the string literals.
 
-- immutable: methods that mutate the array in place like push, pop, shift, unshift, splice should not be used, there is a strict export that enforce this by freezing the instance when constructed.
+- Methods that mutate the array in place like push, pop, shift, unshift, splice should not be used, there is a strict export that enforce this restriction.
 
-- inference: concat, toReversed, toSorted and slice methods are implemented to return a new frozen instance and will infer the new values.
-  - the concat method parameters types has been updated to accept strings literals and/or instances of StringList.
-  - slice method will not infer the missing terms, but is exposed for compatibility.
+- no changes is made to the execution of the methods to minimize side effects and the interface is compatible with the native array to work with library expecting arrays.
 
-- search methods: includes, indexOf, find, every, some, filter, etc... types are updated to prevent type errors when comparing with non-literals strings.
-
-- not chainable or iterator: map / filter / reduce / flat / values / keys / entries are the same as the native Array, and will return the type defined by the native method.
-
-- no changes is made to the execution of the methods to minimize maintenance, bugs or breaking changes. Types on the other hand are subjects to bugs and breaking changes, or incompatibilities with typescript and es versions.
-
-- `mutable():string[]` has been implemented to return a copy of the underlying array as string[].
-
-- an `enum` property is available to access the string literals. It's a frozen object built from the array values, it's used as a lookup instead of the array, but the primary intent is for convenience. This construct is not meant to manipulate millions of strings.
+- an `arr.enum` property is available to access the literals similar to the way an enum is accessed in typescript.
 
 - then additional methods for string literals and type constructs are implemented:
+
   - `without(...$)`: opposite of concat, accept string / list parameters.
   - `withPrefix($)`: add prefix to all the words.
   - `withSuffix($)`: add suffix to all the words.
@@ -37,8 +26,12 @@ The StringList class extends the Array interface types to work with string liter
   - `value($)`: similar to enum but throws an error if the value doesn't exists.
   - `enum[$]:$` Object is exposed as readonly.
   - `withTrim()`: trim all the words.
-  - `withReplace(search, replacement)`: call the String.prototype.replace on all the words.
-  - `withReplaceAll(search, replacement)`: call the String.prototype.replaceAll on all the words.
+  - `withReplace(search, replacement)`: call the String.prototype.replace on all.
+  - `withReplaceAll(search, replacement)`: call the String.prototype.replaceAll on all.
+  - `to"Case"()` methods for case transform, camel, pascal, snake, capitalize, etc...
+  - `toRecordValue/toRecordType` methods to create a type of `Record<literal, type | typeof value>` with initial value and builtin or infered types.
+
+The array order is preserved in a Tuple to infer the types when possible, some methods like toSorted will cause the new instance to be flagged as unsorted and methods like join() will return a generic string type.
 
 ## Installation
 
@@ -54,97 +47,123 @@ yarn add string-literal-list
 
 ```js
 import { stringList } from 'string-literal-list';
-// Or import { stringList } from 'string-literal-list/strict.js'; with frozen array.
+// Or for a shorter alias
+import { sl } from 'string-literal-list';
+// Or with a frozen array throwing error on mutation.
+// import { stringList } or { sl } from 'string-literal-list/strict.js';
 
-let v = stringList("foo", "bar", ...) => SL<"foo" | "bar">;
+let v = sl('foo', 'bar');
+// SL<"["foo","bar"]>;
 
-v.enum.foo => "foo"
+v.enum.foo;
+// "foo"
 
-v.includes(anyValue) => boolean;
+v.includes(any);
+// boolean;
 
-v.withPrefix('prefix.') => SL<"prefix.foo" | "prefix.bar">
+v.withPrefix('prefix.');
+// SL<["prefix.foo","prefix.bar"]>
 
-v.withSuffix('.suffix') => SL<"foo.suffix" | "bar.suffix">
+v.withSuffix('.suffix');
+// SL<["foo.suffix","bar.suffix"]>
 
-v.concat('zing', 'boom', stringList('zig', 'zag')) => SL<"foo" | "bar" | "zing" | "boom" | "zig" | "zag">;
+v.concat('zing', 'boom');
+// SL<["foo","bar","zing","boom"]>;
+
+v.concatList(sl('zig', 'zag'));
+// SL<["foo","bar","zig","zag"]>;
 
 v.value('foo') => 'foo';
-
 v.value('not') => throws;
+v.enum['not'] => undefined;
 
-v.withDerivatedSuffix('s') => SL<"foo" | "foos" | "bars" "bar">;
-v.withDerivatedPrefix('#') => SL<"foo" | "#foo" | "bar" | "#bar">;
+v.withTrim()
+// SL<["foo","bar"]>;
+v.withReplace('a', 'e')
+// SL<["foo","ber"]>;
+v.withReplaceAll('o', 'e')
+// SL<["fee","bar"]>;
 
-v.withTrim() => SL<"foo" | "bar">;
-v.withReplace('a', 'e') => SL<"foo" | "ber">;
-v.withReplaceAll('o', 'e') => SL<"fee" | "bar">;
-
-v.without('foo') => SL<"bar">;
+v.without('foo')
+// SL<["bar"]>;
 ```
 
 ```js
-import { stringList } from 'string-literal-list';
+import { sl } from 'string-literal-list';
 
-const list = stringList(
-  'foo',
-  'bar',
-);
+const list = sl('foo', 'bar');
 // SL<"foo" | "bar">;
 
 list.enum;
 // => { foo: "foo", bar: "bar" };
 
-
 const prefixed = list.withPrefix('prefix.');
-// SL<"prefix.foo" | "prefix.bar">;
+// SL<["prefix.foo","prefix.bar"]>;
 
 const suffixed = list.withSuffix('.suffix');
-// SL<"foo.suffix" | "bar.suffix">;
+// SL<["foo.suffix","bar.suffix"]>;
 
-const concat = prefixed.concat(...suffixed);
-// SL<"prefix.foo" | "prefix.bar" | "foo.suffix" | "bar.suffix">;
+const concat = list.concat('bar', 'foo');
+// SL<["foo","bar","bar","foo"]>
 
-const without = concat.without('prefix.foo').without('bar.suffix');
-// SL<"prefix.bar" | "foo.suffix">;
+const concatList = prefixed.concatList(suffixed);
+// SL<["prefix.foo","prefix.bar","foo.suffix","bar.suffix"]>;
+concatList.join('::');
+// "prefix.foo::prefix.bar::foo.suffix::bar.suffix"
+
+const without = concatList.without('prefix.foo', 'bar.suffix');
+const withoutList = concatList.without(sl('prefix.foo', 'bar.suffix'));
+// SL<["prefix.bar","foo.suffix"]>;
 
 const bothWay = list.withPrefix('data.').withSuffix('.ext');
-// SL<"data.foo.ext" | "data.bar.ext">;
+// SL<["data.foo.ext",data.bar.ext"]>;
 
 /** @type {any|unknown|'notInTheList'} */
 let val;
 list.includes(val); // No type error just boolean result.
-// list implements similar fix for indexOf, lastIndexOf, filter, some, every, findIndex and find methods.
+// similar types fix for indexOf, lastIndexOf, filter, some, every, findIndex and find methods.
 
 // Get a copy of the underlying array -> T[]
-const arr = list.mutable(); // => ["foo", "bar"]
+const arr = list.mutable(); // => ["foo","bar"]
 
 // access a value in the list
 list.value('foo'); // 'foo'
 list.value('n'); // throws error
 
 // Generate words variants with or without the given suffix/prefix depending on their presence.
-const foods = stringList('food', 'bars', 'pasta', 'meatballs');
-foods.withDerivatedSuffix('s'); => SL<"food" | "bars" | "pasta" | "meatballs" | "foods" | "bar" | "pasta" | "meatball">
+const foods = sl('food', 'bars', 'pasta', 'meatballs');
+foods.withDerivatedSuffix('s');
+// => SL<"food" | "bars" | "pasta" | "meatballs" | "foods" | "pastas" | "bar" | "meatball">
 
-const tags = stringList('spring', '#boot', '#typescript', 'fundamentals');
-tags.withDerivatedPrefix('#'); => SL<"#spring" | "#boot" | "#typescript" | "#fundamentals" | "spring" | "boot" | "typescript" | "fundamentals">
+const tags = sl('spring', '#boot', '#typescript', 'fundamentals');
+tags.withDerivatedPrefix('#');
+//=> SL<"#spring" | "#boot" | "#typescript" | "#fundamentals" | "spring" | "boot" | "typescript" | "fundamentals">
 
-const scored = stringList('if has ', 'spaces', ' between ', ' o r', 'into the words').withTrim().withReplaceAll(' ', '_') => SL<"if_has" | "spaces" | "between" | "o_r" |"into_the_words">
+const scored = sl(' has ', 'spaces', ' between ', ' o r', 'in the words')
+  .withTrim()
+  .withReplaceAll(' ', '_');
+// => SL<["has","spaces","between","o_r","in_the_words"]>
+
+const Upper = sl('foo', 'bar').toUpperCase();
+// SL<["FOO","BAR"]>
+
+const Pascal = sl('foo', 'bar').withPrefix('pascal_').toPascalCase();
+// SL<["PascalFoo","PascalBar"]>
 ```
 
-#### list.concat(...(string|StringList)[])
+#### list.concat(...(string)[]) and list.concatList(sl)
 
-`list.concat()` accept only string and StringList as arguments to enable inference.
+`list.concat()` accept only string as arguments to enable inference.
 If a native array is passed the string literals won't be inferred.
+`list.concatList()` accept 1 list of string literals.
 
 ```js
-// OK
-list.concat('zing', 'foo', stringList('gurgle', 'doink'));
-=> SL<"foo" | "bar" | 'zing' | 'gurgle' | 'doink'>
+// Inferred
+sl('foo', 'bar').concat('zing', 'foo').concatList(sl('gurgle', 'doink'));
+// SL<["foo","bar",'zing','foo','gurgle','doink']>
 
-// Not OK.
-list.concat('zing', 'foo', ['boom', 'bar']);
-// => Argument of type '"foo"' is not assignable to parameter of type '"zing" | ILiterals<"zing">'.ts(2345)
+// Not Inferred.
+list.concat(['boom', 'bar']);
 ```
 
 ### filter / map / reduce / slice and other array methods

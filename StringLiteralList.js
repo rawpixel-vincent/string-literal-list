@@ -1,17 +1,26 @@
 import 'core-js/actual/array/to-reversed.js';
 import 'core-js/actual/array/to-sorted.js';
 import 'core-js/actual/array/to-spliced.js';
+import 'core-js/actual/array/find-last-index.js';
 import 'core-js/actual/array/with.js';
 
+const SeparatorsRegexp = /[[|\]{}()\\/\-_\\ .,\]]+/g;
+
 const freezeIfImmutable = (source, target) => {
-  if (Object.isFrozen(source)) {
+  if (source && target && Object.isFrozen(source)) {
     return Object.freeze(target);
   }
   return target;
 };
 
 export class SL extends Array {
-  literal = undefined;
+  infered = {
+    Union: undefined,
+    Tuple: undefined,
+    Mutable: undefined,
+    Unsorted: undefined,
+  };
+
   enum;
   hasEmpty = false;
   constructor(...args) {
@@ -44,6 +53,10 @@ export class SL extends Array {
     );
   }
 
+  concatList(list) {
+    return this.concat(...list);
+  }
+
   toSorted() {
     return freezeIfImmutable(
       this,
@@ -55,6 +68,20 @@ export class SL extends Array {
     return freezeIfImmutable(
       this,
       new SL(...super.toReversed.apply(this, arguments)),
+    );
+  }
+
+  reverse() {
+    return freezeIfImmutable(
+      this,
+      new SL(...super.reverse.apply(this, arguments)),
+    );
+  }
+
+  toSpliced() {
+    return freezeIfImmutable(
+      this,
+      new SL(...super.toSpliced.apply(this, arguments)),
     );
   }
 
@@ -125,17 +152,80 @@ export class SL extends Array {
     );
   }
 
-  withReplace(string, replacement = '') {
+  withReplace(string, replacement = undefined) {
     return freezeIfImmutable(
       this,
       new SL(...super.map((e) => e.replace(string, replacement))),
     );
   }
 
-  withReplaceAll(string, replacement = '') {
+  withReplaceAll(string, replacement = undefined) {
     return freezeIfImmutable(
       this,
       new SL(...super.map((e) => e.replaceAll(string, replacement))),
+    );
+  }
+
+  toLowerCase() {
+    return freezeIfImmutable(
+      this,
+      new SL(...super.map((e) => e.toLowerCase())),
+    );
+  }
+
+  toUpperCase() {
+    return freezeIfImmutable(
+      this,
+      new SL(...super.map((e) => e.toUpperCase())),
+    );
+  }
+
+  toCapitalize() {
+    return this.withReplace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  toUnCapitalize() {
+    return this.withReplace(/\b\w/g, (char) => char.toLowerCase());
+  }
+
+  toPascalCase() {
+    return freezeIfImmutable(
+      this,
+      new SL(
+        ...super.map((e) =>
+          e
+            .trim()
+            .replace(SeparatorsRegexp, '_')
+            .replace(/[^a-z0-9_]+/gi, '')
+            .replace(/[_]+/g, '_')
+            .replace(/(?:^|_)(\w)/g, (_, char) => char.toUpperCase())
+            .replace(/[\s_]+/g, '')
+            .trim(),
+        ),
+      ),
+    ).toCapitalize();
+  }
+
+  toCamelCase() {
+    return this.withPrefix('_').toPascalCase().toUnCapitalize();
+  }
+
+  toSnakeCase() {
+    return freezeIfImmutable(
+      this,
+      new SL(
+        ...super.map((e) =>
+          e
+            .trim()
+            .replace(SeparatorsRegexp, '_')
+            .replace(/[^a-z0-9_]+/gi, '')
+            .replace(/([A-Z])/g, (_, char) => `_${char.toLowerCase()}`)
+            .replace(/[\s_]+/g, '_')
+            .replace(/^[_]+/g, '')
+            .toLowerCase()
+            .trim(),
+        ),
+      ),
     );
   }
 
@@ -152,6 +242,22 @@ export class SL extends Array {
   // Get the native array
   mutable() {
     return Array.from(this);
+  }
+
+  toRecordValue(initialValue = undefined, ...records) {
+    return Object.assign(
+      {},
+      ...records,
+      Object.fromEntries(super.map((e) => [e, initialValue])),
+    );
+  }
+
+  toRecordType(type = 'any', initialValue = undefined, ...records) {
+    return Object.assign(
+      {},
+      ...records,
+      Object.fromEntries(super.map((e) => [e, initialValue])),
+    );
   }
 
   // Methods returning the native array
@@ -185,11 +291,6 @@ export class SL extends Array {
     return mut.flatMap.apply(mut, arguments);
   }
 
-  toSpliced() {
-    const mut = this.mutable();
-    return mut.toSpliced.apply(mut, arguments);
-  }
-
   with() {
     const mut = this.mutable();
     return mut.with.apply(mut, arguments);
@@ -205,5 +306,3 @@ export const ARRAY_IN_PLACE_MUTATION = Object.freeze({
   fill: 'fill',
   splice: 'splice',
 });
-
-export class SLS extends SL {}

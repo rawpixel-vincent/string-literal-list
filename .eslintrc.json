@@ -5,6 +5,17 @@
     "node": true
   },
   "extends": ["eslint:recommended", "prettier"],
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      {
+        "vars": "all",
+        "args": "none",
+        "ignoreRestSiblings": false,
+        "varsIgnorePattern": "^_"
+      }
+    ]
+  },
   "overrides": [],
   "parserOptions": {
     "ecmaVersion": 14,

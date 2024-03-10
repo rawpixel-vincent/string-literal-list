@@ -10,6 +10,9 @@
     },
     "./strict.js": {
       "import": "./strict.js"
+    },
+    "./types.js": {
+      "import": "./types/index.js"
     }
   },
   "engines": {
@@ -43,6 +46,7 @@
     "typescript": "latest"
   },
   "dependencies": {
-    "core-js": "latest"
+    "core-js": "latest",
+    "string-ts": "^2.0.0"
   }
 }
