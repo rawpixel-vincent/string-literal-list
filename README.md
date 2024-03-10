@@ -166,7 +166,7 @@ sl('foo', 'bar').concat('zing', 'foo').concatList(sl('gurgle', 'doink'));
 list.concat(['boom', 'bar']);
 ```
 
-### filter / map / reduce / slice and other array methods
+### filter / map / reduce and other array methods
 
 The results of those methods will result in type loose `string[]` or returned `U[]` for map / reduce.
 
