@@ -994,7 +994,7 @@ for (const { type, stringList } of functions) {
 
   t.test(type + `: toRecordType()`, (t) => {
     const list = stringList('foo', 'bar', 'baz');
-    /** @type {Record<'foo' | 'bar' | 'baz', any[]>|Record<typeof list['infered']['Union'], any[]>} */
+    /** @type {Record<'foo' | 'bar' | 'baz', any[]>|Record<typeof list['infered']['Tuple'][*], any[]>} */
     const schema = list.toRecordType('any[]', []);
     t.match(schema, {
       foo: [],
@@ -1013,7 +1013,7 @@ for (const { type, stringList } of functions) {
     // @ts-expect-error
     schema.bar = 'bar';
 
-    /** @type {Record<'foo' | 'bar' | 'baz', string[]>|Record<typeof list['infered']['Union'], string[]>} */
+    /** @type {Record<'foo' | 'bar' | 'baz', string[]>|Record<typeof list['infered']['Tuple'][*], string[]>} */
     const schema2 = list.toRecordType('string[]', []);
     t.match(schema2, {
       foo: [],
@@ -1031,7 +1031,7 @@ for (const { type, stringList } of functions) {
     // @ts-expect-error
     schema2.bar = 'bar';
 
-    /** @type {Record<'foo' | 'bar' | 'baz', string>|Record<typeof list['infered']['Union'], string>} */
+    /** @type {Record<'foo' | 'bar' | 'baz', string>|Record<typeof list['infered']['Tuple'][*], string>} */
     const schema3 = list.toRecordType('string', null);
     t.match(schema3, {
       foo: null,
@@ -1168,7 +1168,7 @@ for (const { type, stringList } of functions) {
 
   t.test(type + `: toRecordValue()`, (t) => {
     const list = stringList('foo', 'bar', 'baz');
-    /** @type {Record<'foo' | 'bar' | 'baz', any[]>|Record<typeof list['infered']['Union'], any[]>} */
+    /** @type {Record<'foo' | 'bar' | 'baz', any[]>|Record<typeof list['infered']['Tuple'][*], any[]>} */
     const schema = list.toRecordValue([]);
     t.match(schema, {
       foo: [],
@@ -1189,7 +1189,7 @@ for (const { type, stringList } of functions) {
 
     /** @type {string[]} */
     const initial2 = [];
-    /** @type {Record<'foo' | 'bar' | 'baz', string[]>|Record<typeof list['infered']['Union'], string[]>} */
+    /** @type {Record<'foo' | 'bar' | 'baz', string[]>|Record<typeof list['infered']['Tuple'][*], string[]>} */
     const schema2 = list.toRecordValue(initial2);
     t.match(schema2, {
       foo: [],
@@ -1209,7 +1209,7 @@ for (const { type, stringList } of functions) {
 
     /** @type {string} */
     const initial3 = null;
-    /** @type {Record<'foo' | 'bar' | 'baz', string>|Record<typeof list['infered']['Union'], string>} */
+    /** @type {Record<'foo' | 'bar' | 'baz', string>|Record<typeof list['infered']['Tuple'][*], string>} */
     const schema3 = list.toRecordValue(initial3);
     t.match(schema3, {
       foo: null,

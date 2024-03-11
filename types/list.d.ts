@@ -6,8 +6,10 @@ export interface ILiterals<Tuple extends readonly string[] = readonly never[]> {
    * The values are undefined and should not be used other than type inference.
    */
   infered: {
-    Union: Tuple[number];
     Tuple: Tuple;
+    TooLong: sl.string.Length<`${Tuple['length']}`> extends 5 | 6 | 7 | 8
+      ? true
+      : false;
   };
 }
 
@@ -62,32 +64,34 @@ export interface IStringList<
     ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
     : never;
 
-  withSuffix<P extends string = ''>(
+  withSuffix<P extends string>(
     suffix: P,
-  ): sl.tuple.TupleSuffixed<
-    Tuple,
-    P extends string ? P : '',
-    []
-  > extends infer W extends readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+  ): P extends string
+    ? sl.tuple.TupleSuffixed<
+        Tuple,
+        P extends string ? P : '',
+        []
+      > extends infer W extends readonly string[]
+      ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+      : never
     : never;
 
   withDerivatedSuffix<S extends string>(
     chars: S,
-  ): sl.tuple.UnionToTuple<
+  ):
     | T
-    | sl.string.DropSuffix<sl.string.DropSuffix<`${T}${S}${S}`, S>, `${S}${S}`>
-  > extends infer W extends readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, true>>
+    | sl.string.DropSuffix<`${T}${S}`, `${S}${S}${S}`> extends infer W extends
+    string
+    ? MaybeReadonly<Mut, IStringList<W, readonly W[], Mut, true>>
     : never;
 
   withDerivatedPrefix<S extends string>(
     chars: S,
-  ): sl.tuple.UnionToTuple<
+  ):
     | T
-    | sl.string.DropPrefix<sl.string.DropPrefix<`${S}${S}${T}`, S>, `${S}${S}`>
-  > extends infer W extends readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, true>>
+    | sl.string.DropPrefix<`${S}${T}`, `${S}${S}${S}`> extends infer W extends
+    string
+    ? MaybeReadonly<Mut, IStringList<W, readonly W[], Mut, true>>
     : never;
 
   withReplace<S extends string, D extends string>(
@@ -232,7 +236,7 @@ export interface IStringList<
     : sl.record.Merge<[Record<T, V>, ...R]>;
 
   // Readonly overrides
-  readonly length: number;
+  readonly length: [Unsorted] extends [true] ? number : Tuple['length'];
   readonly [n: number]: T | undefined;
   readonly enum: { [P in T & string]: P } & Omit<
     {
@@ -508,13 +512,26 @@ export interface IStringList<
   fill<U = T & string>(value: U, start?: number, end?: number): U[];
   join<D extends string = ''>(
     delimiter?: D,
-  ): [Unsorted] extends [true]
-    ? [Tuple['length']] extends [0]
-      ? ''
-      : string
-    : [Tuple['length']] extends [0]
-      ? ''
-      : sl.tuple.Join<Tuple, D extends string ? D : ''>;
+  ): [this['infered']['TooLong']] extends [true]
+    ? string
+    : [Unsorted] extends [true]
+      ? [Tuple['length']] extends [0]
+        ? ''
+        : string
+      : [Tuple['length']] extends [0]
+        ? ''
+        : sl.tuple.TupleSplit<Tuple, 100> extends readonly [
+              infer A extends readonly string[],
+              infer B,
+            ]
+          ? B extends readonly string[]
+            ? `${sl.tuple.Join<B, D>}` extends infer C extends string
+              ? C extends ''
+                ? `${sl.tuple.Join<A, D>}`
+                : `${sl.tuple.Join<A, D>}${D}${C}`
+              : sl.tuple.Join<A, D>
+            : sl.tuple.Join<Tuple, D>
+          : string;
 }
 
 export {};

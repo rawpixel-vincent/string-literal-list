@@ -13,7 +13,6 @@ export type ArrayInPlaceMutation = {
 
 export const ARRAY_IN_PLACE_MUTATION: ArrayInPlaceMutation;
 
-/** @type {StringLiteralList.list.IStringList} */
 export class SL {
   constructor(...list: string[]);
 }

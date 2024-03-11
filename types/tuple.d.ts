@@ -28,7 +28,9 @@ declare global {
         generic.UnionToIntersection<
           T extends never ? never : T extends string ? (t: T) => T : never
         > extends (_: never) => infer W
-          ? readonly [...UnionToTuple<Exclude<T, W>>, W]
+          ? W extends string
+            ? readonly [...UnionToTuple<Exclude<T, W>>, W]
+            : never
           : readonly [];
 
       export type TupleSplit<
@@ -200,22 +202,40 @@ declare global {
           : Reversed
         : Reversed;
 
-      type Join<
-        T extends readonly unknown[],
+      type JoinInner<
+        T extends readonly string[],
         delimiter extends string = '',
-      > = T extends readonly string[]
-        ? generic.All<
-            [IsStringLiteralArray<T>, string.IsStringLiteral<delimiter>]
-          > extends true
-          ? T extends readonly [
-              infer first extends string,
-              ...infer rest extends string[],
+      > = T extends readonly [
+        infer first extends string,
+        ...infer rest extends readonly string[],
+      ]
+        ? rest extends []
+          ? first
+          : `${first}${delimiter}${JoinInner<rest, delimiter>}`
+        : '';
+
+      export type Join<
+        T extends readonly string[],
+        delimiter extends string = '',
+      > = delimiter extends string
+        ? T extends readonly string[]
+          ? TupleSplit<T, 30> extends [
+              infer L extends readonly string[],
+              infer R extends readonly string[],
             ]
-            ? rest extends []
-              ? first
-              : `${first}${delimiter}${Join<rest, delimiter>}`
+            ? JoinInner<L, delimiter> extends infer C extends string
+              ? `${R['length']}` extends `0`
+                ? C
+                : R extends readonly string[]
+                  ? string.Length<`${R['length']}`> extends 1 | 2
+                    ? JoinInner<R, delimiter> extends infer D extends string
+                      ? `${C}${D}`
+                      : Join<readonly [C, ...R], delimiter>
+                    : ''
+                  : ''
+              : ''
             : ''
-          : string
+          : never
         : never;
 
       export type TupleJoin<
