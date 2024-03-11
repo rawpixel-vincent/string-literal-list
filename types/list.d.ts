@@ -80,8 +80,10 @@ export interface IStringList<
     chars: S,
   ):
     | T
-    | sl.string.DropSuffix<`${T}${S}`, `${S}${S}${S}`> extends infer W extends
-    string
+    | sl.string.DropSuffix<
+        sl.string.DropSuffix<`${T}${S}${S}`, S>,
+        `${S}${S}`
+      > extends infer W extends string
     ? MaybeReadonly<Mut, IStringList<W, readonly W[], Mut, true>>
     : never;
 
@@ -89,8 +91,10 @@ export interface IStringList<
     chars: S,
   ):
     | T
-    | sl.string.DropPrefix<`${S}${T}`, `${S}${S}${S}`> extends infer W extends
-    string
+    | sl.string.DropPrefix<
+        sl.string.DropPrefix<`${S}${S}${T}`, S>,
+        `${S}${S}`
+      > extends infer W extends string
     ? MaybeReadonly<Mut, IStringList<W, readonly W[], Mut, true>>
     : never;
 
