@@ -2111,6 +2111,7 @@ var require_with3 = __commonJS({
 // strict.js
 var strict_exports = {};
 __export(strict_exports, {
+  default: () => strict_default,
   sl: () => sl,
   stringList: () => stringList
 });
@@ -2392,3 +2393,7 @@ __name(stringListReadonly, "stringListReadonly");
 // strict.js
 var stringList = stringListReadonly;
 var sl = stringListReadonly;
+var strict_default = {
+  stringList,
+  sl
+};

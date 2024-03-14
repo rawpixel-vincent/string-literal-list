@@ -2111,6 +2111,7 @@ var require_with3 = __commonJS({
 // stringList.js
 var stringList_exports = {};
 __export(stringList_exports, {
+  default: () => stringList_default,
   sl: () => sl,
   stringList: () => stringList
 });
@@ -2388,3 +2389,7 @@ __name(stringListMutable, "stringListMutable");
 // stringList.js
 var stringList = stringListMutable;
 var sl = stringListMutable;
+var stringList_default = {
+  stringList,
+  sl
+};
