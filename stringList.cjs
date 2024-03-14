@@ -2129,10 +2129,7 @@ var freezeIfImmutable = /* @__PURE__ */ __name((source, target) => {
   }
   return target;
 }, "freezeIfImmutable");
-var SL = class _SL extends Array {
-  static {
-    __name(this, "SL");
-  }
+var _SL = class _SL extends Array {
   infered = {
     Union: void 0,
     Tuple: void 0,
@@ -2358,6 +2355,8 @@ var SL = class _SL extends Array {
     return mut.with.apply(mut, arguments);
   }
 };
+__name(_SL, "SL");
+var SL = _SL;
 var ARRAY_IN_PLACE_MUTATION = Object.freeze({
   push: "push",
   unshift: "unshift",

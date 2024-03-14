@@ -1,6 +1,6 @@
 {
   "name": "string-literal-list",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "description": "an array for string literal",
   "main": "stringList.js",
   "types": "stringList.d.ts",
@@ -31,8 +31,8 @@
     "lint": "eslint --fix \"./*.js\"",
     "lint:ci": "eslint . --ext .js",
     "build": "npm run build:main && npm run build:strict",
-    "build:strict": "esbuild ./strict.js  --bundle --format=cjs --keep-names --outfile=strict.cjs",
-    "build:main": "esbuild  ./stringList.js --bundle --format=cjs --keep-names --outfile=stringList.cjs",
+    "build:strict": "esbuild ./strict.js  --bundle --format=cjs --keep-names --outfile=strict.cjs --target=node16",
+    "build:main": "esbuild  ./stringList.js --bundle --format=cjs --keep-names --outfile=stringList.cjs --target=node16",
     "prepare": "husky"
   },
   "author": "Vincent Baronnet",
