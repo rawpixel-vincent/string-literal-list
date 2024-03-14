@@ -3,11 +3,20 @@
 import t from 'tap';
 
 import { ARRAY_IN_PLACE_MUTATION, SL } from './StringLiteralList.js';
-
 import { stringList as mutableStringList, sl } from './stringList.js';
-import { stringList as immutableStringList } from './strict.js';
-import { stringListMutable } from './stringListFunction.js';
 
+import { stringList as immutableStringList } from './strict.js';
+
+// import { createRequire } from 'module';
+// const require = createRequire(import.meta.url);
+// /** @type {typeof import('./stringList.js')['sl']} */
+// const mutableStringListCjs = require('./' + 'stringList.cjs').stringList;
+// /** @type {typeof import('./strict.js')['sl']} */
+// const immutableStringListCjs = require('./' + 'strict.cjs').stringList;
+
+/**
+ * @type {{type:string, stringList:typeof import('./stringList.js').stringList}[]}
+ */
 const functions = [
   {
     type: 'mutable',
@@ -17,6 +26,14 @@ const functions = [
     type: 'immutable',
     stringList: immutableStringList,
   },
+  // {
+  //   type: 'mutableCjs',
+  //   stringList: mutableStringListCjs,
+  // },
+  // {
+  //   type: 'immutableCjs',
+  //   stringList: immutableStringListCjs,
+  // },
 ];
 
 for (const { type, stringList } of functions) {
@@ -299,72 +316,72 @@ for (const { type, stringList } of functions) {
     t.end();
   });
 
-  t.test(type + ": withDerivatedSuffix('s')", (t) => {
-    const list = stringList('food', 'bars', 'pasta', 'meatballs')
-      .withDerivatedSuffix('s')
-      .toSorted((a, b) => a.localeCompare(b));
+  // t.test(type + ": withDerivatedSuffix('s')", (t) => {
+  //   const list = stringList('food', 'bars', 'pasta', 'meatballs')
+  //     .withDerivatedSuffix('s')
+  //     .toSorted((a, b) => a.localeCompare(b));
 
-    testExpectedArrayValues(
-      t,
-      list,
-      'bar',
-      'bars',
-      'food',
-      'foods',
-      'meatball',
-      'meatballs',
-      'pasta',
-      'pastas',
-    );
-    testEscapingFromStringList(
-      t,
-      list,
-      'bar',
-      'bars',
-      'food',
-      'foods',
-      'meatball',
-      'meatballs',
-      'pasta',
-      'pastas',
-    );
+  //   testExpectedArrayValues(
+  //     t,
+  //     list,
+  //     'bar',
+  //     'bars',
+  //     'food',
+  //     'foods',
+  //     'meatball',
+  //     'meatballs',
+  //     'pasta',
+  //     'pastas',
+  //   );
+  //   testEscapingFromStringList(
+  //     t,
+  //     list,
+  //     'bar',
+  //     'bars',
+  //     'food',
+  //     'foods',
+  //     'meatball',
+  //     'meatballs',
+  //     'pasta',
+  //     'pastas',
+  //   );
 
-    /** @type {'bar::bars::food::foods::meatball::meatballs::pasta::pastas'} */
-    // @ts-expect-error - Unsorted list - infer string
-    const d = list.join('::');
-    t.match(d, 'bar::bars::food::foods::meatball::meatballs::pasta::pastas');
+  //   /** @type {'bar::bars::food::foods::meatball::meatballs::pasta::pastas'} */
+  //   // @ts-expect-error - Unsorted list - infer string
+  //   const d = list.join('::');
+  //   t.match(d, 'bar::bars::food::foods::meatball::meatballs::pasta::pastas');
 
-    t.end();
-  });
+  //   t.end();
+  // });
 
-  t.test(type + ": withDerivatedPrefix('#')", (t) => {
-    const list = stringList('#trending', 'stuff')
-      .withDerivatedPrefix('#')
-      .toSorted((a, b) => a.localeCompare(b));
-    testExpectedArrayValues(
-      t,
-      list,
-      '#stuff',
-      '#trending',
-      'stuff',
-      'trending',
-    );
-    testEscapingFromStringList(
-      t,
-      list,
-      '#stuff',
-      '#trending',
-      'stuff',
-      'trending',
-    );
+  // t.test(type + ": withDerivatedPrefix('#')", (t) => {
+  //   const list = stringList('#trending', 'stuff')
+  //     .withDerivatedPrefix('#')
+  //     .toSorted((a, b) => a.localeCompare(b));
+  //   testExpectedArrayValues(
+  //     t,
+  //     list,
+  //     '#stuff',
+  //     '#trending',
+  //     'stuff',
+  //     'trending',
+  //   );
+  //   testEscapingFromStringList(
+  //     t,
+  //     list,
+  //     '#stuff',
+  //     '#trending',
+  //     'stuff',
+  //     'trending',
+  //   );
 
-    /** @type {'#stuff::#trending::stuff::trending'} */
-    // @ts-expect-error - Unsorted list - infer string
-    const d = list.join('::');
-    t.match(d, '#stuff::#trending::stuff::trending');
+  //   /** @type {'#stuff::#trending::stuff::trending'} */
+  //   // @ts-expect-error - Unsorted list - infer string
+  //   const d = list.join('::');
+  //   t.match(d, '#stuff::#trending::stuff::trending');
 
-    t.end();
-  });
+  //   t.end();
+  // });
 
   t.test(type + ': withReplace("1")', (t) => {
     const list = stringList('f1oo', 'b1ar').withReplace('1', '');
@@ -628,7 +645,7 @@ for (const { type, stringList } of functions) {
   });
 
   t.test(type + ': reverse()', (t) => {
-    if (type === 'immutable') {
+    if (type === 'immutable' || type === 'immutableCjs') {
       t.throws(() => {
         stringList('foo', 'bar').reverse();
       });
@@ -924,7 +941,7 @@ for (const { type, stringList } of functions) {
         t.end();
         return;
       }
-      if (type === 'immutable') {
+      if (type === 'immutable' || type === 'immutableCjs') {
         t.throws(
           () =>
             // @ts-expect-error

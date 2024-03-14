@@ -76,27 +76,27 @@ export interface IStringList<
       : never
     : never;
 
-  withDerivatedSuffix<S extends string>(
-    chars: S,
-  ):
-    | T
-    | sl.string.DropSuffix<
-        sl.string.DropSuffix<`${T}${S}${S}`, S>,
-        `${S}${S}`
-      > extends infer W extends string
-    ? MaybeReadonly<Mut, IStringList<W, readonly W[], Mut, true>>
-    : never;
+  // withDerivatedSuffix<S extends string>(
+  //   chars: S,
+  // ):
+  //   | T
+  //   | sl.string.DropSuffix<
+  //       sl.string.DropSuffix<`${T}${S}${S}`, S>,
+  //       `${S}${S}`
+  //     > extends infer W extends string
+  //   ? MaybeReadonly<Mut, IStringList<W, readonly W[], Mut, true>>
+  //   : never;
 
-  withDerivatedPrefix<S extends string>(
-    chars: S,
-  ):
-    | T
-    | sl.string.DropPrefix<
-        sl.string.DropPrefix<`${S}${S}${T}`, S>,
-        `${S}${S}`
-      > extends infer W extends string
-    ? MaybeReadonly<Mut, IStringList<W, readonly W[], Mut, true>>
-    : never;
+  // withDerivatedPrefix<S extends string>(
+  //   chars: S,
+  // ):
+  //   | T
+  //   | sl.string.DropPrefix<
+  //       sl.string.DropPrefix<`${S}${S}${T}`, S>,
+  //       `${S}${S}`
+  //     > extends infer W extends string
+  //   ? MaybeReadonly<Mut, IStringList<W, readonly W[], Mut, true>>
+  //   : never;
 
   withReplace<S extends string, D extends string>(
     searchValue: S,

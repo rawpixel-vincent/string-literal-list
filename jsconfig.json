@@ -13,5 +13,6 @@
     "traceResolution": false,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["*.js", "*.d.ts", "*.ts", "types/*"]
+  "include": ["*.js", "*.d.ts", "*.ts", "types/*.d.ts"],
+  "exclude": ["node_modules", "*.cjs", "**/*.cjs"]
 }

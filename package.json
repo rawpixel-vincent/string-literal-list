@@ -1,18 +1,21 @@
 {
   "name": "string-literal-list",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "description": "an array for string literal",
   "main": "stringList.js",
   "types": "stringList.d.ts",
   "exports": {
     ".": {
-      "import": "./stringList.js"
+      "import": "./stringList.js",
+      "require": "./stringList.cjs"
     },
     "./strict.js": {
-      "import": "./strict.js"
+      "import": "./strict.js",
+      "require": "./strict.cjs"
     },
     "./types.js": {
-      "import": "./types/index.js"
+      "import": "./types/index.js",
+      "require": "./types/index.js"
     }
   },
   "engines": {
@@ -27,6 +30,9 @@
     "prettier": "prettier --write \"**/*.{js,ts}\"",
     "lint": "eslint --fix \"./*.js\"",
     "lint:ci": "eslint . --ext .js",
+    "build": "npm run build:main && npm run build:strict",
+    "build:strict": "esbuild ./strict.js  --bundle --format=cjs --keep-names --outfile=strict.cjs",
+    "build:main": "esbuild  ./stringList.js --bundle --format=cjs --keep-names --outfile=stringList.cjs",
     "prepare": "husky"
   },
   "author": "Vincent Baronnet",
@@ -36,6 +42,7 @@
     "url": "https://github.com/rawpixel-vincent/string-literal-list.git"
   },
   "devDependencies": {
+    "esbuild": "^0.20.1",
     "eslint": "latest",
     "eslint-config-prettier": "latest",
     "eslint-config-standard": "latest",

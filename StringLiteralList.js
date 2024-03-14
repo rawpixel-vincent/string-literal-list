@@ -124,33 +124,33 @@ export class SL extends Array {
     );
   }
 
-  withDerivatedSuffix(chars = '') {
-    return freezeIfImmutable(
-      this,
-      new SL(
-        ...super.flatMap((t) => [
-          t,
-          t.endsWith(chars)
-            ? t.slice(0, Math.min(t.length, chars.length) * -1)
-            : `${t}${chars}`,
-        ]),
-      ),
-    );
-  }
+  // withDerivatedSuffix(chars = '') {
+  //   return freezeIfImmutable(
+  //     this,
+  //     new SL(
+  //       ...super.flatMap((t) => [
+  //         t,
+  //         t.endsWith(chars)
+  //           ? t.slice(0, Math.min(t.length, chars.length) * -1)
+  //           : `${t}${chars}`,
+  //       ]),
+  //     ),
+  //   );
+  // }
 
-  withDerivatedPrefix(chars = '') {
-    return freezeIfImmutable(
-      this,
-      new SL(
-        ...super.flatMap((t) => [
-          t,
-          t.startsWith(chars)
-            ? t.slice(Math.min(chars.length, t.length), t.length)
-            : `${chars}${t}`,
-        ]),
-      ),
-    );
-  }
+  // withDerivatedPrefix(chars = '') {
+  //   return freezeIfImmutable(
+  //     this,
+  //     new SL(
+  //       ...super.flatMap((t) => [
+  //         t,
+  //         t.startsWith(chars)
+  //           ? t.slice(Math.min(chars.length, t.length), t.length)
+  //           : `${chars}${t}`,
+  //       ]),
+  //     ),
+  //   );
+  // }
 
   withReplace(string, replacement = undefined) {
     return freezeIfImmutable(

@@ -21,7 +21,6 @@ The StringList class extends the Array with new methods and supercharges the arr
 
   - `without(...$)`: filter out the given values, accept string and StringList.
   - `withPrefix($)` and `withSuffix($)`: add prefix/suffix to all the words.
-  - `withDerivatedPrefix($)` and `withDerivatedSuffix($)`: Generate words variants with or without the given suffix/prefix depending on their presence.
   - `value($)`: similar to enum but throws an error if the value doesn't exists.
   - `enum[$]:$` Object is exposed as readonly.
   - `withTrim()`: trim all the words.
@@ -128,15 +127,6 @@ const arr = list.mutable(); // => ["foo","bar"]
 // access a value in the list
 list.value('foo'); // 'foo'
 list.value('n'); // throws error
-
-// Generate words variants with or without the given suffix/prefix depending on their presence.
-const foods = sl('food', 'bars', 'pasta', 'meatballs');
-foods.withDerivatedSuffix('s');
-// => SL<"food" | "bars" | "pasta" | "meatballs" | "foods" | "pastas" | "bar" | "meatball">
-
-const tags = sl('spring', '#boot', '#typescript', 'fundamentals');
-tags.withDerivatedPrefix('#');
-//=> SL<"#spring" | "#boot" | "#typescript" | "#fundamentals" | "spring" | "boot" | "typescript" | "fundamentals">
 
 const scored = sl(' has ', 'spaces', ' between ', ' o r', 'in the words')
   .withTrim()
