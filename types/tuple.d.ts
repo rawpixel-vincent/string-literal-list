@@ -143,10 +143,7 @@ declare global {
           | 'uppercase'
           | 'lowercase'
           | 'capitalize'
-          | 'unCapitalize'
-          | 'pascalCase'
-          | 'camelCase'
-          | 'snakeCase',
+          | 'unCapitalize',
         Transformed extends readonly string[],
       > = T extends readonly [infer H, ...infer R]
         ? H extends string

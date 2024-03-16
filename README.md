@@ -26,7 +26,7 @@ The StringList class extends the Array with new methods and supercharges the arr
   - `withTrim()`: trim all the words.
   - `withReplace(search, replacement)`: call the String.prototype.replace on all.
   - `withReplaceAll(search, replacement)`: call the String.prototype.replaceAll on all.
-  - `to"Case"()` methods for case transform, camel, pascal, snake, capitalize, etc...
+  - `to"Case"()` methods for case transform, uppercase, lowercase capitalize, etc...
   - `toRecordValue/toRecordType` methods to create a type of `Record<literal, type | typeof value>` with initial value and builtin or infered types.
 
 The array order is preserved in a Tuple to infer the types when possible, some methods like toSorted will cause the new instance to be flagged as unsorted and methods like join() will return a generic string type.
@@ -135,9 +135,6 @@ const scored = sl(' has ', 'spaces', ' between ', ' o r', 'in the words')
 
 const Upper = sl('foo', 'bar').toUpperCase();
 // SL<["FOO","BAR"]>
-
-const Pascal = sl('foo', 'bar').withPrefix('pascal_').toPascalCase();
-// SL<["PascalFoo","PascalBar"]>
 ```
 
 #### list.concat(...(string)[]) and list.concatList(sl)

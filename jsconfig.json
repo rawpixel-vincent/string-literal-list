@@ -13,6 +13,14 @@
     "traceResolution": false,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["*.js", "*.d.ts", "*.ts", "types/*.d.ts"],
-  "exclude": ["node_modules", "*.cjs", "**/*.cjs"]
+  "include": [
+    "*.d.ts",
+    "types/*.d.ts",
+    "*.ts",
+    "strict.js",
+    "stringList.js",
+    "StringLiteralList.js",
+    "stringListFunction.js"
+  ],
+  "exclude": ["node_modules", "*.cjs", "**/*.cjs", "*.min.js", "**/*.min.js"]
 }

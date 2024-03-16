@@ -1,13 +1,6 @@
-import 'core-js/actual/array/to-reversed.js';
-import 'core-js/actual/array/to-sorted.js';
-import 'core-js/actual/array/to-spliced.js';
-import 'core-js/actual/array/find-last-index.js';
-import 'core-js/actual/array/with.js';
-
-const SeparatorsRegexp = /[[|\]{}()\\/\-_\\ .,\]]+/g;
-
 const freezeIfImmutable = (source, target) => {
   if (source && target && Object.isFrozen(source)) {
+    /* c8 ignore next 3 @preserve */
     return Object.freeze(target);
   }
   return target;
@@ -186,47 +179,6 @@ export class SL extends Array {
 
   toUnCapitalize() {
     return this.withReplace(/\b\w/g, (char) => char.toLowerCase());
-  }
-
-  toPascalCase() {
-    return freezeIfImmutable(
-      this,
-      new SL(
-        ...super.map((e) =>
-          e
-            .trim()
-            .replace(SeparatorsRegexp, '_')
-            .replace(/[^a-z0-9_]+/gi, '')
-            .replace(/[_]+/g, '_')
-            .replace(/(?:^|_)(\w)/g, (_, char) => char.toUpperCase())
-            .replace(/[\s_]+/g, '')
-            .trim(),
-        ),
-      ),
-    ).toCapitalize();
-  }
-
-  toCamelCase() {
-    return this.withPrefix('_').toPascalCase().toUnCapitalize();
-  }
-
-  toSnakeCase() {
-    return freezeIfImmutable(
-      this,
-      new SL(
-        ...super.map((e) =>
-          e
-            .trim()
-            .replace(SeparatorsRegexp, '_')
-            .replace(/[^a-z0-9_]+/gi, '')
-            .replace(/([A-Z])/g, (_, char) => `_${char.toLowerCase()}`)
-            .replace(/[\s_]+/g, '_')
-            .replace(/^[_]+/g, '')
-            .toLowerCase()
-            .trim(),
-        ),
-      ),
-    );
   }
 
   value(value) {

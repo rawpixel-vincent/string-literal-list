@@ -17,7 +17,7 @@
     ]
   },
   "overrides": [],
-  "ignorePatterns": ["*.cjs"],
+  "ignorePatterns": ["*.cjs", "*.min.js"],
   "parserOptions": {
     "ecmaVersion": 14,
     "sourceType": "module"

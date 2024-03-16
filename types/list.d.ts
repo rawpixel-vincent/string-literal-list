@@ -47,11 +47,10 @@ type RecordTypes = {
 type RecordType = keyof RecordTypes;
 
 export interface IStringList<
-  T extends string = never,
   Tuple extends readonly string[] = readonly never[],
   Mut extends boolean = true,
   Unsorted extends boolean = false,
-> extends Omit<Array<T>, specs.ImplementedMethod>,
+> extends Omit<Array<Tuple[number]>, specs.ImplementedMethod>,
     ILiterals<Tuple> {
   // Custom Methods
   withPrefix<P extends string = ''>(
@@ -61,7 +60,7 @@ export interface IStringList<
     P extends string ? P : '',
     []
   > extends infer W extends readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+    ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
     : never;
 
   withSuffix<P extends string>(
@@ -72,7 +71,7 @@ export interface IStringList<
         P extends string ? P : '',
         []
       > extends infer W extends readonly string[]
-      ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+      ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
       : never
     : never;
 
@@ -103,7 +102,7 @@ export interface IStringList<
     replaceValue: D,
   ): sl.tuple.TupleWithReplace<Tuple, S, D, [], false> extends infer W extends
     readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+    ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
     : never;
 
   withReplaceAll<S extends string | RegExp, D extends string>(
@@ -111,89 +110,67 @@ export interface IStringList<
     replaceValue: D,
   ): sl.tuple.TupleWithReplace<Tuple, S, D, [], true> extends infer W extends
     readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+    ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
     : never;
 
   withTrim(): sl.tuple.TupleWithTrim<Tuple, []> extends infer W extends
     readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+    ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
     : never;
   toLowerCase(): sl.tuple.TupleWithCaseTransform<
     Tuple,
     'lowercase',
     []
   > extends infer W extends readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+    ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
     : never;
   toUpperCase(): sl.tuple.TupleWithCaseTransform<
     Tuple,
     'uppercase',
     []
   > extends infer W extends readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+    ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
     : never;
   toCapitalize(): sl.tuple.TupleWithCaseTransform<
     Tuple,
     'capitalize',
     []
   > extends infer W extends readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+    ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
     : never;
   toUnCapitalize(): sl.tuple.TupleWithCaseTransform<
     Tuple,
     'unCapitalize',
     []
   > extends infer W extends readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+    ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
     : never;
 
-  toPascalCase(): sl.tuple.TupleWithCaseTransform<
-    Tuple,
-    'pascalCase',
-    []
-  > extends infer W extends readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
-    : never;
-  toSnakeCase(): sl.tuple.TupleWithCaseTransform<
-    Tuple,
-    'snakeCase',
-    []
-  > extends infer W extends readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
-    : never;
-  toCamelCase(): sl.tuple.TupleWithCaseTransform<
-    Tuple,
-    'camelCase',
-    []
-  > extends infer W extends readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
-    : never;
-
-  value(val): T;
-  mutable(): T & string[];
-  sort<P1 = T, P2 = T>(
+  value(val): Tuple[number];
+  mutable(): Tuple[number] & string[];
+  sort<P1 = Tuple[number], P2 = Tuple[number]>(
     compareFn?: (a: P1, b: P2) => number,
-  ): MaybeReadonly<Mut, IStringList<T, Tuple, Mut, true>>;
+  ): MaybeReadonly<Mut, IStringList<Tuple, Mut, true>>;
 
   reverse(): sl.tuple.TupleReversed<Tuple, []> extends infer W extends
     readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+    ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
     : this;
 
   without<S extends string>(
     ...arg: readonly (ILiterals<readonly S[]> | S)[]
   ): sl.tuple.TupleWithExclude<Tuple, S, []> extends infer E extends
     readonly string[]
-    ? MaybeReadonly<Mut, IStringList<E[number], E, Mut, Unsorted>>
+    ? MaybeReadonly<Mut, IStringList<E, Mut, Unsorted>>
     : never;
 
   toSorted(
-    compareFn?: (a: T, b: T) => number,
-  ): MaybeReadonly<Mut, IStringList<T, Tuple, Mut, true>>;
+    compareFn?: (a: Tuple[number], b: Tuple[number]) => number,
+  ): MaybeReadonly<Mut, IStringList<Tuple, Mut, true>>;
 
   toReversed(): sl.tuple.TupleReversed<Tuple, []> extends infer W extends
     readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+    ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
     : never;
 
   /**
@@ -203,7 +180,7 @@ export interface IStringList<
   concat<S extends readonly string[]>(
     ...arg: S[]
   ): [...Tuple, S[number][number]] extends infer W extends readonly string[]
-    ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, true>>
+    ? MaybeReadonly<Mut, IStringList<W, Mut, true>>
     : never;
 
   concat<S extends readonly string[]>(
@@ -211,7 +188,7 @@ export interface IStringList<
   ): [...Tuple, ...S] extends infer W extends readonly string[]
     ? MaybeReadonly<
         Mut,
-        IStringList<W[number], W, Mut, [Tuple] extends [[]] ? false : Unsorted>
+        IStringList<W, Mut, [Tuple] extends [[]] ? false : Unsorted>
       >
     : never;
 
@@ -219,7 +196,7 @@ export interface IStringList<
     arg: ILiterals<S>,
   ): S extends infer C extends readonly string[]
     ? readonly [...Tuple, ...C] extends infer W extends readonly string[]
-      ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+      ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
       : this
     : this;
 
@@ -230,47 +207,58 @@ export interface IStringList<
     type?: RT,
     initial?: RecordTypes[RT],
     ...records: R
-  ): sl.record.Merge<[Record<T, RecordTypes[RT]>, ...R]>;
+  ): sl.record.Merge<[Record<Tuple[number], RecordTypes[RT]>, ...R]>;
 
   toRecordValue<V extends unknown = any, R extends any[] = never>(
     initial?: V,
     ...records: R
   ): R[number] extends never
-    ? Record<T, V>
-    : sl.record.Merge<[Record<T, V>, ...R]>;
+    ? Record<Tuple[number], V>
+    : sl.record.Merge<[Record<Tuple[number], V>, ...R]>;
 
   // Readonly overrides
   readonly length: [Unsorted] extends [true] ? number : Tuple['length'];
-  readonly [n: number]: T | undefined;
-  readonly enum: { [P in T & string]: P } & Omit<
+  readonly [n: number]: Tuple[number] | undefined;
+  readonly enum: { [P in Tuple[number] & string]: P } & Omit<
     {
       [P in number | string | symbol]: P extends number | symbol
         ? never
-        : T | undefined | null;
+        : Tuple[number] | undefined | null;
     },
-    T
+    Tuple[number]
   >;
 
   // Supported Methods
-  at(n: number): T | undefined;
+  at(n: number): Tuple[number] | undefined;
 
   // Type override to prevent string not in type T issue
-  includes<PP = T>(val: PP, fromIndex?: number): boolean;
-  indexOf<PP = T>(searchElement: PP, fromIndex?: number): number;
-  lastIndexOf<PP = T>(searchElement: PP, fromIndex?: number): number;
+  includes<PP = Tuple[number]>(val: PP, fromIndex?: number): boolean;
+  indexOf<PP = Tuple[number]>(searchElement: PP, fromIndex?: number): number;
+  lastIndexOf<PP = Tuple[number]>(
+    searchElement: PP,
+    fromIndex?: number,
+  ): number;
 
-  find<PP = T & string>(
+  find<PP = Tuple[number] & string>(
     predictate: (
-      val: PP extends T & string ? T : PP,
+      val: PP extends Tuple[number] & string ? Tuple[number] : PP,
       i: number,
-      obj: T[],
-    ) => val is PP extends T & string ? T : PP,
-  ): T;
+      obj: Tuple[number][],
+    ) => val is PP extends Tuple[number] & string ? Tuple[number] : PP,
+  ): Tuple[number];
   find(
-    predictate: (val: string | undefined, i: number, obj: T[]) => boolean,
-  ): T;
-  findIndex<S = T & string>(
-    predicate: (value: S & string, index: number, obj: T[]) => unknown,
+    predictate: (
+      val: string | undefined,
+      i: number,
+      obj: Tuple[number][],
+    ) => boolean,
+  ): Tuple[number];
+  findIndex<S = Tuple[number] & string>(
+    predicate: (
+      value: S & string,
+      index: number,
+      obj: Tuple[number][],
+    ) => unknown,
     thisArg?: any,
   ): number;
 
@@ -284,19 +272,19 @@ export interface IStringList<
           sl.tuple.GetTuplePositiveIndex<Tuple, Start>,
           sl.tuple.GetTuplePositiveIndex<Tuple, End>
         > extends infer W extends readonly string[]
-      ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+      ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
       : never;
 
   toSpliced<Start extends number = 0>(
     start: Start,
   ): [Start] extends [0 | never]
-    ? MaybeReadonly<Mut, IStringList<never, [], Mut, Unsorted>>
+    ? MaybeReadonly<Mut, IStringList<[], Mut, Unsorted>>
     : [sl.generic.IsNegative<Start>] extends [true]
-      ? MaybeReadonly<Mut, IStringList<T, Tuple, Mut, Unsorted>>
+      ? MaybeReadonly<Mut, IStringList<Tuple, Mut, Unsorted>>
       : sl.tuple.TupleSplit<Tuple, Start> extends readonly [infer C, infer R]
         ? C extends readonly string[]
           ? R extends readonly string[]
-            ? MaybeReadonly<Mut, IStringList<C[number], C, Mut, Unsorted>>
+            ? MaybeReadonly<Mut, IStringList<C, Mut, Unsorted>>
             : never
           : never
         : never;
@@ -334,7 +322,7 @@ export interface IStringList<
           | [[true], [0], [any]]
           | [[any], [0], [Tuple['length']]]
           | [[any], [0], [never]]
-      ? MaybeReadonly<Mut, IStringList<never, [], Mut, false>>
+      ? MaybeReadonly<Mut, IStringList<[], Mut, false>>
       : sl.tuple.TupleSplit<
             Tuple,
             [sl.generic.IsNegative<Start>] extends [true] ? 0 : Start
@@ -348,15 +336,10 @@ export interface IStringList<
               ? E extends readonly string[]
                 ? MaybeReadonly<
                     Mut,
-                    IStringList<
-                      C[number] | E[number],
-                      readonly [...C, ...E],
-                      Mut,
-                      Unsorted
-                    >
+                    IStringList<readonly [...C, ...E], Mut, Unsorted>
                   >
-                : MaybeReadonly<Mut, IStringList<C[number], C, Mut, Unsorted>>
-              : MaybeReadonly<Mut, IStringList<C[number], C, Mut, Unsorted>>
+                : MaybeReadonly<Mut, IStringList<C, Mut, Unsorted>>
+              : MaybeReadonly<Mut, IStringList<C, Mut, Unsorted>>
             : never
           : never
         : never;
@@ -377,7 +360,7 @@ export interface IStringList<
     >,
   ] extends [true]
     ? readonly [...Tuple, ...I] extends infer W extends readonly string[]
-      ? MaybeReadonly<Mut, IStringList<W[number], W, Mut, Unsorted>>
+      ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
       : never
     : sl.tuple.TupleSplit<
           Tuple,
@@ -392,49 +375,42 @@ export interface IStringList<
             ? E extends readonly string[]
               ? MaybeReadonly<
                   Mut,
-                  IStringList<
-                    C[number] | I[number] | E[number],
-                    readonly [...C, ...I, ...E],
-                    Mut,
-                    Unsorted
-                  >
+                  IStringList<readonly [...C, ...I, ...E], Mut, Unsorted>
                 >
               : MaybeReadonly<
                   Mut,
-                  IStringList<
-                    C[number] | I[number],
-                    readonly [...C, ...I],
-                    Mut,
-                    Unsorted
-                  >
+                  IStringList<readonly [...C, ...I], Mut, Unsorted>
                 >
             : MaybeReadonly<
                 Mut,
-                IStringList<
-                  C[number] | I[number],
-                  readonly [...I, ...C],
-                  Mut,
-                  Unsorted
-                >
+                IStringList<readonly [...I, ...C], Mut, Unsorted>
               >
           : never
         : never
       : never;
 
-  some<S = T & string>(
-    predicate: (value: S & string, index: number, array: T[]) => unknown,
-    thisArg?: any,
-  ): boolean;
-  every<S = T & string>(
+  some<S = Tuple[number] & string>(
     predicate: (
       value: S & string,
       index: number,
-      array: T[],
+      array: Tuple[number][],
+    ) => unknown,
+    thisArg?: any,
+  ): boolean;
+  every<S = Tuple[number] & string>(
+    predicate: (
+      value: S & string,
+      index: number,
+      array: Tuple[number][],
     ) => value is S & string,
     thisArg?: any,
   ): this is S[];
   every(
-    predicate: (value: T & string, index: number, array: T[]) => unknown,
+    predicate: (
+      value: Tuple[number] & string,
+      index: number,
+      array: Tuple[number][],
+    ) => unknown,
     thisArg?: any,
   ): boolean;
 
@@ -442,50 +418,54 @@ export interface IStringList<
   /**
    * @deprecated This method does not support type inference and will return a mutable T[] array.
    */
-  with<V extends string>(index: number, value: V): (T | V)[];
-  filter<S = T & string>(
+  with<V extends string>(index: number, value: V): (Tuple[number] | V)[];
+  filter<S = Tuple[number] & string>(
     predicate: (
       value: S & string,
       index: number,
-      array: T[],
+      array: Tuple[number][],
     ) => value is S & string,
     thisArg?: any,
   ): S[];
   filter(
-    predicate: (value: string, index: number, array: T[]) => boolean,
+    predicate: (
+      value: string,
+      index: number,
+      array: Tuple[number][],
+    ) => boolean,
     thisArg?: any,
-  ): T & string[];
+  ): Tuple[number] & string[];
 
   /**
    * @deprecated This method will mutate the list, Get the mutable array with `list.mutable()`
    * Or to obtain a modified list without the last element use:
    * `const lastElement = list[list.length - 1]` and then remove it using `const newlist = list.without(lastElement)`.
    */
-  pop(): T | undefined;
+  pop(): Tuple[number] | undefined;
 
   /**
    * @deprecated This method will mutate the list, get the mutable array with `list.mutable()`
    * Or use `const firstElement = list[0]` and then remove it using `const newlist = list.without(firstElement)`.
    */
-  shift(): T | undefined;
+  shift(): Tuple[number] | undefined;
 
   /**
    * @deprecated This method will mutate the list, get the mutable array with `list.mutable()`
    * Or use `const newlist = stringList('el', list);`.
    */
-  unshift<S = T & string>(...newElement: S[]): number;
+  unshift<S = Tuple[number] & string>(...newElement: S[]): number;
 
   /**
    * @deprecated This method will mutate the list, use `list.concat()` or get the mutable array with `list.mutable()`
    */
-  push<S = T & string>(...items: S[]): number;
+  push<S = Tuple[number] & string>(...items: S[]): number;
 
   /**
    * @deprecated This method will mutate the list, get the mutable array with `list.mutable()`
    * Or to obtain a modified list use:
    * `list.toSpliced())`.
    */
-  splice(start: number, deleteCount?: number): T[];
+  splice(start: number, deleteCount?: number): Tuple[number][];
 
   /**
    * @deprecated This method will mutate the list, get the mutable array with `list.mutable()`
@@ -496,16 +476,20 @@ export interface IStringList<
     start: number,
     deleteCount: number,
     ...items: Items
-  ): T[];
+  ): Tuple[number][];
 
   /**
    * @deprecated This method will mutate the list, get the mutable array with `list.mutable()`
    */
-  copyWithin<S = T & string>(target: number, start: number, end?: number): S[];
+  copyWithin<S = Tuple[number] & string>(
+    target: number,
+    start: number,
+    end?: number,
+  ): S[];
   /**
    * @deprecated This method will mutate the list, get the mutable array with `list.mutable()`
    */
-  fill<S = T, U = T & string>(
+  fill<S = Tuple[number], U = Tuple[number] & string>(
     value: (U | undefined)[],
     start?: number,
     end?: number,
@@ -513,7 +497,7 @@ export interface IStringList<
   /**
    * @deprecated This method will mutate the list, get the mutable array with `list.mutable()`
    */
-  fill<U = T & string>(value: U, start?: number, end?: number): U[];
+  fill<U = Tuple[number] & string>(value: U, start?: number, end?: number): U[];
   join<D extends string = ''>(
     delimiter?: D,
   ): [this['infered']['TooLong']] extends [true]

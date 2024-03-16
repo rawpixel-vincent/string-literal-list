@@ -1,7 +1,6 @@
 /// <reference path="generic.d.ts" />
 /// <reference path="index.d.ts" />
 /// <reference path="tuple.d.ts" />
-import { CamelCase, PascalCase, SnakeCase, TitleCase, Words } from 'string-ts';
 
 declare global {
   export namespace StringLiteralList {
@@ -50,16 +49,24 @@ declare global {
           | 'uppercase'
           | 'lowercase'
           | 'capitalize'
-          | 'unCapitalize'
-          | 'pascalCase'
-          | 'camelCase'
-          | 'snakeCase',
+          | 'unCapitalize',
       > = Transform extends 'uppercase'
         ? Uppercase<T>
         : Transform extends 'lowercase'
           ? Lowercase<T>
           : Transform extends 'capitalize'
-            ? TitleCase<T>
+            ? Split<T, ' '> extends [
+                infer U extends string,
+                ...infer Rest extends string[],
+              ]
+              ? U extends string
+                ? [Rest['length']] extends [0]
+                  ? Capitalize<U>
+                  : Rest extends readonly string[]
+                    ? `${Capitalize<U>} ${tuple.Join<tuple.TupleWithCaseTransform<Rest, 'capitalize', []>, ' '>}`
+                    : T
+                : T
+              : T
             : Transform extends 'unCapitalize'
               ? Split<T, ' '> extends [
                   infer U extends string,
@@ -73,13 +80,7 @@ declare global {
                       : T
                   : T
                 : T
-              : Transform extends 'pascalCase'
-                ? PascalCase<ReplaceAll<T, ','>>
-                : Transform extends 'camelCase'
-                  ? CamelCase<ReplaceAll<T, ','>>
-                  : Transform extends 'snakeCase'
-                    ? SnakeCase<ReplaceAll<T, ','>>
-                    : T;
+              : T;
 
       export type DropSuffix<
         sentence extends string,

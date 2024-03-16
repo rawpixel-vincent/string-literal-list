@@ -1,18 +1,29 @@
 /* eslint-disable no-unused-vars */
 'use strict';
-import t from 'tap';
+import 'core-js/actual/array/to-reversed.js';
+import 'core-js/actual/array/to-sorted.js';
+import 'core-js/actual/array/to-spliced.js';
+import 'core-js/actual/array/find-last-index.js';
+import 'core-js/actual/array/flat-map.js';
+import 'core-js/actual/array/last-index-of.js';
+import 'core-js/actual/array/with.js';
+import mt from 'tap';
 
 import { ARRAY_IN_PLACE_MUTATION, SL } from './StringLiteralList.js';
 import { stringList as mutableStringList, sl } from './stringList.js';
 
 import { stringList as immutableStringList } from './strict.js';
 
-// import { createRequire } from 'module';
-// const require = createRequire(import.meta.url);
-// /** @type {typeof import('./stringList.js')['sl']} */
-// const mutableStringListCjs = require('./' + 'stringList.cjs').stringList;
-// /** @type {typeof import('./strict.js')['sl']} */
-// const immutableStringListCjs = require('./' + 'strict.cjs').stringList;
+import mutableMin from './stringList.min.js';
+
+import strictMin from './strict.min.js';
+
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+/** @type {typeof import('./stringList.js')['sl']} */
+const mutableStringListCjs = require('./' + 'stringList.cjs').stringList;
+/** @type {typeof import('./strict.js')['sl']} */
+const immutableStringListCjs = require('./' + 'strict.cjs').stringList;
 
 /**
  * @type {{type:string, stringList:typeof import('./stringList.js').stringList}[]}
@@ -26,631 +37,625 @@ const functions = [
     type: 'immutable',
     stringList: immutableStringList,
   },
-  // {
-  //   type: 'mutableCjs',
-  //   stringList: mutableStringListCjs,
-  // },
-  // {
-  //   type: 'immutableCjs',
-  //   stringList: immutableStringListCjs,
-  // },
+  {
+    type: 'mutableCjs',
+    stringList: mutableStringListCjs,
+  },
+  {
+    type: 'immutableCjs',
+    stringList: immutableStringListCjs,
+  },
+  {
+    type: 'mutableMin',
+    stringList: mutableMin.stringList,
+  },
+  {
+    type: 'immutableMin',
+    stringList: strictMin.stringList,
+  },
 ];
 
 for (const { type, stringList } of functions) {
-  /**
-   * @param {import('tap').Test} st
-   * @param {any} list
-   * @param {string[]} values
-   */
-  const testExpectedArrayValues = (st, list, ...values) => {
-    st.ok(list.constructor.name === 'SL');
-    st.notOk(list.constructor.name === 'Array');
-    st.match(list, new SL(...values));
-    st.match(list, {
-      length: values.length,
-    });
-    st.match([...list], values);
-    st.match(JSON.stringify([...list]), JSON.stringify(values));
-    st.match([...list.keys()], [...values.keys()]);
-    st.match([...list.values()], values);
-    st.match([...list.entries()], [...values.entries()]);
-    for (const [i, value] of list.entries()) {
-      st.match(value, values[i]);
-      st.match(list.enum[value], value);
-      st.ok(list.includes(value));
-      st.ok(list.indexOf(values[i]) !== -1);
-      st.ok(list.at(i) === value);
-
-      st.ok(list.findLastIndex((v) => v === value) !== -1);
-
-      st.ok(list.filter((v, vi) => v === value && vi === i).length === 1);
-      st.ok(list.some((v) => v === value) === true);
-      st.ok(list.every((v) => v === value) === (list.length === 1));
-      st.ok(list.value(value) === value);
-    }
-
-    st.ok(list.enum[`${Math.random() * 100000}!`] === undefined);
-    st.ok(list.enum[Math.random() * 100000] === undefined);
-    st.throws(() => list.value(`${Math.random() * 100000}`));
-
-    st.notOk(list.includes(null));
-    st.ok(list.at(values.length) === undefined);
-  };
-
-  /**
-   * @param {import('tap').Test} st
-   * @param {any} list
-   * @param {...string} values
-   */
-  const testEscapingFromStringList = (st, list, ...values) => {
-    st.ok(list.constructor.name === 'SL');
-
-    // map()
-    const fromMap = list.map((el) => el);
-    st.ok(fromMap.constructor.name === 'Array');
-    st.ok(fromMap.length === list.length);
-    st.match(fromMap, list);
-    st.match(JSON.stringify([...list]), JSON.stringify(fromMap));
-    if (values.length > 0) {
-      list
-        .map((e) => typeof e === 'string' && e.toUpperCase())
-        .includes(values[0].toUpperCase());
-    }
-
-    // filter()
-    const fromFilter = list.filter(() => true);
-    st.ok(fromFilter.constructor.name === 'Array');
-    st.ok(fromFilter.length === list.length);
-    st.match(fromFilter, list);
-    st.match(JSON.stringify([...list]), JSON.stringify(fromFilter));
-
-    // reduce()
-    const fromReduce = list.reduce((acc, el) => acc.concat(el), []);
-    st.ok(fromReduce.constructor.name === 'Array');
-    st.ok(fromReduce.length === list.length);
-    st.match(fromReduce, list);
-    st.match(JSON.stringify([...list]), JSON.stringify(fromReduce));
-
-    // reduceRight()
-    const fromReduceRight = list.reduceRight((acc, el) => acc.concat(el), []);
-    st.ok(fromReduceRight.constructor.name === 'Array');
-    st.ok(fromReduceRight.length === list.length);
-    st.match(fromReduceRight.reverse(), list);
-    st.match(JSON.stringify([...list]), JSON.stringify(fromReduceRight));
-
-    // flat()
-    const fromFlat = list.flat();
-    st.ok(fromFlat.constructor.name === 'Array');
-    st.ok(fromFlat.length === list.length);
-    st.match(fromFlat, list);
-    st.match(JSON.stringify([...list]), JSON.stringify(fromFlat));
-
-    // flatMap()
-    const fromFlatMap = list.flatMap((el) => [el]);
-    st.ok(fromFlatMap.constructor.name === 'Array');
-    st.ok(fromFlatMap.length === list.length);
-    st.match(fromFlatMap, list);
-    st.match(JSON.stringify([...list]), JSON.stringify(fromFlatMap));
-
-    // with()
-    if (values.length > 0) {
-      const fromWith = list.with(0, '__NEVER_USE_%');
-      st.ok(fromWith.constructor.name === 'Array');
-      st.ok(fromWith.length === list.length);
-      st.notMatch(fromWith, list);
-      st.notMatch(fromWith, values);
-      st.match([...fromWith.slice(1)], values.slice(1));
-      st.match(fromWith.concat(...list), fromWith);
-    } else {
-      if (!process.version.match(/^v1[2-8]\./)) {
-        st.throws(
-          () => list.with(0, '__NEVER_USE_%'),
-          new Error('Invalid index : 0'),
-        );
-      } else {
-        st.throws(
-          () => list.with(0, '__NEVER_USE_%').slice(1),
-          new RangeError('Incorrect index'),
-        );
-      }
-    }
-  };
-
-  t.test(type + ': empty stringList', (t) => {
-    const list = stringList();
-    t.match([...list], []);
-    testExpectedArrayValues(t, list);
-    testEscapingFromStringList(t, list);
-    t.doesNotThrow(() => {
-      t.ok(list.concat().length === 0);
-      t.ok(list.withPrefix('.').length === 0);
-      t.ok(list.withSuffix('.').length === 0);
-      t.ok(list.toSorted().length === 0);
-      t.ok(list.toReversed().length === 0);
-    });
-
-    const notEmpty = list.concat('a', 'b', 'c').concat('c', 'b', 'a');
-    t.ok(notEmpty.length === 6);
-    t.ok(list.length === 0);
-    t.notMatch(list, notEmpty);
-    t.match(notEmpty, stringList('a', 'b', 'c', 'c', 'b', 'a'));
-
-    /** @type {'a::b::c::c::b::a'} */
-    const d = notEmpty.join('::');
-    t.match(d, 'a::b::c::c::b::a');
-
-    const list2 = notEmpty.without('a').concatList(stringList('c', 'a', 'b'));
-
-    /** @type {'b::c::c::b::c::a::b'} */
-    const d2 = list2.join('::');
-    t.match(d2, 'b::c::c::b::c::a::b');
-    t.match(d2, ['b', 'c', 'c', 'b', 'c', 'a', 'b'].join('::'));
-
-    t.end();
-  });
-
-  t.test(type + ': enum object', (t) => {
-    const list = stringList('foo', 'bar');
-    t.match(list.enum, {
-      foo: 'foo',
-      bar: 'bar',
-    });
-
-    const list2 = list.concat('doink', 'bleep');
-
-    t.match(list.enum, {
-      foo: 'foo',
-      bar: 'bar',
-    });
-
-    t.match(list2.enum, {
-      foo: 'foo',
-      bar: 'bar',
-      doink: 'doink',
-      bleep: 'bleep',
-    });
-    t.end();
-  });
-
-  t.test(type + ": stringList('foo')", (t) => {
-    const list = stringList('foo');
-    testExpectedArrayValues(t, list, 'foo');
-    testEscapingFromStringList(t, list, 'foo');
-
-    const list2 = stringList('foo', 'bar');
-    testExpectedArrayValues(t, list2, 'foo', 'bar');
-    testEscapingFromStringList(t, list2, 'foo', 'bar');
-
-    /** @type {'foo::bar'} */
-    const d = list2.join('::');
-    t.match(d, 'foo::bar');
-
-    t.end();
-  });
-
-  t.test(type + ": withPrefix('prefix.')", (t) => {
-    const list = stringList('foo', 'bar').withPrefix('prefix.');
-    testExpectedArrayValues(t, list, 'prefix.foo', 'prefix.bar');
-    testEscapingFromStringList(t, list, 'prefix.foo', 'prefix.bar');
-
-    /** @type {'prefix.foo::prefix.bar'} */
-    const d = list.join('::');
-    t.match(d, 'prefix.foo::prefix.bar');
-
-    const list2 = stringList().withPrefix('prefix.').withPrefix('z.');
-    testExpectedArrayValues(t, list2);
-    testEscapingFromStringList(t, list2);
-
-    /** @type {''} */
-    const d2 = list2.join('::');
-    t.match(d2, '');
-
-    const list3 = stringList()
-      .withPrefix('prefix.')
-      .concat('a')
-      .withPrefix('z.');
-    testExpectedArrayValues(t, list3, 'z.a');
-    testEscapingFromStringList(t, list3, 'z.a');
-
-    /** @type {'z.a'} */
-    const d3 = list3.join('::');
-    t.match(d3, 'z.a');
-
-    const list4 = stringList()
-      .withPrefix('prefix.')
-      .concat('b')
-      .withPrefix('z.')
-      .without('z.b')
-      .withPrefix('z.');
-    testExpectedArrayValues(t, list4);
-    testEscapingFromStringList(t, list4);
-
-    /** @type {''} */
-    const d4 = list4.join('::');
-    t.match(d4, '');
-
-    t.end();
-  });
-
-  t.test(type + ": withSuffix('.suffix')", (t) => {
-    const list = stringList('foo', 'bar').withSuffix('.suffix');
-    testExpectedArrayValues(t, list, 'foo.suffix', 'bar.suffix');
-    testEscapingFromStringList(t, list, 'foo.suffix', 'bar.suffix');
-
-    /** @type {'foo.suffix::bar.suffix'} */
-    const d = list.join('::');
-    t.match(d, 'foo.suffix::bar.suffix');
-
-    const list2 = stringList().withSuffix('.suffix').withSuffix('.z');
-    testExpectedArrayValues(t, list2);
-    testEscapingFromStringList(t, list2);
-
-    /** @type {''} */
-    const d2 = list2.join('::');
-    t.match(d2, '');
-
-    const list3 = stringList()
-      .withSuffix('.suffix')
-      .concat('a')
-      .withSuffix('.z');
-    testExpectedArrayValues(t, list3, 'a.z');
-    testEscapingFromStringList(t, list3, 'a.z');
-
-    /** @type {'a.z'} */
-    const d3 = list3.join('::');
-    t.match(d3, 'a.z');
-
-    const list4 = stringList()
-      .withSuffix('prefix.')
-      .concat('b')
-      .withSuffix('.z')
-      .without('b.z')
-      .withSuffix('.z');
-    testExpectedArrayValues(t, list4);
-    testEscapingFromStringList(t, list4);
-
-    /** @type {''} */
-    const d4 = list4.join('::');
-    t.match(d4, '');
-
-    t.end();
-  });
-
-  // t.test(type + ": withDerivatedSuffix('s')", (t) => {
-  //   const list = stringList('food', 'bars', 'pasta', 'meatballs')
-  //     .withDerivatedSuffix('s')
-  //     .toSorted((a, b) => a.localeCompare(b));
-
-  //   testExpectedArrayValues(
-  //     t,
-  //     list,
-  //     'bar',
-  //     'bars',
-  //     'food',
-  //     'foods',
-  //     'meatball',
-  //     'meatballs',
-  //     'pasta',
-  //     'pastas',
-  //   );
-  //   testEscapingFromStringList(
-  //     t,
-  //     list,
-  //     'bar',
-  //     'bars',
-  //     'food',
-  //     'foods',
-  //     'meatball',
-  //     'meatballs',
-  //     'pasta',
-  //     'pastas',
-  //   );
-
-  //   /** @type {'bar::bars::food::foods::meatball::meatballs::pasta::pastas'} */
-  //   // @ts-expect-error - Unsorted list - infer string
-  //   const d = list.join('::');
-  //   t.match(d, 'bar::bars::food::foods::meatball::meatballs::pasta::pastas');
-
-  //   t.end();
-  // });
-
-  // t.test(type + ": withDerivatedPrefix('#')", (t) => {
-  //   const list = stringList('#trending', 'stuff')
-  //     .withDerivatedPrefix('#')
-  //     .toSorted((a, b) => a.localeCompare(b));
-  //   testExpectedArrayValues(
-  //     t,
-  //     list,
-  //     '#stuff',
-  //     '#trending',
-  //     'stuff',
-  //     'trending',
-  //   );
-  //   testEscapingFromStringList(
-  //     t,
-  //     list,
-  //     '#stuff',
-  //     '#trending',
-  //     'stuff',
-  //     'trending',
-  //   );
-
-  //   /** @type {'#stuff::#trending::stuff::trending'} */
-  //   // @ts-expect-error - Unsorted list - infer string
-  //   const d = list.join('::');
-  //   t.match(d, '#stuff::#trending::stuff::trending');
-
-  //   t.end();
-  // });
-
-  t.test(type + ': withReplace("1")', (t) => {
-    const list = stringList('f1oo', 'b1ar').withReplace('1', '');
-    testExpectedArrayValues(t, list, 'foo', 'bar');
-    testEscapingFromStringList(t, list, 'foo', 'bar');
-
-    /** @type {'foo::bar'} */
-    const d = list.join('::');
-    t.match(d, 'foo::bar');
-
-    const list2 = list.withReplace('o', 'a');
-    testExpectedArrayValues(t, list2, 'fao', 'bar');
-    testEscapingFromStringList(t, list2, 'fao', 'bar');
-
+  await mt.test(type, async (tt) => {
+    let constructorName = stringList().constructor.name;
     /**
-     * @type {"foo::bar"}
+     * @param {import('tap').Test} st
+     * @param {any} list
+     * @param {string[]} values
      */
-    const d2 = list.join('::');
-    t.match(d2, 'foo::bar');
-
-    const list3 = stringList('ababababa', 'babababa').withReplace('b', '');
-    testExpectedArrayValues(t, list3, 'aabababa', 'abababa');
-    testEscapingFromStringList(t, list3, 'aabababa', 'abababa');
-
-    /** @type {"aabababa::abababa"} */
-    const j = list3.join('::');
-    t.match(j, 'aabababa::abababa');
-
-    t.end();
-  });
-
-  t.test(type + ': withReplaceAll("z")', (t) => {
-    const list = stringList('foo', 'azzztiv', 'zzz', 'z1').withReplaceAll(
-      'z',
-      '',
-    );
-    testExpectedArrayValues(t, list, 'foo', 'ativ', '', '1');
-    testEscapingFromStringList(t, list, 'foo', 'ativ', '', '1');
-
-    /**
-     * @type {'foo::ativ::::1'}
-     */
-    const d = list.join('::');
-    t.match(d, 'foo::ativ::::1');
-
-    /** @type {"ativ"} */
-    const d2 = list.without('foo', '', '1').join('::');
-    t.match(d2, 'ativ');
-
-    /** @type {""} */
-    const d22 = list.without('foo', 'ativ', '', '1').join('::');
-    t.match(d22, '');
-
-    /** @type {'zaa::ztiv::::1'} */
-    const d3 = list
-      .withReplaceAll('a', 'z')
-      .withReplaceAll('o', 'a')
-      .withReplaceAll('f', 'z')
-      .join('::');
-    t.match(d3, 'zaa::ztiv::::1');
-
-    t.end();
-  });
-
-  t.test(type + ': withTrim()', (t) => {
-    const list = stringList('   foo  ', ' bar    ').withTrim();
-    testExpectedArrayValues(t, list, 'foo', 'bar');
-    testEscapingFromStringList(t, list, 'foo', 'bar');
-    t.end();
-  });
-
-  t.test(type + ': withTrim().withReplaceAll("_")', (t) => {
-    const list = stringList(' z', 'has spaces ', ' has more_spaces')
-      .withTrim()
-      .withReplaceAll(' ', '_');
-    testExpectedArrayValues(t, list, 'z', 'has_spaces', 'has_more_spaces');
-    testEscapingFromStringList(t, list, 'z', 'has_spaces', 'has_more_spaces');
-
-    /** @type {'z::has_spaces::has_more_spaces'} */
-    const d = list.join('::');
-    t.match(d, 'z::has_spaces::has_more_spaces');
-
-    const list2 = stringList()
-      .concat('  z ', 'has spaces ', ' has more  spaces  ')
-      .withTrim()
-      .withReplaceAll(' ', '_');
-    testExpectedArrayValues(t, list2, 'z', 'has_spaces', 'has_more__spaces');
-    testEscapingFromStringList(t, list2, 'z', 'has_spaces', 'has_more__spaces');
-
-    /** @type {'z::has_spaces::has_more__spaces'} */
-    const d2 = list2.join('::');
-    t.match(d2, 'z::has_spaces::has_more__spaces');
-
-    t.end();
-  });
-
-  t.test(type + ': without()', (t) => {
-    const list = stringList('foo', 'bar').without('bar');
-    testExpectedArrayValues(t, list, 'foo');
-    testEscapingFromStringList(t, list, 'foo');
-
-    /** @type {'foo'} */
-    const d = list.join('::');
-    t.match(d, 'foo');
-
-    const list2 = stringList(
-      'foo',
-      'bar',
-      'bar2',
-      'foo2',
-      'bar3',
-      'foo3',
-      'bar4',
-      'foo4',
-    ).without(
-      stringList('bar', 'foo'),
-      // @ts-expect-error (because of null/object in the parameters - added to cover the case)
-      'bar2',
-      stringList('bar3', 'foo3'),
-      'foo4',
-      null,
-      { foo2: 'bar4' },
-    );
-    testExpectedArrayValues(t, list2, 'foo2', 'bar4');
-    testEscapingFromStringList(t, list2, 'foo2', 'bar4');
-
-    const list3 = stringList('foo2', 'bar4', 'set', 'match').without(
-      stringList('match', 'set'),
-      'foo2',
-    );
-    testExpectedArrayValues(t, list3, 'bar4');
-    testEscapingFromStringList(t, list3, 'bar4');
-
-    /** @type {'bar4'} */
-    const d3 = list3.join('::');
-    t.match(d3, 'bar4');
-
-    const list4 = stringList('z', 'a', 'X', 'aa', 'b', 'c')
-      .concat('d', 'e')
-      .without('X', stringList('z', 'b'));
-    testExpectedArrayValues(t, list4, 'a', 'aa', 'c', 'd', 'e');
-    testEscapingFromStringList(t, list4, 'a', 'aa', 'c', 'd', 'e');
-
-    /** @type {'a::aa::c::d::e'} */
-    const d4 = list4.join('::');
-    t.match(d4, 'a::aa::c::d::e');
-
-    const list5 = stringList()
-      .concat('n', 'ff', 'dd', 'ss')
-      .without('ff')
-      .without('n');
-
-    testExpectedArrayValues(t, list5, 'dd', 'ss');
-    testEscapingFromStringList(t, list5, 'dd', 'ss');
-
-    /** @type {'dd::ss'} */
-    const d5 = list5.join('::');
-    t.match(d5, 'dd::ss');
-
-    t.end();
-  });
-
-  t.test(type + ": concat('zing', 'boom')", (t) => {
-    const list = stringList('foo', 'bar').concat('zing', 'boom');
-    testExpectedArrayValues(t, list, 'foo', 'bar', 'zing', 'boom');
-    testEscapingFromStringList(t, list, 'foo', 'bar', 'zing', 'boom');
-
-    /** @type {"foo::bar::zing::boom"} */
-    const d = list.join('::');
-    t.match(d, 'foo::bar::zing::boom');
-
-    const list2 = list
-      .concat('zing', 'foo', 'du')
-      .concatList(stringList('doink', 'bleep'));
-
-    /** @type {'foo::bar::zing::boom::zing::foo::du::doink::bleep'} */
-    const d2 = list2.join('::');
-    t.match(d2, 'foo::bar::zing::boom::zing::foo::du::doink::bleep');
-
-    t.end();
-  });
-
-  t.test(type + ": concat(stringList, stringList, 'a', 'b', 'c', 'd')", (t) => {
-    const a = stringList('abc', 'def', 'ghi');
-    const b = stringList('jkl', 'mno', 'pqr');
-    const c = stringList('stu', 'vwx', 'yz');
-    const list = a.concatList(b).concatList(c).concat('a', 'b', 'c', 'd');
-    testExpectedArrayValues(
-      t,
-      list,
-      'abc',
-      'def',
-      'ghi',
-      'jkl',
-      'mno',
-      'pqr',
-      'stu',
-      'vwx',
-      'yz',
-      'a',
-      'b',
-      'c',
-      'd',
-    );
-    testEscapingFromStringList(
-      t,
-      list,
-      'abc',
-      'def',
-      'ghi',
-      'jkl',
-      'mno',
-      'pqr',
-      'stu',
-      'vwx',
-      'yz',
-      'a',
-      'b',
-      'c',
-      'd',
-    );
-
-    /** @type {'abc::def::ghi::jkl::mno::pqr::stu::vwx::yz::a::b::c::d'} */
-    const d = list.join('::');
-    t.match(d, 'abc::def::ghi::jkl::mno::pqr::stu::vwx::yz::a::b::c::d');
-
-    t.end();
-  });
-
-  t.test(type + ': toSorted()', (t) => {
-    const list = stringList('foo', 'bar').toSorted();
-    testExpectedArrayValues(t, list, 'bar', 'foo');
-    testEscapingFromStringList(t, list, 'bar', 'foo');
-
-    /** @type {'bar::foo'} */
-    // @ts-expect-error - Unsorted list - toSorted not supported
-    const d = list.join('::');
-    t.match(d, 'bar::foo');
-
-    t.end();
-  });
-
-  t.test(type + ': toReversed()', (t) => {
-    const list = stringList('foo', 'bar').toReversed();
-    testExpectedArrayValues(t, list, 'bar', 'foo');
-    testEscapingFromStringList(t, list, 'bar', 'foo');
-
-    /** @type {'bar::foo'} */
-    const d = list.join('::');
-    t.match(d, 'bar::foo');
-
-    const list2 = list.concat('doink', 'bleep').toReversed();
-    testExpectedArrayValues(t, list2, 'bleep', 'doink', 'foo', 'bar');
-    testEscapingFromStringList(t, list2, 'bleep', 'doink', 'foo', 'bar');
-
-    /** @type {'bleep::doink::foo::bar'} */
-    const d2 = list2.join('::');
-    t.match(d2, 'bleep::doink::foo::bar');
-
-    t.end();
-  });
-
-  t.test(type + ': reverse()', (t) => {
-    if (type === 'immutable' || type === 'immutableCjs') {
-      t.throws(() => {
-        stringList('foo', 'bar').reverse();
+    const testExpectedArrayValues = (st, list, ...values) => {
+      st.ok(list.constructor.name === constructorName);
+      st.notOk(list.constructor.name === Array.name);
+      st.match(list, new SL(...values));
+      st.match(list, {
+        length: values.length,
       });
-    } else {
-      const list = stringList('foo', 'bar').reverse();
+      st.match([...list], values);
+      st.match(JSON.stringify([...list]), JSON.stringify(values));
+      st.match([...list.keys()], [...values.keys()]);
+      st.match([...list.values()], values);
+      st.match([...list.entries()], [...values.entries()]);
+      for (const [i, value] of list.entries()) {
+        st.match(value, values[i]);
+        st.match(list.enum[value], value);
+        st.ok(list.includes(value));
+        st.ok(list.indexOf(values[i]) !== -1);
+        st.ok(list.at(i) === value);
+
+        st.ok(list.findLastIndex((v) => v === value) !== -1);
+
+        st.ok(list.filter((v, vi) => v === value && vi === i).length === 1);
+        st.ok(list.some((v) => v === value) === true);
+        st.ok(list.every((v) => v === value) === (list.length === 1));
+        st.ok(list.value(value) === value);
+      }
+
+      st.ok(list.enum[`${Math.random() * 100000}!`] === undefined);
+      st.ok(list.enum[Math.random() * 100000] === undefined);
+      st.throws(() => list.value(`${Math.random() * 100000}`));
+
+      st.notOk(list.includes(null));
+      st.ok(list.at(values.length) === undefined);
+    };
+
+    /**
+     * @param {import('tap').Test} st
+     * @param {any} list
+     * @param {...string} values
+     */
+    const testEscapingFromStringList = (st, list, ...values) => {
+      st.ok(list.constructor.name === constructorName);
+
+      // map()
+      const fromMap = list.map((el) => el);
+      st.ok(fromMap.constructor.name === Array.name);
+      st.ok(fromMap.length === list.length);
+      st.match(fromMap, list);
+      st.match(JSON.stringify([...list]), JSON.stringify(fromMap));
+      if (values.length > 0) {
+        list
+          .map((e) => typeof e === 'string' && e.toUpperCase())
+          .includes(values[0].toUpperCase());
+      }
+
+      // filter()
+      const fromFilter = list.filter(() => true);
+      st.ok(fromFilter.constructor.name === Array.name);
+      st.ok(fromFilter.length === list.length);
+      st.match(fromFilter, list);
+      st.match(JSON.stringify([...list]), JSON.stringify(fromFilter));
+
+      // reduce()
+      const fromReduce = list.reduce((acc, el) => acc.concat(el), []);
+      st.ok(fromReduce.constructor.name === Array.name);
+      st.ok(fromReduce.length === list.length);
+      st.match(fromReduce, list);
+      st.match(JSON.stringify([...list]), JSON.stringify(fromReduce));
+
+      // reduceRight()
+      const fromReduceRight = list.reduceRight((acc, el) => acc.concat(el), []);
+      st.ok(fromReduceRight.constructor.name === Array.name);
+      st.ok(fromReduceRight.length === list.length);
+      st.match(fromReduceRight.reverse(), list);
+      st.match(JSON.stringify([...list]), JSON.stringify(fromReduceRight));
+
+      // flat()
+      const fromFlat = list.flat();
+      st.ok(fromFlat.constructor.name === Array.name);
+      st.ok(fromFlat.length === list.length);
+      st.match(fromFlat, list);
+      st.match(JSON.stringify([...list]), JSON.stringify(fromFlat));
+
+      // flatMap()
+      const fromFlatMap = list.flatMap((el) => [el]);
+      st.ok(fromFlatMap.constructor.name === Array.name);
+      st.ok(fromFlatMap.length === list.length);
+      st.match(fromFlatMap, list);
+      st.match(JSON.stringify([...list]), JSON.stringify(fromFlatMap));
+
+      // with()
+      if (values.length > 0) {
+        const fromWith = list.with(0, '__NEVER_USE_%');
+        st.ok(fromWith.constructor.name === Array.name);
+        st.ok(fromWith.length === list.length);
+        st.notMatch(fromWith, list);
+        st.notMatch(fromWith, values);
+        st.match([...fromWith.slice(1)], values.slice(1));
+        st.match(fromWith.concat(...list), fromWith);
+      } else {
+        if (!process.version.match(/^v1[2-8]\./)) {
+          st.throws(
+            () => list.with(0, '__NEVER_USE_%'),
+            new Error('Invalid index : 0'),
+          );
+        } else {
+          st.throws(
+            () => list.with(0, '__NEVER_USE_%').slice(1),
+            new RangeError('Incorrect index'),
+          );
+        }
+      }
+    };
+
+    tt.test(type + ': empty stringList', (t) => {
+      const list = stringList();
+      t.match([...list], []);
+      testExpectedArrayValues(t, list);
+      testEscapingFromStringList(t, list);
+      t.doesNotThrow(() => {
+        t.ok(list.concat().length === 0);
+        t.ok(list.withPrefix('.').length === 0);
+        t.ok(list.withSuffix('.').length === 0);
+        t.ok(list.toSorted().length === 0);
+        t.ok(list.toReversed().length === 0);
+      });
+
+      const notEmpty = list.concat('a', 'b', 'c').concat('c', 'b', 'a');
+      t.ok(notEmpty.length === 6);
+      t.ok(list.length === 0);
+      t.notMatch(list, notEmpty);
+      t.match(notEmpty, stringList('a', 'b', 'c', 'c', 'b', 'a'));
+
+      /** @type {'a::b::c::c::b::a'} */
+      const d = notEmpty.join('::');
+      t.match(d, 'a::b::c::c::b::a');
+
+      const list2 = notEmpty.without('a').concatList(stringList('c', 'a', 'b'));
+
+      /** @type {'b::c::c::b::c::a::b'} */
+      const d2 = list2.join('::');
+      t.match(d2, 'b::c::c::b::c::a::b');
+      t.match(d2, ['b', 'c', 'c', 'b', 'c', 'a', 'b'].join('::'));
+
+      t.end();
+    });
+
+    tt.test(type + ': enum object', (t) => {
+      const list = stringList('foo', 'bar');
+      t.match(list.enum, {
+        foo: 'foo',
+        bar: 'bar',
+      });
+
+      const list2 = list.concat('doink', 'bleep');
+
+      t.match(list.enum, {
+        foo: 'foo',
+        bar: 'bar',
+      });
+
+      t.match(list2.enum, {
+        foo: 'foo',
+        bar: 'bar',
+        doink: 'doink',
+        bleep: 'bleep',
+      });
+      t.end();
+    });
+
+    tt.test(type + ": stringList('foo')", (t) => {
+      const list = stringList('foo');
+      testExpectedArrayValues(t, list, 'foo');
+      testEscapingFromStringList(t, list, 'foo');
+
+      const list2 = stringList('foo', 'bar');
+      testExpectedArrayValues(t, list2, 'foo', 'bar');
+      testEscapingFromStringList(t, list2, 'foo', 'bar');
+
+      /** @type {'foo::bar'} */
+      const d = list2.join('::');
+      t.match(d, 'foo::bar');
+
+      t.end();
+    });
+
+    tt.test(type + ": withPrefix('prefix.')", (t) => {
+      const list = stringList('foo', 'bar').withPrefix('prefix.');
+      testExpectedArrayValues(t, list, 'prefix.foo', 'prefix.bar');
+      testEscapingFromStringList(t, list, 'prefix.foo', 'prefix.bar');
+
+      /** @type {'prefix.foo::prefix.bar'} */
+      const d = list.join('::');
+      t.match(d, 'prefix.foo::prefix.bar');
+
+      const list2 = stringList().withPrefix('prefix.').withPrefix('z.');
+      testExpectedArrayValues(t, list2);
+      testEscapingFromStringList(t, list2);
+
+      /** @type {''} */
+      const d2 = list2.join('::');
+      t.match(d2, '');
+
+      const list3 = stringList()
+        .withPrefix('prefix.')
+        .concat('a')
+        .withPrefix('z.');
+      testExpectedArrayValues(t, list3, 'z.a');
+      testEscapingFromStringList(t, list3, 'z.a');
+
+      /** @type {'z.a'} */
+      const d3 = list3.join('::');
+      t.match(d3, 'z.a');
+
+      const list4 = stringList()
+        .withPrefix('prefix.')
+        .concat('b')
+        .withPrefix('z.')
+        .without('z.b')
+        .withPrefix('z.');
+      testExpectedArrayValues(t, list4);
+      testEscapingFromStringList(t, list4);
+
+      /** @type {''} */
+      const d4 = list4.join('::');
+      t.match(d4, '');
+
+      t.end();
+    });
+
+    tt.test(type + ": withSuffix('.suffix')", (t) => {
+      const list = stringList('foo', 'bar').withSuffix('.suffix');
+      testExpectedArrayValues(t, list, 'foo.suffix', 'bar.suffix');
+      testEscapingFromStringList(t, list, 'foo.suffix', 'bar.suffix');
+
+      /** @type {'foo.suffix::bar.suffix'} */
+      const d = list.join('::');
+      t.match(d, 'foo.suffix::bar.suffix');
+
+      const list2 = stringList().withSuffix('.suffix').withSuffix('.z');
+      testExpectedArrayValues(t, list2);
+      testEscapingFromStringList(t, list2);
+
+      /** @type {''} */
+      const d2 = list2.join('::');
+      t.match(d2, '');
+
+      const list3 = stringList()
+        .withSuffix('.suffix')
+        .concat('a')
+        .withSuffix('.z');
+      testExpectedArrayValues(t, list3, 'a.z');
+      testEscapingFromStringList(t, list3, 'a.z');
+
+      /** @type {'a.z'} */
+      const d3 = list3.join('::');
+      t.match(d3, 'a.z');
+
+      const list4 = stringList()
+        .withSuffix('prefix.')
+        .concat('b')
+        .withSuffix('.z')
+        .without('b.z')
+        .withSuffix('.z');
+      testExpectedArrayValues(t, list4);
+      testEscapingFromStringList(t, list4);
+
+      /** @type {''} */
+      const d4 = list4.join('::');
+      t.match(d4, '');
+
+      t.end();
+    });
+
+    // tt.test(type + ": withDerivatedSuffix('s')", (t) => {
+    //   const list = stringList('food', 'bars', 'pasta', 'meatballs')
+    //     .withDerivatedSuffix('s')
+    //     .toSorted((a, b) => a.localeCompare(b));
+
+    //   testExpectedArrayValues(
+    //     t,
+    //     list,
+    //     'bar',
+    //     'bars',
+    //     'food',
+    //     'foods',
+    //     'meatball',
+    //     'meatballs',
+    //     'pasta',
+    //     'pastas',
+    //   );
+    //   testEscapingFromStringList(
+    //     t,
+    //     list,
+    //     'bar',
+    //     'bars',
+    //     'food',
+    //     'foods',
+    //     'meatball',
+    //     'meatballs',
+    //     'pasta',
+    //     'pastas',
+    //   );
+
+    //   /** @type {'bar::bars::food::foods::meatball::meatballs::pasta::pastas'} */
+    //   // @ts-expect-error - Unsorted list - infer string
+    //   const d = list.join('::');
+    //   t.match(d, 'bar::bars::food::foods::meatball::meatballs::pasta::pastas');
+
+    //   t.end();
+    // });
+
+    // tt.test(type + ": withDerivatedPrefix('#')", (t) => {
+    //   const list = stringList('#trending', 'stuff')
+    //     .withDerivatedPrefix('#')
+    //     .toSorted((a, b) => a.localeCompare(b));
+    //   testExpectedArrayValues(
+    //     t,
+    //     list,
+    //     '#stuff',
+    //     '#trending',
+    //     'stuff',
+    //     'trending',
+    //   );
+    //   testEscapingFromStringList(
+    //     t,
+    //     list,
+    //     '#stuff',
+    //     '#trending',
+    //     'stuff',
+    //     'trending',
+    //   );
+
+    //   /** @type {'#stuff::#trending::stuff::trending'} */
+    //   // @ts-expect-error - Unsorted list - infer string
+    //   const d = list.join('::');
+    //   t.match(d, '#stuff::#trending::stuff::trending');
+
+    //   t.end();
+    // });
+
+    tt.test(type + ': withReplace("1")', (t) => {
+      const list = stringList('f1oo', 'b1ar').withReplace('1', '');
+      testExpectedArrayValues(t, list, 'foo', 'bar');
+      testEscapingFromStringList(t, list, 'foo', 'bar');
+
+      /** @type {'foo::bar'} */
+      const d = list.join('::');
+      t.match(d, 'foo::bar');
+
+      const list2 = list.withReplace('o', 'a');
+      testExpectedArrayValues(t, list2, 'fao', 'bar');
+      testEscapingFromStringList(t, list2, 'fao', 'bar');
+
+      /**
+       * @type {"foo::bar"}
+       */
+      const d2 = list.join('::');
+      t.match(d2, 'foo::bar');
+
+      const list3 = stringList('ababababa', 'babababa').withReplace('b', '');
+      testExpectedArrayValues(t, list3, 'aabababa', 'abababa');
+      testEscapingFromStringList(t, list3, 'aabababa', 'abababa');
+
+      /** @type {"aabababa::abababa"} */
+      const j = list3.join('::');
+      t.match(j, 'aabababa::abababa');
+
+      t.end();
+    });
+
+    tt.test(type + ': withReplaceAll("z")', (t) => {
+      const list = stringList('foo', 'azzztiv', 'zzz', 'z1').withReplaceAll(
+        'z',
+        '',
+      );
+      testExpectedArrayValues(t, list, 'foo', 'ativ', '', '1');
+      testEscapingFromStringList(t, list, 'foo', 'ativ', '', '1');
+
+      /**
+       * @type {'foo::ativ::::1'}
+       */
+      const d = list.join('::');
+      t.match(d, 'foo::ativ::::1');
+
+      /** @type {"ativ"} */
+      const d2 = list.without('foo', '', '1').join('::');
+      t.match(d2, 'ativ');
+
+      /** @type {""} */
+      const d22 = list.without('foo', 'ativ', '', '1').join('::');
+      t.match(d22, '');
+
+      /** @type {'zaa::ztiv::::1'} */
+      const d3 = list
+        .withReplaceAll('a', 'z')
+        .withReplaceAll('o', 'a')
+        .withReplaceAll('f', 'z')
+        .join('::');
+      t.match(d3, 'zaa::ztiv::::1');
+
+      t.end();
+    });
+
+    tt.test(type + ': withTrim()', (t) => {
+      const list = stringList('   foo  ', ' bar    ').withTrim();
+      testExpectedArrayValues(t, list, 'foo', 'bar');
+      testEscapingFromStringList(t, list, 'foo', 'bar');
+      t.end();
+    });
+
+    tt.test(type + ': withTrim().withReplaceAll("_")', (t) => {
+      const list = stringList(' z', 'has spaces ', ' has more_spaces')
+        .withTrim()
+        .withReplaceAll(' ', '_');
+      testExpectedArrayValues(t, list, 'z', 'has_spaces', 'has_more_spaces');
+      testEscapingFromStringList(t, list, 'z', 'has_spaces', 'has_more_spaces');
+
+      /** @type {'z::has_spaces::has_more_spaces'} */
+      const d = list.join('::');
+      t.match(d, 'z::has_spaces::has_more_spaces');
+
+      const list2 = stringList()
+        .concat('  z ', 'has spaces ', ' has more  spaces  ')
+        .withTrim()
+        .withReplaceAll(' ', '_');
+      testExpectedArrayValues(t, list2, 'z', 'has_spaces', 'has_more__spaces');
+      testEscapingFromStringList(
+        t,
+        list2,
+        'z',
+        'has_spaces',
+        'has_more__spaces',
+      );
+
+      /** @type {'z::has_spaces::has_more__spaces'} */
+      const d2 = list2.join('::');
+      t.match(d2, 'z::has_spaces::has_more__spaces');
+
+      t.end();
+    });
+
+    tt.test(type + ': without()', (t) => {
+      const list = stringList('foo', 'bar').without('bar');
+      testExpectedArrayValues(t, list, 'foo');
+      testEscapingFromStringList(t, list, 'foo');
+
+      /** @type {'foo'} */
+      const d = list.join('::');
+      t.match(d, 'foo');
+
+      const list2 = stringList(
+        'foo',
+        'bar',
+        'bar2',
+        'foo2',
+        'bar3',
+        'foo3',
+        'bar4',
+        'foo4',
+      ).without(
+        stringList('bar', 'foo'),
+        // @ts-expect-error (because of null/object in the parameters - added to cover the case)
+        'bar2',
+        stringList('bar3', 'foo3'),
+        'foo4',
+        null,
+        { foo2: 'bar4' },
+      );
+      testExpectedArrayValues(t, list2, 'foo2', 'bar4');
+      testEscapingFromStringList(t, list2, 'foo2', 'bar4');
+
+      const list3 = stringList('foo2', 'bar4', 'set', 'match').without(
+        stringList('match', 'set'),
+        'foo2',
+      );
+      testExpectedArrayValues(t, list3, 'bar4');
+      testEscapingFromStringList(t, list3, 'bar4');
+
+      /** @type {'bar4'} */
+      const d3 = list3.join('::');
+      t.match(d3, 'bar4');
+
+      const list4 = stringList('z', 'a', 'X', 'aa', 'b', 'c')
+        .concat('d', 'e')
+        .without('X', stringList('z', 'b'));
+      testExpectedArrayValues(t, list4, 'a', 'aa', 'c', 'd', 'e');
+      testEscapingFromStringList(t, list4, 'a', 'aa', 'c', 'd', 'e');
+
+      /** @type {'a::aa::c::d::e'} */
+      const d4 = list4.join('::');
+      t.match(d4, 'a::aa::c::d::e');
+
+      const list5 = stringList()
+        .concat('n', 'ff', 'dd', 'ss')
+        .without('ff')
+        .without('n');
+
+      testExpectedArrayValues(t, list5, 'dd', 'ss');
+      testEscapingFromStringList(t, list5, 'dd', 'ss');
+
+      /** @type {'dd::ss'} */
+      const d5 = list5.join('::');
+      t.match(d5, 'dd::ss');
+
+      t.end();
+    });
+
+    tt.test(type + ": concat('zing', 'boom')", (t) => {
+      const list = stringList('foo', 'bar').concat('zing', 'boom');
+      testExpectedArrayValues(t, list, 'foo', 'bar', 'zing', 'boom');
+      testEscapingFromStringList(t, list, 'foo', 'bar', 'zing', 'boom');
+
+      /** @type {"foo::bar::zing::boom"} */
+      const d = list.join('::');
+      t.match(d, 'foo::bar::zing::boom');
+
+      const list2 = list
+        .concat('zing', 'foo', 'du')
+        .concatList(stringList('doink', 'bleep'));
+
+      /** @type {'foo::bar::zing::boom::zing::foo::du::doink::bleep'} */
+      const d2 = list2.join('::');
+      t.match(d2, 'foo::bar::zing::boom::zing::foo::du::doink::bleep');
+
+      t.end();
+    });
+
+    tt.test(
+      type + ": concat(stringList, stringList, 'a', 'b', 'c', 'd')",
+      (t) => {
+        const a = stringList('abc', 'def', 'ghi');
+        const b = stringList('jkl', 'mno', 'pqr');
+        const c = stringList('stu', 'vwx', 'yz');
+        const list = a.concatList(b).concatList(c).concat('a', 'b', 'c', 'd');
+        testExpectedArrayValues(
+          t,
+          list,
+          'abc',
+          'def',
+          'ghi',
+          'jkl',
+          'mno',
+          'pqr',
+          'stu',
+          'vwx',
+          'yz',
+          'a',
+          'b',
+          'c',
+          'd',
+        );
+        testEscapingFromStringList(
+          t,
+          list,
+          'abc',
+          'def',
+          'ghi',
+          'jkl',
+          'mno',
+          'pqr',
+          'stu',
+          'vwx',
+          'yz',
+          'a',
+          'b',
+          'c',
+          'd',
+        );
+
+        /** @type {'abc::def::ghi::jkl::mno::pqr::stu::vwx::yz::a::b::c::d'} */
+        const d = list.join('::');
+        t.match(d, 'abc::def::ghi::jkl::mno::pqr::stu::vwx::yz::a::b::c::d');
+
+        t.end();
+      },
+    );
+
+    tt.test(type + ': toSorted()', (t) => {
+      const list = stringList('foo', 'bar').toSorted();
+      testExpectedArrayValues(t, list, 'bar', 'foo');
+      testEscapingFromStringList(t, list, 'bar', 'foo');
+
+      /** @type {'bar::foo'} */
+      // @ts-expect-error - Unsorted list - toSorted not supported
+      const d = list.join('::');
+      t.match(d, 'bar::foo');
+
+      t.end();
+    });
+
+    tt.test(type + ': toReversed()', (t) => {
+      const list = stringList('foo', 'bar').toReversed();
       testExpectedArrayValues(t, list, 'bar', 'foo');
       testEscapingFromStringList(t, list, 'bar', 'foo');
 
@@ -658,1065 +663,1122 @@ for (const { type, stringList } of functions) {
       const d = list.join('::');
       t.match(d, 'bar::foo');
 
-      const list2 = list.concat('doink', 'bleep').reverse().concat('du', 'du');
+      const list2 = list.concat('doink', 'bleep').toReversed();
+      testExpectedArrayValues(t, list2, 'bleep', 'doink', 'foo', 'bar');
+      testEscapingFromStringList(t, list2, 'bleep', 'doink', 'foo', 'bar');
+
+      /** @type {'bleep::doink::foo::bar'} */
+      const d2 = list2.join('::');
+      t.match(d2, 'bleep::doink::foo::bar');
+
+      t.end();
+    });
+
+    tt.test(type + ': reverse()', (t) => {
+      if (
+        type === 'immutable' ||
+        type === 'immutableCjs' ||
+        type === 'immutableMin'
+      ) {
+        t.throws(() => {
+          stringList('foo', 'bar').reverse();
+        });
+      } else {
+        const list = stringList('foo', 'bar').reverse();
+        testExpectedArrayValues(t, list, 'bar', 'foo');
+        testEscapingFromStringList(t, list, 'bar', 'foo');
+
+        /** @type {'bar::foo'} */
+        const d = list.join('::');
+        t.match(d, 'bar::foo');
+
+        const list2 = list
+          .concat('doink', 'bleep')
+          .reverse()
+          .concat('du', 'du');
+
+        testExpectedArrayValues(
+          t,
+          list2,
+          'bleep',
+          'doink',
+          'foo',
+          'bar',
+          'du',
+          'du',
+        );
+        testEscapingFromStringList(
+          t,
+          list2,
+          'bleep',
+          'doink',
+          'foo',
+          'bar',
+          'du',
+          'du',
+        );
+
+        /** @type {'bleep::doink::foo::bar::du::du'} */
+        const d2 = list2.join('::');
+        t.match(d2, 'bleep::doink::foo::bar::du::du');
+      }
+      t.end();
+    });
+
+    tt.test(type + ': slice()', (t) => {
+      const list = stringList('foo', 'bar', 'baz').slice(1, 3);
+      testExpectedArrayValues(t, list, 'bar', 'baz');
+      testExpectedArrayValues(t, list, ...['foo', 'bar', 'baz'].slice(1, 3));
+      testEscapingFromStringList(t, list, 'bar', 'baz');
+
+      /** @type {'bar::baz'} */
+      const d = list.join('::');
+      t.match(d, 'bar::baz');
+
+      const list2 = stringList('foo', 'bar', 'baz').slice(0);
+      testExpectedArrayValues(t, list2, 'foo', 'bar', 'baz');
+      testExpectedArrayValues(t, list2, ...['foo', 'bar', 'baz'].slice(0));
+      testEscapingFromStringList(t, list2, 'foo', 'bar', 'baz');
+
+      /** @type {'foo::bar::baz'} */
+      const d2 = list2.join('::');
+      t.match(d2, 'foo::bar::baz');
+
+      const list3 = stringList('foo', 'bar', 'baz').slice(0, 2);
+      testExpectedArrayValues(t, list3, 'foo', 'bar');
+      testExpectedArrayValues(t, list3, ...['foo', 'bar', 'baz'].slice(0, 2));
+      testEscapingFromStringList(t, list3, 'foo', 'bar');
+
+      /** @type {'foo::bar'} */
+      const d3 = list3.join('::');
+      t.match(d3, 'foo::bar');
+
+      const list4 = stringList('z', 'a', 'X', 'aa', 'b').slice(1, 5);
+      testExpectedArrayValues(t, list4, 'a', 'X', 'aa', 'b');
+      testExpectedArrayValues(
+        t,
+        list4,
+        ...['z', 'a', 'X', 'aa', 'b'].slice(1, 5),
+      );
+      testEscapingFromStringList(t, list4, 'a', 'X', 'aa', 'b');
+
+      /** @type {'a::X::aa::b'} */
+      const d4 = list4.join('::');
+      t.match(d4, 'a::X::aa::b');
+
+      const list5 = stringList('n', 'ff', 'dd', 'ss').slice(-4, -1);
+      testExpectedArrayValues(t, list5, 'n', 'ff', 'dd');
+      testExpectedArrayValues(
+        t,
+        list5,
+        ...['n', 'ff', 'dd', 'ss'].slice(-4, -1),
+      );
+      testEscapingFromStringList(t, list5, 'n', 'ff', 'dd');
+
+      /** @type {'n::ff::dd'} */
+      const d5 = list5.join('::');
+      t.match(d5, 'n::ff::dd');
+
+      const list6 = stringList('n', 'ff', 'dd', 'ss').slice(-2, -1);
+      testExpectedArrayValues(t, list6, 'dd');
+      testExpectedArrayValues(
+        t,
+        list6,
+        ...['n', 'ff', 'dd', 'ss'].slice(-2, -1),
+      );
+      testEscapingFromStringList(t, list6, 'dd');
+
+      /** @type {'dd'} */
+      const d6 = list6.join('::');
+      t.match(d6, 'dd');
+
+      const list7 = stringList('n', 'ff', 'dd', 'ss').slice(-1, 4);
+      testExpectedArrayValues(t, list7, 'ss');
+      testExpectedArrayValues(
+        t,
+        list7,
+        ...['n', 'ff', 'dd', 'ss'].slice(-1, 4),
+      );
+      testEscapingFromStringList(t, list7, 'ss');
+
+      /** @type {'ss'} */
+      const d7 = list7.join('::');
+      t.match(d7, 'ss');
+
+      const list8 = stringList('n', 'ff', 'dd', 'ss').slice(-3);
+      testExpectedArrayValues(t, list8, 'ff', 'dd', 'ss');
+      testExpectedArrayValues(t, list8, ...['n', 'ff', 'dd', 'ss'].slice(-3));
+      testEscapingFromStringList(t, list8, 'ff', 'dd', 'ss');
+
+      /** @type {"ff::dd::ss"} */
+      const d8 = list8.join('::');
+      t.match(d8, 'ff::dd::ss');
+
+      const list9 = stringList('n', 'ff', 'dd', 'ss').slice(0, -3);
+      testExpectedArrayValues(t, list9, 'n');
+      testExpectedArrayValues(
+        t,
+        list9,
+        ...['n', 'ff', 'dd', 'ss'].slice(0, -3),
+      );
+      testEscapingFromStringList(t, list9, 'n');
+
+      /** @type {"n"} */
+      const d9 = list9.join('::');
+      t.match(d9, 'n');
+
+      t.end();
+    });
+
+    tt.test(type + ': all chained', (t) => {
+      const list = stringList('foo', 'bar')
+        .concat('doink', 'bleep')
+        .withPrefix('prefix.')
+        .withSuffix('.suffix')
+        .toReversed();
 
       testExpectedArrayValues(
         t,
-        list2,
-        'bleep',
-        'doink',
-        'foo',
-        'bar',
-        'du',
-        'du',
+        list,
+        'prefix.bleep.suffix',
+        'prefix.doink.suffix',
+        'prefix.bar.suffix',
+        'prefix.foo.suffix',
       );
       testEscapingFromStringList(
         t,
-        list2,
-        'bleep',
-        'doink',
-        'foo',
-        'bar',
-        'du',
-        'du',
+        list,
+        'prefix.bleep.suffix',
+        'prefix.doink.suffix',
+        'prefix.bar.suffix',
+        'prefix.foo.suffix',
       );
 
-      /** @type {'bleep::doink::foo::bar::du::du'} */
-      const d2 = list2.join('::');
-      t.match(d2, 'bleep::doink::foo::bar::du::du');
-    }
-    t.end();
-  });
-
-  t.test(type + ': slice()', (t) => {
-    const list = stringList('foo', 'bar', 'baz').slice(1, 3);
-    testExpectedArrayValues(t, list, 'bar', 'baz');
-    testExpectedArrayValues(t, list, ...['foo', 'bar', 'baz'].slice(1, 3));
-    testEscapingFromStringList(t, list, 'bar', 'baz');
-
-    /** @type {'bar::baz'} */
-    const d = list.join('::');
-    t.match(d, 'bar::baz');
-
-    const list2 = stringList('foo', 'bar', 'baz').slice(0);
-    testExpectedArrayValues(t, list2, 'foo', 'bar', 'baz');
-    testExpectedArrayValues(t, list2, ...['foo', 'bar', 'baz'].slice(0));
-    testEscapingFromStringList(t, list2, 'foo', 'bar', 'baz');
-
-    /** @type {'foo::bar::baz'} */
-    const d2 = list2.join('::');
-    t.match(d2, 'foo::bar::baz');
-
-    const list3 = stringList('foo', 'bar', 'baz').slice(0, 2);
-    testExpectedArrayValues(t, list3, 'foo', 'bar');
-    testExpectedArrayValues(t, list3, ...['foo', 'bar', 'baz'].slice(0, 2));
-    testEscapingFromStringList(t, list3, 'foo', 'bar');
-
-    /** @type {'foo::bar'} */
-    const d3 = list3.join('::');
-    t.match(d3, 'foo::bar');
-
-    const list4 = stringList('z', 'a', 'X', 'aa', 'b').slice(1, 5);
-    testExpectedArrayValues(t, list4, 'a', 'X', 'aa', 'b');
-    testExpectedArrayValues(
-      t,
-      list4,
-      ...['z', 'a', 'X', 'aa', 'b'].slice(1, 5),
-    );
-    testEscapingFromStringList(t, list4, 'a', 'X', 'aa', 'b');
-
-    /** @type {'a::X::aa::b'} */
-    const d4 = list4.join('::');
-    t.match(d4, 'a::X::aa::b');
-
-    const list5 = stringList('n', 'ff', 'dd', 'ss').slice(-4, -1);
-    testExpectedArrayValues(t, list5, 'n', 'ff', 'dd');
-    testExpectedArrayValues(t, list5, ...['n', 'ff', 'dd', 'ss'].slice(-4, -1));
-    testEscapingFromStringList(t, list5, 'n', 'ff', 'dd');
-
-    /** @type {'n::ff::dd'} */
-    const d5 = list5.join('::');
-    t.match(d5, 'n::ff::dd');
-
-    const list6 = stringList('n', 'ff', 'dd', 'ss').slice(-2, -1);
-    testExpectedArrayValues(t, list6, 'dd');
-    testExpectedArrayValues(t, list6, ...['n', 'ff', 'dd', 'ss'].slice(-2, -1));
-    testEscapingFromStringList(t, list6, 'dd');
-
-    /** @type {'dd'} */
-    const d6 = list6.join('::');
-    t.match(d6, 'dd');
-
-    const list7 = stringList('n', 'ff', 'dd', 'ss').slice(-1, 4);
-    testExpectedArrayValues(t, list7, 'ss');
-    testExpectedArrayValues(t, list7, ...['n', 'ff', 'dd', 'ss'].slice(-1, 4));
-    testEscapingFromStringList(t, list7, 'ss');
-
-    /** @type {'ss'} */
-    const d7 = list7.join('::');
-    t.match(d7, 'ss');
-
-    const list8 = stringList('n', 'ff', 'dd', 'ss').slice(-3);
-    testExpectedArrayValues(t, list8, 'ff', 'dd', 'ss');
-    testExpectedArrayValues(t, list8, ...['n', 'ff', 'dd', 'ss'].slice(-3));
-    testEscapingFromStringList(t, list8, 'ff', 'dd', 'ss');
-
-    /** @type {"ff::dd::ss"} */
-    const d8 = list8.join('::');
-    t.match(d8, 'ff::dd::ss');
-
-    const list9 = stringList('n', 'ff', 'dd', 'ss').slice(0, -3);
-    testExpectedArrayValues(t, list9, 'n');
-    testExpectedArrayValues(t, list9, ...['n', 'ff', 'dd', 'ss'].slice(0, -3));
-    testEscapingFromStringList(t, list9, 'n');
-
-    /** @type {"n"} */
-    const d9 = list9.join('::');
-    t.match(d9, 'n');
-
-    t.end();
-  });
-
-  t.test(type + ': all chained', (t) => {
-    const list = stringList('foo', 'bar')
-      .concat('doink', 'bleep')
-      .withPrefix('prefix.')
-      .withSuffix('.suffix')
-      .toReversed();
-
-    testExpectedArrayValues(
-      t,
-      list,
-      'prefix.bleep.suffix',
-      'prefix.doink.suffix',
-      'prefix.bar.suffix',
-      'prefix.foo.suffix',
-    );
-    testEscapingFromStringList(
-      t,
-      list,
-      'prefix.bleep.suffix',
-      'prefix.doink.suffix',
-      'prefix.bar.suffix',
-      'prefix.foo.suffix',
-    );
-
-    /** @type {"prefix.bleep.suffix::prefix.doink.suffix::prefix.bar.suffix::prefix.foo.suffix"} */
-    const d = list.join('::');
-    t.match(
-      d,
-      'prefix.bleep.suffix::prefix.doink.suffix::prefix.bar.suffix::prefix.foo.suffix',
-    );
-
-    /** @type {"prefix.bleep::prefix.doink::prefix.bar::prefix.foo"} */
-    // @ts-expect-error - Unsorted list - toSorted not supported
-    const d2 = list.toSorted().join('::');
-    t.match(
-      d2,
-      'prefix.bar.suffix::prefix.bleep.suffix::prefix.doink.suffix::prefix.foo.suffix',
-    );
-
-    t.end();
-  });
-
-  t.test(type + ': join()', (t) => {
-    /**
-     * Expected type
-     * @type {string}
-     */
-    const joinUnsorted = stringList('foo', 'bar')
-      .concat('doink', 'bleep')
-      .withPrefix('prefix.')
-      .withSuffix('.suffix')
-      .toSorted()
-      .toReversed()
-      .join('::');
-
-    t.match(
-      joinUnsorted,
-      'prefix.foo.suffix::prefix.doink.suffix::prefix.bleep.suffix::prefix.bar.suffix',
-    );
-
-    /**
-     * Expected type
-     * @type {'foo::bar'}
-     */
-    const joinSorted = stringList('foo', 'bar').join('::');
-    t.match(joinSorted, 'foo::bar');
-
-    /**
-     * Expected type
-     * @type {'foo::bar'}
-     */
-    const emptyConcat = stringList().concat('foo', 'bar').join('::');
-    t.match(emptyConcat, 'foo::bar');
-
-    /**
-     * Expected type
-     * @type {'data.foo::data.bar'}
-     */
-    const withPrefix = stringList('foo', 'bar').withPrefix('data.').join('::');
-    t.match(withPrefix, 'data.foo::data.bar');
-
-    /**
-     * Expected type
-     * @type {'foo.json::bar.json'}
-     */
-    const withSuffix = stringList('foo', 'bar').withSuffix('.json').join('::');
-    t.match(withSuffix, 'foo.json::bar.json');
-
-    /**
-     * Expected type
-     * @type {'data.foo.json::data.bar.json'}
-     */
-    const withBoth = stringList('foo', 'bar')
-      .withPrefix('data.')
-      .withSuffix('.json')
-      .join('::');
-    t.match(withBoth, 'data.foo.json::data.bar.json');
-
-    /**
-     * Expected type
-     * @type {'data.foo::data.bar::foo.json::bar.json'}
-     */
-    const listConcat = stringList()
-      .concatList(stringList('foo', 'bar').withPrefix('data.'))
-      .concatList(stringList('foo', 'bar').withSuffix('.json'))
-      .join('::');
-
-    t.match(listConcat, 'data.foo::data.bar::foo.json::bar.json');
-
-    /**
-     * Expected type
-     * @type {string}
-     */
-    const listConcatWithout = stringList()
-      .concatList(stringList('foo', 'bar').withPrefix('data.'))
-      .concatList(stringList('foo', 'bar').withSuffix('.json'))
-      .without('data.bar', 'bar.json')
-      .concat('foo', 'bar')
-      .without('bar', 'foo.json')
-      .join('::');
-    t.match(listConcatWithout, 'data.foo::foo');
-
-    /**
-     * Expected type
-     * @type {'data.foo.json::data.bar.json::foo'}
-     */
-    const stringsConcatWithout = stringList()
-      .concat('foo', 'bar')
-      .withPrefix('data.')
-      .concat('foo', 'bar')
-      .withSuffix('.json')
-      .without('data.bar', 'bar.json')
-      .concat('foo', 'bar')
-      .without('bar', 'foo.json')
-      .join('::');
-    t.match(stringsConcatWithout, 'data.foo.json::data.bar.json::foo');
-
-    /**
-     * Expected type
-     * @type {'a.z.foo::a.foo'}
-     */
-    const list = stringList('foo')
-      .withPrefix('z.')
-      .concat('foo')
-      .withPrefix('a.')
-      .join('::');
-
-    t.match(list, 'a.z.foo::a.foo');
-
-    t.end();
-  });
-
-  t.test(type + ': stringList(invalid arguments) throws', (t) => {
-    t.doesNotThrow(() => stringList(4, 'foo', ['d', 45], undefined));
-    t.end();
-  });
-
-  Object.values(ARRAY_IN_PLACE_MUTATION).forEach((el) => {
-    t.test(type + `: stringList calling function list.${el}()`, (t) => {
-      const list = stringList('foo', 'bar');
-      if (el !== 'pop') {
-        t.end();
-        return;
-      }
-      if (type === 'immutable' || type === 'immutableCjs') {
-        t.throws(
-          () =>
-            // @ts-expect-error
-            list[el](0, 0),
-          `foo'.${el} should throw in ${type} mode`,
-        );
-      } else {
-        t.doesNotThrow(
-          () =>
-            // @ts-expect-error
-            list[el](0, 0),
-          `foo'.${el} should fail`,
-        );
-      }
-      t.ok(
-        typeof list.mutable()[el] === 'function',
-        `Expected list.mutable().${el} to exists.`,
+      /** @type {"prefix.bleep.suffix::prefix.doink.suffix::prefix.bar.suffix::prefix.foo.suffix"} */
+      const d = list.join('::');
+      t.match(
+        d,
+        'prefix.bleep.suffix::prefix.doink.suffix::prefix.bar.suffix::prefix.foo.suffix',
       );
-      t.ok(
-        // @ts-expect-error
-        typeof list.mutable()[el](0, 0) !== 'undefined',
-        `Expected list.mutable().${el} to exists and return something.`,
+
+      /** @type {"prefix.bleep::prefix.doink::prefix.bar::prefix.foo"} */
+      // @ts-expect-error - Unsorted list - toSorted not supported
+      const d2 = list.toSorted().join('::');
+      t.match(
+        d2,
+        'prefix.bar.suffix::prefix.bleep.suffix::prefix.doink.suffix::prefix.foo.suffix',
       );
+
       t.end();
     });
-  });
 
-  t.test(type + ': search methods', (t) => {
-    const values = 'abcdefghij'.split('');
-    const list = stringList('foo', 'bar', 'baz')
-      .withPrefix('a.')
-      .withSuffix('.z');
+    tt.test(type + ': join()', (t) => {
+      /**
+       * Expected type
+       * @type {string}
+       */
+      const joinUnsorted = stringList('foo', 'bar')
+        .concat('doink', 'bleep')
+        .withPrefix('prefix.')
+        .withSuffix('.suffix')
+        .toSorted()
+        .toReversed()
+        .join('::');
 
-    t.ok(!list.includes('bar'));
-    t.ok(!list.includes(values[1]));
-    t.ok(!list.includes(null));
-    t.ok(!list.includes(undefined));
-    t.ok(!list.includes(0));
-    t.ok(!list.includes(/foo/i));
-    t.ok(!list.some((el) => el === values[1]));
-    t.ok(!list.some((el) => el === null));
-    t.ok(!list.some((el) => el === undefined));
-    // @ts-expect-error
-    t.ok(!list.some((el) => el === 0));
-    t.ok(list.indexOf('bar') === -1);
-    t.ok(list.indexOf(null) === -1);
-    t.ok(list.indexOf(undefined) === -1);
-    t.ok(list.indexOf(values[1]) === -1);
-    t.ok(!list.every((el) => el === values[1]));
-    t.ok(!list.every((e) => e === null));
-    t.ok(!list.every((e) => e === undefined));
-    // @ts-expect-error
-    t.ok(!list.every((e) => e === 0));
-    t.ok(!list.find((el) => el === values[1]));
-    t.ok(!list.find((el) => el === null));
-    t.ok(!list.find((el) => el === undefined));
-    // @ts-expect-error
-    t.ok(!list.find((el) => el === 0));
-    t.ok(list.findIndex((el) => el === values[1]) === -1);
-    t.ok(list.findIndex((el) => el === null) === -1);
-    t.ok(list.findIndex((el) => el === undefined) === -1);
-    // @ts-expect-error
-    t.ok(list.findIndex((el) => el === 0) === -1);
+      t.match(
+        joinUnsorted,
+        'prefix.foo.suffix::prefix.doink.suffix::prefix.bleep.suffix::prefix.bar.suffix',
+      );
 
-    t.end();
-  });
+      /**
+       * Expected type
+       * @type {'foo::bar'}
+       */
+      const joinSorted = stringList('foo', 'bar').join('::');
+      t.match(joinSorted, 'foo::bar');
 
-  t.test(type + `: toRecordType()`, (t) => {
-    const list = stringList('foo', 'bar', 'baz');
-    /** @type {Record<'foo' | 'bar' | 'baz', any[]>|Record<typeof list['infered']['Tuple'][*], any[]>} */
-    const schema = list.toRecordType('any[]', []);
-    t.match(schema, {
-      foo: [],
-      bar: [],
-      baz: [],
+      /**
+       * Expected type
+       * @type {'foo::bar'}
+       */
+      const emptyConcat = stringList().concat('foo', 'bar').join('::');
+      t.match(emptyConcat, 'foo::bar');
+
+      /**
+       * Expected type
+       * @type {'data.foo::data.bar'}
+       */
+      const withPrefix = stringList('foo', 'bar')
+        .withPrefix('data.')
+        .join('::');
+      t.match(withPrefix, 'data.foo::data.bar');
+
+      /**
+       * Expected type
+       * @type {'foo.json::bar.json'}
+       */
+      const withSuffix = stringList('foo', 'bar')
+        .withSuffix('.json')
+        .join('::');
+      t.match(withSuffix, 'foo.json::bar.json');
+
+      /**
+       * Expected type
+       * @type {'data.foo.json::data.bar.json'}
+       */
+      const withBoth = stringList('foo', 'bar')
+        .withPrefix('data.')
+        .withSuffix('.json')
+        .join('::');
+      t.match(withBoth, 'data.foo.json::data.bar.json');
+
+      /**
+       * Expected type
+       * @type {'data.foo::data.bar::foo.json::bar.json'}
+       */
+      const listConcat = stringList()
+        .concatList(stringList('foo', 'bar').withPrefix('data.'))
+        .concatList(stringList('foo', 'bar').withSuffix('.json'))
+        .join('::');
+
+      t.match(listConcat, 'data.foo::data.bar::foo.json::bar.json');
+
+      /**
+       * Expected type
+       * @type {string}
+       */
+      const listConcatWithout = stringList()
+        .concatList(stringList('foo', 'bar').withPrefix('data.'))
+        .concatList(stringList('foo', 'bar').withSuffix('.json'))
+        .without('data.bar', 'bar.json')
+        .concat('foo', 'bar')
+        .without('bar', 'foo.json')
+        .join('::');
+      t.match(listConcatWithout, 'data.foo::foo');
+
+      /**
+       * Expected type
+       * @type {'data.foo.json::data.bar.json::foo'}
+       */
+      const stringsConcatWithout = stringList()
+        .concat('foo', 'bar')
+        .withPrefix('data.')
+        .concat('foo', 'bar')
+        .withSuffix('.json')
+        .without('data.bar', 'bar.json')
+        .concat('foo', 'bar')
+        .without('bar', 'foo.json')
+        .join('::');
+      t.match(stringsConcatWithout, 'data.foo.json::data.bar.json::foo');
+
+      /**
+       * Expected type
+       * @type {'a.z.foo::a.foo'}
+       */
+      const list = stringList('foo')
+        .withPrefix('z.')
+        .concat('foo')
+        .withPrefix('a.')
+        .join('::');
+
+      t.match(list, 'a.z.foo::a.foo');
+
+      t.end();
     });
-    schema.foo = [3];
-    schema.bar = ['bar'];
-    schema.baz = [];
-    schema.foo = [{ a: 'a' }];
-    t.match(schema, {
-      foo: [{ a: 'a' }],
-      bar: ['bar'],
-      baz: [],
+
+    tt.test(type + ': stringList(invalid arguments) throws', (t) => {
+      t.doesNotThrow(() => stringList(4, 'foo', ['d', 45], undefined));
+      t.end();
     });
-    // @ts-expect-error
-    schema.bar = 'bar';
 
-    /** @type {Record<'foo' | 'bar' | 'baz', string[]>|Record<typeof list['infered']['Tuple'][*], string[]>} */
-    const schema2 = list.toRecordType('string[]', []);
-    t.match(schema2, {
-      foo: [],
-      bar: [],
-      baz: [],
+    Object.values(ARRAY_IN_PLACE_MUTATION).forEach((el) => {
+      tt.test(type + `: stringList calling function list.${el}()`, (t) => {
+        const list = stringList('foo', 'bar');
+        if (el !== 'pop') {
+          t.end();
+          return;
+        }
+        if (
+          type === 'immutable' ||
+          type === 'immutableCjs' ||
+          type === 'immutableMin'
+        ) {
+          t.throws(
+            () =>
+              // @ts-expect-error
+              list[el](0, 0),
+            `foo'.${el} should throw in ${type} mode`,
+          );
+        } else {
+          t.doesNotThrow(
+            () =>
+              // @ts-expect-error
+              list[el](0, 0),
+            `foo'.${el} should fail`,
+          );
+        }
+        t.ok(
+          typeof list.mutable()[el] === 'function',
+          `Expected list.mutable().${el} to exists.`,
+        );
+        t.ok(
+          // @ts-expect-error
+          typeof list.mutable()[el](0, 0) !== 'undefined',
+          `Expected list.mutable().${el} to exists and return something.`,
+        );
+        t.end();
+      });
     });
-    schema2.foo = ['bar'];
-    t.match(schema2, {
-      foo: ['bar'],
-      bar: [],
-      baz: [],
+
+    tt.test(type + ': search methods', (t) => {
+      const values = 'abcdefghij'.split('');
+      const list = stringList('foo', 'bar', 'baz')
+        .withPrefix('a.')
+        .withSuffix('.z');
+
+      t.ok(!list.includes('bar'));
+      t.ok(!list.includes(values[1]));
+      t.ok(!list.includes(null));
+      t.ok(!list.includes(undefined));
+      t.ok(!list.includes(0));
+      t.ok(!list.includes(/foo/i));
+      t.ok(!list.some((el) => el === values[1]));
+      t.ok(!list.some((el) => el === null));
+      t.ok(!list.some((el) => el === undefined));
+      // @ts-expect-error
+      t.ok(!list.some((el) => el === 0));
+      t.ok(list.indexOf('bar') === -1);
+      t.ok(list.indexOf(null) === -1);
+      t.ok(list.indexOf(undefined) === -1);
+      t.ok(list.indexOf(values[1]) === -1);
+      t.ok(!list.every((el) => el === values[1]));
+      t.ok(!list.every((e) => e === null));
+      t.ok(!list.every((e) => e === undefined));
+      // @ts-expect-error
+      t.ok(!list.every((e) => e === 0));
+      t.ok(!list.find((el) => el === values[1]));
+      t.ok(!list.find((el) => el === null));
+      t.ok(!list.find((el) => el === undefined));
+      // @ts-expect-error
+      t.ok(!list.find((el) => el === 0));
+      t.ok(list.findIndex((el) => el === values[1]) === -1);
+      t.ok(list.findIndex((el) => el === null) === -1);
+      t.ok(list.findIndex((el) => el === undefined) === -1);
+      // @ts-expect-error
+      t.ok(list.findIndex((el) => el === 0) === -1);
+
+      t.end();
     });
-    // @ts-expect-error
-    schema2.bar = [3];
-    // @ts-expect-error
-    schema2.bar = 'bar';
 
-    /** @type {Record<'foo' | 'bar' | 'baz', string>|Record<typeof list['infered']['Tuple'][*], string>} */
-    const schema3 = list.toRecordType('string', null);
-    t.match(schema3, {
-      foo: null,
-      bar: null,
-      baz: null,
-    });
-    schema3.foo = 'bar';
-    schema3.baz = undefined;
-    t.match(schema3, {
-      foo: 'bar',
-      bar: null,
-      baz: undefined,
-    });
-    // @ts-expect-error
-    schema3.bar = 3;
-    // @ts-expect-error
-    schema3.baz = [];
+    tt.test(type + `: toRecordType()`, (t) => {
+      const list = stringList('foo', 'bar', 'baz');
+      /** @type {Record<'foo' | 'bar' | 'baz', any[]>|Record<typeof list['infered']['Tuple'][*], any[]>} */
+      const schema = list.toRecordType('any[]', []);
+      t.match(schema, {
+        foo: [],
+        bar: [],
+        baz: [],
+      });
+      schema.foo = [3];
+      schema.bar = ['bar'];
+      schema.baz = [];
+      schema.foo = [{ a: 'a' }];
+      t.match(schema, {
+        foo: [{ a: 'a' }],
+        bar: ['bar'],
+        baz: [],
+      });
+      // @ts-expect-error
+      schema.bar = 'bar';
 
-    const schemaBase = stringList('id', 'created', 'changed').toRecordType(
-      'number',
-      null,
-    );
-    const schemaTags = stringList(
-      'keywords',
-      'categories',
-      'hashtags',
-    ).toRecordType('string[]', []);
+      /** @type {Record<'foo' | 'bar' | 'baz', string[]>|Record<typeof list['infered']['Tuple'][*], string[]>} */
+      const schema2 = list.toRecordType('string[]', []);
+      t.match(schema2, {
+        foo: [],
+        bar: [],
+        baz: [],
+      });
+      schema2.foo = ['bar'];
+      t.match(schema2, {
+        foo: ['bar'],
+        bar: [],
+        baz: [],
+      });
+      // @ts-expect-error
+      schema2.bar = [3];
+      // @ts-expect-error
+      schema2.bar = 'bar';
 
-    const schemaAuthor = stringList('name', 'email').toRecordType(
-      'string',
-      null,
-    );
+      /** @type {Record<'foo' | 'bar' | 'baz', string>|Record<typeof list['infered']['Tuple'][*], string>} */
+      const schema3 = list.toRecordType('string', null);
+      t.match(schema3, {
+        foo: null,
+        bar: null,
+        baz: null,
+      });
+      schema3.foo = 'bar';
+      schema3.baz = undefined;
+      t.match(schema3, {
+        foo: 'bar',
+        bar: null,
+        baz: undefined,
+      });
+      // @ts-expect-error
+      schema3.bar = 3;
+      // @ts-expect-error
+      schema3.baz = [];
 
-    const entity = stringList('published', 'deleted').toRecordType(
-      'boolean',
-      false,
-      schemaBase,
-      schemaTags,
-      stringList('author').toRecordValue(schemaAuthor),
-    );
-    t.match(entity, {
-      id: null,
-      created: null,
-      changed: null,
-      keywords: [],
-      categories: [],
-      hashtags: [],
-      published: false,
-      deleted: false,
-      author: {
-        name: null,
-        email: null,
-      },
-    });
-    entity.id = 3;
-    entity.deleted = true;
-    entity.created = 1;
-    entity.changed = 2;
-    entity.keywords = ['a'];
-    entity.categories = ['b'];
-    entity.hashtags = ['#c', '#d'];
-    entity.published = true;
-    entity.author.name = 'name';
-    entity.author.email = 'email';
-    t.match(entity, {
-      id: 3,
-      created: 1,
-      changed: 2,
-      keywords: ['a'],
-      categories: ['b'],
-      hashtags: ['#c', '#d'],
-      published: true,
-      deleted: true,
-      author: {
-        name: 'name',
-        email: 'email',
-      },
-    });
-    // @ts-expect-error
-    entity.tags = [];
-    // @ts-expect-error
-    entity.id = 'id';
-    // @ts-expect-error
-    entity.keywords = [3];
-    // @ts-expect-error
-    entity.created = true;
-    // @ts-expect-error
-    entity.keywords = 'a';
-    // @ts-expect-error
-    entity.author.name = 3;
-    // @ts-expect-error
-    entity.author = {};
-    // @ts-expect-error
-    entity.author.email = { email: 'email' };
-    entity.author = null;
+      const schemaBase = stringList('id', 'created', 'changed').toRecordType(
+        'number',
+        null,
+      );
+      const schemaTags = stringList(
+        'keywords',
+        'categories',
+        'hashtags',
+      ).toRecordType('string[]', []);
 
-    const schemaBASE = stringList('id', 'created', 'changed')
-      .toUpperCase()
-      .toRecordType('number', null);
-    const schemaTAGS = stringList('keywords', 'categories', 'hashtags')
-      .toUpperCase()
-      .toRecordType('string[]', []);
+      const schemaAuthor = stringList('name', 'email').toRecordType(
+        'string',
+        null,
+      );
 
-    const schemaAUTHOR = stringList('name', 'email')
-      .toUpperCase()
-      .toRecordType('string', null);
-
-    const ENTITY = stringList('published', 'deleted')
-      .toUpperCase()
-      .toRecordType(
+      const entity = stringList('published', 'deleted').toRecordType(
         'boolean',
         false,
-        schemaBASE,
-        schemaTAGS,
-        stringList('AUTHOR').toRecordValue(schemaAUTHOR),
+        schemaBase,
+        schemaTags,
+        stringList('author').toRecordValue(schemaAuthor),
       );
-    t.match(ENTITY, {
-      ID: null,
-      CREATED: null,
-      CHANGED: null,
-      KEYWORDS: [],
-      CATEGORIES: [],
-      HASHTAGS: [],
-      PUBLISHED: false,
-      DELETED: false,
-      AUTHOR: {
-        NAME: null,
-        EMAIL: null,
-      },
+      t.match(entity, {
+        id: null,
+        created: null,
+        changed: null,
+        keywords: [],
+        categories: [],
+        hashtags: [],
+        published: false,
+        deleted: false,
+        author: {
+          name: null,
+          email: null,
+        },
+      });
+      entity.id = 3;
+      entity.deleted = true;
+      entity.created = 1;
+      entity.changed = 2;
+      entity.keywords = ['a'];
+      entity.categories = ['b'];
+      entity.hashtags = ['#c', '#d'];
+      entity.published = true;
+      entity.author.name = 'name';
+      entity.author.email = 'email';
+      t.match(entity, {
+        id: 3,
+        created: 1,
+        changed: 2,
+        keywords: ['a'],
+        categories: ['b'],
+        hashtags: ['#c', '#d'],
+        published: true,
+        deleted: true,
+        author: {
+          name: 'name',
+          email: 'email',
+        },
+      });
+      // @ts-expect-error
+      entity.tags = [];
+      // @ts-expect-error
+      entity.id = 'id';
+      // @ts-expect-error
+      entity.keywords = [3];
+      // @ts-expect-error
+      entity.created = true;
+      // @ts-expect-error
+      entity.keywords = 'a';
+      // @ts-expect-error
+      entity.author.name = 3;
+      // @ts-expect-error
+      entity.author = {};
+      // @ts-expect-error
+      entity.author.email = { email: 'email' };
+      entity.author = null;
+
+      const schemaBASE = stringList('id', 'created', 'changed')
+        .toUpperCase()
+        .toRecordType('number', null);
+      const schemaTAGS = stringList('keywords', 'categories', 'hashtags')
+        .toUpperCase()
+        .toRecordType('string[]', []);
+
+      const schemaAUTHOR = stringList('name', 'email')
+        .toUpperCase()
+        .toRecordType('string', null);
+
+      const ENTITY = stringList('published', 'deleted')
+        .toUpperCase()
+        .toRecordType(
+          'boolean',
+          false,
+          schemaBASE,
+          schemaTAGS,
+          stringList('AUTHOR').toRecordValue(schemaAUTHOR),
+        );
+      t.match(ENTITY, {
+        ID: null,
+        CREATED: null,
+        CHANGED: null,
+        KEYWORDS: [],
+        CATEGORIES: [],
+        HASHTAGS: [],
+        PUBLISHED: false,
+        DELETED: false,
+        AUTHOR: {
+          NAME: null,
+          EMAIL: null,
+        },
+      });
+
+      t.end();
     });
 
-    t.end();
-  });
+    tt.test(type + `: toRecordValue()`, (t) => {
+      const list = stringList('foo', 'bar', 'baz');
+      /** @type {Record<'foo' | 'bar' | 'baz', any[]>|Record<typeof list['infered']['Tuple'][*], any[]>} */
+      const schema = list.toRecordValue([]);
+      t.match(schema, {
+        foo: [],
+        bar: [],
+        baz: [],
+      });
+      schema.foo = [3];
+      schema.bar = ['bar'];
+      schema.baz = [];
+      schema.foo = [{ a: 'a' }];
+      t.match(schema, {
+        foo: [{ a: 'a' }],
+        bar: ['bar'],
+        baz: [],
+      });
+      // @ts-expect-error
+      schema.bar = 'bar';
 
-  t.test(type + `: toRecordValue()`, (t) => {
-    const list = stringList('foo', 'bar', 'baz');
-    /** @type {Record<'foo' | 'bar' | 'baz', any[]>|Record<typeof list['infered']['Tuple'][*], any[]>} */
-    const schema = list.toRecordValue([]);
-    t.match(schema, {
-      foo: [],
-      bar: [],
-      baz: [],
+      /** @type {string[]} */
+      const initial2 = [];
+      /** @type {Record<'foo' | 'bar' | 'baz', string[]>|Record<typeof list['infered']['Tuple'][*], string[]>} */
+      const schema2 = list.toRecordValue(initial2);
+      t.match(schema2, {
+        foo: [],
+        bar: [],
+        baz: [],
+      });
+      schema2.foo = ['bar'];
+      t.match(schema2, {
+        foo: ['bar'],
+        bar: [],
+        baz: [],
+      });
+      // @ts-expect-error
+      schema2.bar = [3];
+      // @ts-expect-error
+      schema2.bar = 'bar';
+
+      /** @type {string} */
+      const initial3 = null;
+      /** @type {Record<'foo' | 'bar' | 'baz', string>|Record<typeof list['infered']['Tuple'][*], string>} */
+      const schema3 = list.toRecordValue(initial3);
+      t.match(schema3, {
+        foo: null,
+        bar: null,
+        baz: null,
+      });
+      schema3.foo = 'bar';
+      schema3.baz = undefined;
+      t.match(schema3, {
+        foo: 'bar',
+        bar: null,
+        baz: undefined,
+      });
+      // @ts-expect-error
+      schema3.bar = 3;
+      // @ts-expect-error
+      schema3.baz = [];
+
+      /** @type {number} */
+      const initialBase = null;
+      const schemaBase = stringList('id', 'created', 'changed').toRecordValue(
+        initialBase,
+      );
+      /** @type {string[]} */
+      const initialTags = [];
+      const schemaTags = stringList(
+        'keywords',
+        'categories',
+        'hashtags',
+      ).toRecordValue(initialTags);
+
+      const entity = stringList('published', 'deleted').toRecordValue(
+        false,
+        schemaBase,
+        schemaTags,
+      );
+      t.match(entity, {
+        id: null,
+        created: null,
+        changed: null,
+        keywords: [],
+        categories: [],
+        hashtags: [],
+        published: false,
+        deleted: false,
+      });
+      entity.id = 3;
+      entity.deleted = true;
+      entity.created = 1;
+      entity.changed = 2;
+      entity.keywords = ['a'];
+      entity.categories = ['b'];
+      entity.hashtags = ['#c', '#d'];
+      entity.published = true;
+      t.match(entity, {
+        id: 3,
+        created: 1,
+        changed: 2,
+        keywords: ['a'],
+        categories: ['b'],
+        hashtags: ['#c', '#d'],
+        published: true,
+        deleted: true,
+      });
+      // @ts-expect-error
+      entity.tags = [];
+      // @ts-expect-error
+      entity.id = 'id';
+      // @ts-expect-error
+      entity.keywords = [3];
+      // @ts-expect-error
+      entity.created = true;
+      // @ts-expect-error
+      entity.keywords = 'a';
+
+      t.end();
     });
-    schema.foo = [3];
-    schema.bar = ['bar'];
-    schema.baz = [];
-    schema.foo = [{ a: 'a' }];
-    t.match(schema, {
-      foo: [{ a: 'a' }],
-      bar: ['bar'],
-      baz: [],
+
+    tt.test(type + ': toLowerCase()', (t) => {
+      const list = stringList('Foo', 'Bar').toLowerCase();
+      testExpectedArrayValues(t, list, 'foo', 'bar');
+      testEscapingFromStringList(t, list, 'foo', 'bar');
+      t.end();
     });
-    // @ts-expect-error
-    schema.bar = 'bar';
 
-    /** @type {string[]} */
-    const initial2 = [];
-    /** @type {Record<'foo' | 'bar' | 'baz', string[]>|Record<typeof list['infered']['Tuple'][*], string[]>} */
-    const schema2 = list.toRecordValue(initial2);
-    t.match(schema2, {
-      foo: [],
-      bar: [],
-      baz: [],
+    tt.test(type + ': toUpperCase()', (t) => {
+      const list = stringList('foo', 'bar').toUpperCase();
+      testExpectedArrayValues(t, list, 'FOO', 'BAR');
+      testEscapingFromStringList(t, list, 'FOO', 'BAR');
+      t.end();
     });
-    schema2.foo = ['bar'];
-    t.match(schema2, {
-      foo: ['bar'],
-      bar: [],
-      baz: [],
+
+    tt.test(type + ': toCapitalize()', (t) => {
+      const list = stringList('foo zi', 'bar').toCapitalize();
+      testExpectedArrayValues(t, list, 'Foo Zi', 'Bar');
+      testEscapingFromStringList(t, list, 'Foo Zi', 'Bar');
+
+      /** @type {'Foo Zi::Bar'} */
+      const d = list.join('::');
+      t.match(d, 'Foo Zi::Bar');
+      t.end();
     });
-    // @ts-expect-error
-    schema2.bar = [3];
-    // @ts-expect-error
-    schema2.bar = 'bar';
 
-    /** @type {string} */
-    const initial3 = null;
-    /** @type {Record<'foo' | 'bar' | 'baz', string>|Record<typeof list['infered']['Tuple'][*], string>} */
-    const schema3 = list.toRecordValue(initial3);
-    t.match(schema3, {
-      foo: null,
-      bar: null,
-      baz: null,
+    tt.test(type + ': toUnCapitalize()', (t) => {
+      const list = stringList('Foo ZIiWa', 'BarBare').toUnCapitalize();
+      testExpectedArrayValues(t, list, 'foo zIiWa', 'barBare');
+      testEscapingFromStringList(t, list, 'foo zIiWa', 'barBare');
+
+      /** @type {'foo zIiWa::barBare'} */
+      const d = list.join('::');
+      t.match(d, 'foo zIiWa::barBare');
+      t.end();
     });
-    schema3.foo = 'bar';
-    schema3.baz = undefined;
-    t.match(schema3, {
-      foo: 'bar',
-      bar: null,
-      baz: undefined,
+
+    tt.test(type + ': toSpliced()', (t) => {
+      const list = stringList('foo', 'bar', 'baz').toSpliced(2, 1);
+      testExpectedArrayValues(t, list, 'foo', 'bar');
+      testExpectedArrayValues(
+        t,
+        list,
+        ...['foo', 'bar', 'baz'].toSpliced(2, 1),
+      );
+      testEscapingFromStringList(t, list, 'foo', 'bar');
+
+      /** @type {'foo::bar'} */
+      const d = list.join('::');
+      t.match(d, 'foo::bar');
+
+      const list2 = stringList('foo', 'bar', 'baz').toSpliced(0, 2);
+      testExpectedArrayValues(t, list2, 'baz');
+      testExpectedArrayValues(
+        t,
+        list2,
+        ...['foo', 'bar', 'baz'].toSpliced(0, 2),
+      );
+      testEscapingFromStringList(t, list2, 'baz');
+
+      /** @type {'baz'} */
+      const d2 = list2.join('::');
+      t.match(d2, 'baz');
+
+      const list3 = stringList('foo', 'bar', 'baz').toSpliced(0, 0);
+      testExpectedArrayValues(t, list3, 'foo', 'bar', 'baz');
+      testExpectedArrayValues(
+        t,
+        list3,
+        ...['foo', 'bar', 'baz'].toSpliced(0, 0),
+      );
+      testEscapingFromStringList(t, list3, 'foo', 'bar', 'baz');
+
+      /** @type {'foo::bar::baz'} */
+      const d3 = list3.join('::');
+      t.match(d3, 'foo::bar::baz');
+
+      const list4 = stringList('foo', 'bar', 'baz').toSpliced(3, 1);
+      testExpectedArrayValues(t, list4, 'foo', 'bar', 'baz');
+      testExpectedArrayValues(
+        t,
+        list4,
+        ...['foo', 'bar', 'baz'].toSpliced(3, 1),
+      );
+      testEscapingFromStringList(t, list4, 'foo', 'bar', 'baz');
+
+      /** @type {'foo::bar::baz'} */
+      const d4 = list4.join('::');
+      t.match(d4, 'foo::bar::baz');
+
+      const list5 = stringList('foo', 'bar', 'baz').toSpliced(-3, 1);
+      testExpectedArrayValues(t, list5, 'bar', 'baz');
+      testExpectedArrayValues(
+        t,
+        list5,
+        ...['foo', 'bar', 'baz'].toSpliced(-3, 1),
+      );
+      testEscapingFromStringList(t, list5, 'bar', 'baz');
+
+      /** @type {'bar::baz'} */
+      const d5 = list5.join('::');
+      t.match(d5, 'bar::baz');
+
+      const list6 = stringList('foo', 'bar', 'baz').toSpliced(1);
+      testExpectedArrayValues(t, list6, 'foo');
+      testExpectedArrayValues(t, list6, ...['foo', 'bar', 'baz'].toSpliced(1));
+      testEscapingFromStringList(t, list6, 'foo');
+
+      /** @type {'foo'} */
+      const d6 = list6.join('::');
+      t.match(d6, 'foo');
+
+      const list7 = stringList('foo', 'bar', 'baz').toSpliced(null);
+      testExpectedArrayValues(t, list7);
+      testExpectedArrayValues(
+        t,
+        list7,
+        ...['foo', 'bar', 'baz'].toSpliced(null),
+      );
+      testEscapingFromStringList(t, list7);
+
+      /** @type {''} */
+      const d7 = list7.join('::');
+      t.match(d7, '');
+
+      t.end();
     });
-    // @ts-expect-error
-    schema3.bar = 3;
-    // @ts-expect-error
-    schema3.baz = [];
 
-    /** @type {number} */
-    const initialBase = null;
-    const schemaBase = stringList('id', 'created', 'changed').toRecordValue(
-      initialBase,
-    );
-    /** @type {string[]} */
-    const initialTags = [];
-    const schemaTags = stringList(
-      'keywords',
-      'categories',
-      'hashtags',
-    ).toRecordValue(initialTags);
+    tt.test(type + ': toSpliced(...string[])', (t) => {
+      const list = stringList('foo', 'bar', 'baz').toSpliced(
+        0,
+        2,
+        'doink',
+        'bleep',
+      );
+      testExpectedArrayValues(t, list, 'doink', 'bleep', 'baz');
+      testExpectedArrayValues(
+        t,
+        list,
+        ...['foo', 'bar', 'baz'].toSpliced(0, 2, 'doink', 'bleep'),
+      );
+      testEscapingFromStringList(t, list, 'doink', 'bleep', 'baz');
 
-    const entity = stringList('published', 'deleted').toRecordValue(
-      false,
-      schemaBase,
-      schemaTags,
-    );
-    t.match(entity, {
-      id: null,
-      created: null,
-      changed: null,
-      keywords: [],
-      categories: [],
-      hashtags: [],
-      published: false,
-      deleted: false,
+      /** @type {'doink::bleep::baz'} */
+      const d = list.join('::');
+      t.match(d, 'doink::bleep::baz');
+
+      const list2 = stringList('foo', 'bar', 'baz').toSpliced(0, 0, 'bleep');
+      testExpectedArrayValues(t, list2, 'bleep', 'foo', 'bar', 'baz');
+      testExpectedArrayValues(
+        t,
+        list2,
+        ...['foo', 'bar', 'baz'].toSpliced(0, 0, 'bleep'),
+      );
+      testEscapingFromStringList(t, list2, 'bleep', 'foo', 'bar', 'baz');
+
+      /** @type {'bleep::foo::bar::baz'} */
+      const d2 = list2.join('::');
+      t.match(d2, 'bleep::foo::bar::baz');
+
+      const list3 = stringList('foo', 'bar', 'baz').toSpliced(3, 1, 'doink');
+      testExpectedArrayValues(t, list3, 'foo', 'bar', 'baz', 'doink');
+      testExpectedArrayValues(
+        t,
+        list3,
+        ...['foo', 'bar', 'baz'].toSpliced(3, 1, 'doink'),
+      );
+      testEscapingFromStringList(t, list3, 'foo', 'bar', 'baz', 'doink');
+
+      /** @type {'foo::bar::baz::doink'} */
+      const d3 = list3.join('::');
+      t.match(d3, 'foo::bar::baz::doink');
+
+      const list4 = stringList('foo', 'bar', 'baz').toSpliced(2, 0, 'doink');
+      testExpectedArrayValues(t, list4, 'foo', 'bar', 'doink', 'baz');
+      testExpectedArrayValues(
+        t,
+        list4,
+        ...['foo', 'bar', 'baz'].toSpliced(2, 0, 'doink'),
+      );
+      testEscapingFromStringList(t, list4, 'foo', 'bar', 'doink', 'baz');
+
+      /** @type {'foo::bar::doink::baz'} */
+      const d4 = list4.join('::');
+      t.match(d4, 'foo::bar::doink::baz');
+
+      const list5 = stringList('foo', 'bar', 'baz').toSpliced(3, 0, 'doink');
+      testExpectedArrayValues(t, list5, 'foo', 'bar', 'baz', 'doink');
+      testExpectedArrayValues(
+        t,
+        list5,
+        ...['foo', 'bar', 'baz'].toSpliced(3, 0, 'doink'),
+      );
+      testEscapingFromStringList(t, list5, 'foo', 'bar', 'baz', 'doink');
+
+      /** @type {'foo::bar::baz::doink'} */
+      const d5 = list5.join('::');
+      t.match(d5, 'foo::bar::baz::doink');
+
+      t.end();
     });
-    entity.id = 3;
-    entity.deleted = true;
-    entity.created = 1;
-    entity.changed = 2;
-    entity.keywords = ['a'];
-    entity.categories = ['b'];
-    entity.hashtags = ['#c', '#d'];
-    entity.published = true;
-    t.match(entity, {
-      id: 3,
-      created: 1,
-      changed: 2,
-      keywords: ['a'],
-      categories: ['b'],
-      hashtags: ['#c', '#d'],
-      published: true,
-      deleted: true,
-    });
-    // @ts-expect-error
-    entity.tags = [];
-    // @ts-expect-error
-    entity.id = 'id';
-    // @ts-expect-error
-    entity.keywords = [3];
-    // @ts-expect-error
-    entity.created = true;
-    // @ts-expect-error
-    entity.keywords = 'a';
 
-    t.end();
-  });
+    tt.test(type + ': toSpliced(0)', (t) => {
+      const list = stringList('foo', 'bar', 'baz').toSpliced(0);
+      testExpectedArrayValues(t, list);
+      testExpectedArrayValues(t, list, ...['foo', 'bar', 'baz'].toSpliced(0));
+      testEscapingFromStringList(t, list);
 
-  t.test(type + ': toLowerCase()', (t) => {
-    const list = stringList('Foo', 'Bar').toLowerCase();
-    testExpectedArrayValues(t, list, 'foo', 'bar');
-    testEscapingFromStringList(t, list, 'foo', 'bar');
-    t.end();
-  });
+      /** @type {''} */
+      const d = list.join('::');
+      t.match(d, '');
 
-  t.test(type + ': toUpperCase()', (t) => {
-    const list = stringList('foo', 'bar').toUpperCase();
-    testExpectedArrayValues(t, list, 'FOO', 'BAR');
-    testEscapingFromStringList(t, list, 'FOO', 'BAR');
-    t.end();
-  });
+      const list2 = stringList('foo', 'bar', 'baz').toSpliced(3);
+      testExpectedArrayValues(t, list2, 'foo', 'bar', 'baz');
+      testExpectedArrayValues(t, list2, ...['foo', 'bar', 'baz'].toSpliced(3));
+      testEscapingFromStringList(t, list2, 'foo', 'bar', 'baz');
 
-  t.test(type + ': toCapitalize()', (t) => {
-    const list = stringList('foo zi', 'bar').toCapitalize();
-    testExpectedArrayValues(t, list, 'Foo Zi', 'Bar');
-    testEscapingFromStringList(t, list, 'Foo Zi', 'Bar');
+      /** @type {'foo::bar::baz'} */
+      const d2 = list2.join('::');
+      t.match(d2, 'foo::bar::baz');
 
-    /** @type {'Foo Zi::Bar'} */
-    const d = list.join('::');
-    t.match(d, 'Foo Zi::Bar');
-    t.end();
-  });
+      const list3 = stringList('foo', 'bar', 'baz').toSpliced(-3, 6);
+      testExpectedArrayValues(t, list3);
+      testExpectedArrayValues(
+        t,
+        list3,
+        ...['foo', 'bar', 'baz'].toSpliced(-3, 6),
+      );
+      testEscapingFromStringList(t, list3);
 
-  t.test(type + ': toUnCapitalize()', (t) => {
-    const list = stringList('Foo ZIiWa', 'BarBare').toUnCapitalize();
-    testExpectedArrayValues(t, list, 'foo zIiWa', 'barBare');
-    testEscapingFromStringList(t, list, 'foo zIiWa', 'barBare');
+      /** @type {''} */
+      const d3 = list3.join('::');
+      t.match(d3, '');
 
-    /** @type {'foo zIiWa::barBare'} */
-    const d = list.join('::');
-    t.match(d, 'foo zIiWa::barBare');
-    t.end();
-  });
+      const list4 = stringList('foo', 'bar', 'baz').toSpliced(0, -2, 'doink');
+      testExpectedArrayValues(t, list4, 'doink', 'foo', 'bar', 'baz');
+      testExpectedArrayValues(
+        t,
+        list4,
+        ...['foo', 'bar', 'baz'].toSpliced(0, -2, 'doink'),
+      );
+      testEscapingFromStringList(t, list4, 'doink', 'foo', 'bar', 'baz');
 
-  t.test(type + ': toPascalCase()', (t) => {
-    const list = stringList('foo_bar', 'barFoo.', " l'ananas ").toPascalCase();
-    testExpectedArrayValues(t, list, 'FooBar', 'BarFoo', 'Lananas');
-    testEscapingFromStringList(t, list, 'FooBar', 'BarFoo', 'Lananas');
+      /** @type {'doink::foo::bar::baz'} */
+      const d4 = list4.join('::');
+      t.match(d4, 'doink::foo::bar::baz');
 
-    /** @type {'FooBar::BarFoo::Lananas'} */
-    const d = list.join('::');
-    t.match(d, 'FooBar::BarFoo::Lananas');
-    t.end();
-  });
+      const list5 = stringList('foo', 'bar', 'baz').toSpliced(3, -2, 'doink');
+      testExpectedArrayValues(t, list5, 'foo', 'bar', 'baz', 'doink');
+      testExpectedArrayValues(
+        t,
+        list5,
+        ...['foo', 'bar', 'baz'].toSpliced(3, -2, 'doink'),
+      );
+      testEscapingFromStringList(t, list5, 'foo', 'bar', 'baz', 'doink');
 
-  t.test(type + ': toCamelCase()', (t) => {
-    const list = stringList(
-      'fo...o_bar',
-      'bar_foo',
-      " l'ananas ",
-    ).toCamelCase();
-    testExpectedArrayValues(t, list, 'foOBar', 'barFoo', 'lananas');
-    testEscapingFromStringList(t, list, 'foOBar', 'barFoo', 'lananas');
+      /** @type {'foo::bar::baz::doink'} */
+      const d5 = list5.join('::');
+      t.match(d5, 'foo::bar::baz::doink');
 
-    /** @type {'foOBar::barFoo::lananas'} */
-    const d = list.join('::');
-    t.match(d, 'foOBar::barFoo::lananas');
+      const list6 = stringList().toSpliced(-3, -2, 'doink');
+      testExpectedArrayValues(t, list6, 'doink');
+      testExpectedArrayValues(t, list6, ...[].toSpliced(-3, -2, 'doink'));
+      testEscapingFromStringList(t, list6, 'doink');
 
-    t.end();
-  });
+      /** @type {'doink'} */
+      const d6 = list6.join('::');
+      t.match(d6, 'doink');
 
-  t.test(type + ': toSnakeCase()', (t) => {
-    const list = stringList('fooBa.r', 'BarFoo', "l'ananas ").toSnakeCase();
-    testExpectedArrayValues(t, list, 'foo_ba_r', 'bar_foo', 'lananas');
-    testEscapingFromStringList(t, list, 'foo_ba_r', 'bar_foo', 'lananas');
+      const list7 = stringList('foo', 'bar', 'baz').toSpliced(
+        0,
+        undefined,
+        'd',
+      );
+      testExpectedArrayValues(t, list7, 'd', 'foo', 'bar', 'baz');
+      testExpectedArrayValues(
+        t,
+        list7,
+        ...['foo', 'bar', 'baz'].toSpliced(0, undefined, 'd'),
+      );
+      testEscapingFromStringList(t, list7, 'd', 'foo', 'bar', 'baz');
 
-    /** @type {'foo_ba_r::bar_foo::lananas'} */
-    const d = list.join('::');
-    t.match(d, 'foo_ba_r::bar_foo::lananas');
+      /** @type {'d::foo::bar::baz'} */
+      const d7 = list7.join('::');
+      t.match(d7, 'd::foo::bar::baz');
 
-    t.end();
-  });
+      const list8 = stringList('d', 'd', 'd', 'd').toSpliced(-3, 2, 'doink');
+      testExpectedArrayValues(t, list8, 'd', 'doink', 'd');
+      testExpectedArrayValues(
+        t,
+        list8,
+        ...['d', 'd', 'd', 'd'].toSpliced(-3, 2, 'doink'),
+      );
+      testEscapingFromStringList(t, list8, 'd', 'doink', 'd');
 
-  t.test(type + ': toSpliced()', (t) => {
-    const list = stringList('foo', 'bar', 'baz').toSpliced(2, 1);
-    testExpectedArrayValues(t, list, 'foo', 'bar');
-    testExpectedArrayValues(t, list, ...['foo', 'bar', 'baz'].toSpliced(2, 1));
-    testEscapingFromStringList(t, list, 'foo', 'bar');
+      /** @type {'d::doink::d'} */
+      const d8 = list8.join('::');
+      t.match(d8, 'd::doink::d');
 
-    /** @type {'foo::bar'} */
-    const d = list.join('::');
-    t.match(d, 'foo::bar');
+      const list9 = stringList('d', 'd', 'd', 'd').toSpliced(
+        -2,
+        1,
+        'doink',
+        'doank',
+      );
+      testExpectedArrayValues(t, list9, 'd', 'd', 'doink', 'doank', 'd');
+      testExpectedArrayValues(
+        t,
+        list9,
+        ...['d', 'd', 'd', 'd'].toSpliced(-2, 1, 'doink', 'doank'),
+      );
+      testEscapingFromStringList(t, list9, 'd', 'd', 'doink', 'doank', 'd');
 
-    const list2 = stringList('foo', 'bar', 'baz').toSpliced(0, 2);
-    testExpectedArrayValues(t, list2, 'baz');
-    testExpectedArrayValues(t, list2, ...['foo', 'bar', 'baz'].toSpliced(0, 2));
-    testEscapingFromStringList(t, list2, 'baz');
+      /** @type {'d::d::doink::doank::d'} */
+      const d9 = list9.join('::');
+      t.match(d9, 'd::d::doink::doank::d');
 
-    /** @type {'baz'} */
-    const d2 = list2.join('::');
-    t.match(d2, 'baz');
+      const list10 = stringList('d', 'd', 'd', 'd').toSpliced(
+        -3,
+        -2,
+        'doink',
+        'doank',
+      );
+      testExpectedArrayValues(t, list10, 'd', 'doink', 'doank', 'd', 'd', 'd');
+      testExpectedArrayValues(
+        t,
+        list10,
+        ...['d', 'd', 'd', 'd'].toSpliced(-3, -2, 'doink', 'doank'),
+      );
+      testEscapingFromStringList(
+        t,
+        list10,
+        'd',
+        'doink',
+        'doank',
+        'd',
+        'd',
+        'd',
+      );
 
-    const list3 = stringList('foo', 'bar', 'baz').toSpliced(0, 0);
-    testExpectedArrayValues(t, list3, 'foo', 'bar', 'baz');
-    testExpectedArrayValues(t, list3, ...['foo', 'bar', 'baz'].toSpliced(0, 0));
-    testEscapingFromStringList(t, list3, 'foo', 'bar', 'baz');
+      /** @type {'d::doink::doank::d::d::d'} */
+      const d10 = list10.join('::');
+      t.match(d10, 'd::doink::doank::d::d::d');
 
-    /** @type {'foo::bar::baz'} */
-    const d3 = list3.join('::');
-    t.match(d3, 'foo::bar::baz');
-
-    const list4 = stringList('foo', 'bar', 'baz').toSpliced(3, 1);
-    testExpectedArrayValues(t, list4, 'foo', 'bar', 'baz');
-    testExpectedArrayValues(t, list4, ...['foo', 'bar', 'baz'].toSpliced(3, 1));
-    testEscapingFromStringList(t, list4, 'foo', 'bar', 'baz');
-
-    /** @type {'foo::bar::baz'} */
-    const d4 = list4.join('::');
-    t.match(d4, 'foo::bar::baz');
-
-    const list5 = stringList('foo', 'bar', 'baz').toSpliced(-3, 1);
-    testExpectedArrayValues(t, list5, 'bar', 'baz');
-    testExpectedArrayValues(
-      t,
-      list5,
-      ...['foo', 'bar', 'baz'].toSpliced(-3, 1),
-    );
-    testEscapingFromStringList(t, list5, 'bar', 'baz');
-
-    /** @type {'bar::baz'} */
-    const d5 = list5.join('::');
-    t.match(d5, 'bar::baz');
-
-    const list6 = stringList('foo', 'bar', 'baz').toSpliced(1);
-    testExpectedArrayValues(t, list6, 'foo');
-    testExpectedArrayValues(t, list6, ...['foo', 'bar', 'baz'].toSpliced(1));
-    testEscapingFromStringList(t, list6, 'foo');
-
-    /** @type {'foo'} */
-    const d6 = list6.join('::');
-    t.match(d6, 'foo');
-
-    const list7 = stringList('foo', 'bar', 'baz').toSpliced(null);
-    testExpectedArrayValues(t, list7);
-    testExpectedArrayValues(t, list7, ...['foo', 'bar', 'baz'].toSpliced(null));
-    testEscapingFromStringList(t, list7);
-
-    /** @type {''} */
-    const d7 = list7.join('::');
-    t.match(d7, '');
-
-    t.end();
-  });
-
-  t.test(type + ': toSpliced(...string[])', (t) => {
-    const list = stringList('foo', 'bar', 'baz').toSpliced(
-      0,
-      2,
-      'doink',
-      'bleep',
-    );
-    testExpectedArrayValues(t, list, 'doink', 'bleep', 'baz');
-    testExpectedArrayValues(
-      t,
-      list,
-      ...['foo', 'bar', 'baz'].toSpliced(0, 2, 'doink', 'bleep'),
-    );
-    testEscapingFromStringList(t, list, 'doink', 'bleep', 'baz');
-
-    /** @type {'doink::bleep::baz'} */
-    const d = list.join('::');
-    t.match(d, 'doink::bleep::baz');
-
-    const list2 = stringList('foo', 'bar', 'baz').toSpliced(0, 0, 'bleep');
-    testExpectedArrayValues(t, list2, 'bleep', 'foo', 'bar', 'baz');
-    testExpectedArrayValues(
-      t,
-      list2,
-      ...['foo', 'bar', 'baz'].toSpliced(0, 0, 'bleep'),
-    );
-    testEscapingFromStringList(t, list2, 'bleep', 'foo', 'bar', 'baz');
-
-    /** @type {'bleep::foo::bar::baz'} */
-    const d2 = list2.join('::');
-    t.match(d2, 'bleep::foo::bar::baz');
-
-    const list3 = stringList('foo', 'bar', 'baz').toSpliced(3, 1, 'doink');
-    testExpectedArrayValues(t, list3, 'foo', 'bar', 'baz', 'doink');
-    testExpectedArrayValues(
-      t,
-      list3,
-      ...['foo', 'bar', 'baz'].toSpliced(3, 1, 'doink'),
-    );
-    testEscapingFromStringList(t, list3, 'foo', 'bar', 'baz', 'doink');
-
-    /** @type {'foo::bar::baz::doink'} */
-    const d3 = list3.join('::');
-    t.match(d3, 'foo::bar::baz::doink');
-
-    const list4 = stringList('foo', 'bar', 'baz').toSpliced(2, 0, 'doink');
-    testExpectedArrayValues(t, list4, 'foo', 'bar', 'doink', 'baz');
-    testExpectedArrayValues(
-      t,
-      list4,
-      ...['foo', 'bar', 'baz'].toSpliced(2, 0, 'doink'),
-    );
-    testEscapingFromStringList(t, list4, 'foo', 'bar', 'doink', 'baz');
-
-    /** @type {'foo::bar::doink::baz'} */
-    const d4 = list4.join('::');
-    t.match(d4, 'foo::bar::doink::baz');
-
-    const list5 = stringList('foo', 'bar', 'baz').toSpliced(3, 0, 'doink');
-    testExpectedArrayValues(t, list5, 'foo', 'bar', 'baz', 'doink');
-    testExpectedArrayValues(
-      t,
-      list5,
-      ...['foo', 'bar', 'baz'].toSpliced(3, 0, 'doink'),
-    );
-    testEscapingFromStringList(t, list5, 'foo', 'bar', 'baz', 'doink');
-
-    /** @type {'foo::bar::baz::doink'} */
-    const d5 = list5.join('::');
-    t.match(d5, 'foo::bar::baz::doink');
-
-    t.end();
-  });
-
-  t.test(type + ': toSpliced(0)', (t) => {
-    const list = stringList('foo', 'bar', 'baz').toSpliced(0);
-    testExpectedArrayValues(t, list);
-    testExpectedArrayValues(t, list, ...['foo', 'bar', 'baz'].toSpliced(0));
-    testEscapingFromStringList(t, list);
-
-    /** @type {''} */
-    const d = list.join('::');
-    t.match(d, '');
-
-    const list2 = stringList('foo', 'bar', 'baz').toSpliced(3);
-    testExpectedArrayValues(t, list2, 'foo', 'bar', 'baz');
-    testExpectedArrayValues(t, list2, ...['foo', 'bar', 'baz'].toSpliced(3));
-    testEscapingFromStringList(t, list2, 'foo', 'bar', 'baz');
-
-    /** @type {'foo::bar::baz'} */
-    const d2 = list2.join('::');
-    t.match(d2, 'foo::bar::baz');
-
-    const list3 = stringList('foo', 'bar', 'baz').toSpliced(-3, 6);
-    testExpectedArrayValues(t, list3);
-    testExpectedArrayValues(
-      t,
-      list3,
-      ...['foo', 'bar', 'baz'].toSpliced(-3, 6),
-    );
-    testEscapingFromStringList(t, list3);
-
-    /** @type {''} */
-    const d3 = list3.join('::');
-    t.match(d3, '');
-
-    const list4 = stringList('foo', 'bar', 'baz').toSpliced(0, -2, 'doink');
-    testExpectedArrayValues(t, list4, 'doink', 'foo', 'bar', 'baz');
-    testExpectedArrayValues(
-      t,
-      list4,
-      ...['foo', 'bar', 'baz'].toSpliced(0, -2, 'doink'),
-    );
-    testEscapingFromStringList(t, list4, 'doink', 'foo', 'bar', 'baz');
-
-    /** @type {'doink::foo::bar::baz'} */
-    const d4 = list4.join('::');
-    t.match(d4, 'doink::foo::bar::baz');
-
-    const list5 = stringList('foo', 'bar', 'baz').toSpliced(3, -2, 'doink');
-    testExpectedArrayValues(t, list5, 'foo', 'bar', 'baz', 'doink');
-    testExpectedArrayValues(
-      t,
-      list5,
-      ...['foo', 'bar', 'baz'].toSpliced(3, -2, 'doink'),
-    );
-    testEscapingFromStringList(t, list5, 'foo', 'bar', 'baz', 'doink');
-
-    /** @type {'foo::bar::baz::doink'} */
-    const d5 = list5.join('::');
-    t.match(d5, 'foo::bar::baz::doink');
-
-    const list6 = stringList().toSpliced(-3, -2, 'doink');
-    testExpectedArrayValues(t, list6, 'doink');
-    testExpectedArrayValues(t, list6, ...[].toSpliced(-3, -2, 'doink'));
-    testEscapingFromStringList(t, list6, 'doink');
-
-    /** @type {'doink'} */
-    const d6 = list6.join('::');
-    t.match(d6, 'doink');
-
-    const list7 = stringList('foo', 'bar', 'baz').toSpliced(0, undefined, 'd');
-    testExpectedArrayValues(t, list7, 'd', 'foo', 'bar', 'baz');
-    testExpectedArrayValues(
-      t,
-      list7,
-      ...['foo', 'bar', 'baz'].toSpliced(0, undefined, 'd'),
-    );
-    testEscapingFromStringList(t, list7, 'd', 'foo', 'bar', 'baz');
-
-    /** @type {'d::foo::bar::baz'} */
-    const d7 = list7.join('::');
-    t.match(d7, 'd::foo::bar::baz');
-
-    const list8 = stringList('d', 'd', 'd', 'd').toSpliced(-3, 2, 'doink');
-    testExpectedArrayValues(t, list8, 'd', 'doink', 'd');
-    testExpectedArrayValues(
-      t,
-      list8,
-      ...['d', 'd', 'd', 'd'].toSpliced(-3, 2, 'doink'),
-    );
-    testEscapingFromStringList(t, list8, 'd', 'doink', 'd');
-
-    /** @type {'d::doink::d'} */
-    const d8 = list8.join('::');
-    t.match(d8, 'd::doink::d');
-
-    const list9 = stringList('d', 'd', 'd', 'd').toSpliced(
-      -2,
-      1,
-      'doink',
-      'doank',
-    );
-    testExpectedArrayValues(t, list9, 'd', 'd', 'doink', 'doank', 'd');
-    testExpectedArrayValues(
-      t,
-      list9,
-      ...['d', 'd', 'd', 'd'].toSpliced(-2, 1, 'doink', 'doank'),
-    );
-    testEscapingFromStringList(t, list9, 'd', 'd', 'doink', 'doank', 'd');
-
-    /** @type {'d::d::doink::doank::d'} */
-    const d9 = list9.join('::');
-    t.match(d9, 'd::d::doink::doank::d');
-
-    const list10 = stringList('d', 'd', 'd', 'd').toSpliced(
-      -3,
-      -2,
-      'doink',
-      'doank',
-    );
-    testExpectedArrayValues(t, list10, 'd', 'doink', 'doank', 'd', 'd', 'd');
-    testExpectedArrayValues(
-      t,
-      list10,
-      ...['d', 'd', 'd', 'd'].toSpliced(-3, -2, 'doink', 'doank'),
-    );
-    testEscapingFromStringList(t, list10, 'd', 'doink', 'doank', 'd', 'd', 'd');
-
-    /** @type {'d::doink::doank::d::d::d'} */
-    const d10 = list10.join('::');
-    t.match(d10, 'd::doink::doank::d::d::d');
-
-    const listfoobar = stringList('d', 'd', 'd', 'd')
-      .toSpliced(-3, -2, 'doink', 'doank')
-      .concat('foo', 'bar')
-      .without('d', 'c')
-      .withReplaceAll('o', '$')
-      .concat('La Bananne ', " L'annanas")
-      .withReplaceAll('$', 'o')
-      .toReversed()
-      .concat(' miercoles')
-      .withTrim()
-      .toSnakeCase()
-      .slice(-10);
-
-    testExpectedArrayValues(
-      t,
-      listfoobar,
-      'lannanas',
-      'la_bananne',
-      'bar',
-      'foo',
-      'doank',
-      'doink',
-      'miercoles',
-    );
-    testExpectedArrayValues(
-      t,
-      listfoobar,
-      ...['d', 'd', 'd', 'd']
+      const listfoobar = stringList('d', 'd', 'd', 'd')
         .toSpliced(-3, -2, 'doink', 'doank')
-        .concat(['foo', 'bar'])
-        .filter((v) => !['d', 'c'].includes(v))
-        .concat(['La Bananne ', " L'annanas"])
+        .concat('foo', 'bar')
+        .without('d', 'c')
+        .withReplaceAll('o', '$')
+        .concat('La Bananne ', " L'annanas")
+        .withReplaceAll('$', 'o')
         .toReversed()
-        .concat([' miercoles'])
-        .map((v) => v.trim())
-        .map((v) =>
-          v
-            .trim()
-            .replace(/([A-Z])/g, (_, char) => `_${char.toLowerCase()}`)
-            .replace(/^[_]+/, '')
-            .replace(/[^a-zA-Z0-9_]+/g, '')
-            .replace(/[_]+/g, '_')
-            .toLowerCase()
-            .replace(/[\s]+/g, '_'),
-        )
-        .slice(-10),
-    );
+        .concat(' miercoles')
+        .withTrim()
+        .toLowerCase()
+        .withReplaceAll("'", '')
+        .withReplaceAll('  ', '_')
+        .withReplaceAll(' ', '_')
+        .slice(-10);
 
-    /** @type {'lannanas::la_bananne::bar::foo::doank::doink::miercoles'} */
-    const dfoobar = listfoobar.join('::');
-    t.match(dfoobar, 'lannanas::la_bananne::bar::foo::doank::doink::miercoles');
+      testExpectedArrayValues(
+        t,
+        listfoobar,
+        'lannanas',
+        'la_bananne',
+        'bar',
+        'foo',
+        'doank',
+        'doink',
+        'miercoles',
+      );
+      testExpectedArrayValues(
+        t,
+        listfoobar,
+        ...['d', 'd', 'd', 'd']
+          .toSpliced(-3, -2, 'doink', 'doank')
+          .concat(['foo', 'bar'])
+          .filter((v) => !['d', 'c'].includes(v))
+          .concat(['La Bananne ', " L'annanas"])
+          .toReversed()
+          .concat([' miercoles'])
+          .map((v) => v.trim())
+          .map((v) =>
+            v
+              .trim()
+              .replace(/([A-Z])/g, (_, char) => `_${char.toLowerCase()}`)
+              .replace(/^[_]+/, '')
+              .replace(/[^a-zA-Z0-9_]+/g, '')
+              .replace(/[_]+/g, '_')
+              .toLowerCase()
+              .replace(/[\s]+/g, '_'),
+          )
+          .slice(-10),
+      );
 
-    /** @type {"la_la_lannanas_la_la::la_la_la_bananne_la_la::la_la_bar_la_la::la_la_foo_la_la::la_la_doank_la_la::la_la_doink_la_la::la_la_miercoles_la_la::la_la_la folie_la_la"} */
-    const dfoobar2 = listfoobar
-      .concat('la folie')
-      .withPrefix('la_la_')
-      .withSuffix('_la_la')
-      .join('::');
-    t.match(
-      dfoobar2,
-      'la_la_lannanas_la_la::la_la_la_bananne_la_la::la_la_bar_la_la::la_la_foo_la_la::la_la_doank_la_la::la_la_doink_la_la::la_la_miercoles_la_la::la_la_la folie_la_la',
-    );
+      /** @type {'lannanas::la_bananne::bar::foo::doank::doink::miercoles'} */
+      const dfoobar = listfoobar.join('::');
+      t.match(
+        dfoobar,
+        'lannanas::la_bananne::bar::foo::doank::doink::miercoles',
+      );
 
-    t.end();
+      /** @type {"la_la_lannanas_la_la::la_la_la_bananne_la_la::la_la_bar_la_la::la_la_foo_la_la::la_la_doank_la_la::la_la_doink_la_la::la_la_miercoles_la_la::la_la_la folie_la_la"} */
+      const dfoobar2 = listfoobar
+        .concat('la folie')
+        .withPrefix('la_la_')
+        .withSuffix('_la_la')
+        .join('::');
+      t.match(
+        dfoobar2,
+        'la_la_lannanas_la_la::la_la_la_bananne_la_la::la_la_bar_la_la::la_la_foo_la_la::la_la_doank_la_la::la_la_doink_la_la::la_la_miercoles_la_la::la_la_la folie_la_la',
+      );
+
+      t.end();
+    });
   });
 }

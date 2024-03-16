@@ -1,42 +1,58 @@
 {
   "name": "string-literal-list",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "description": "an array for string literal",
-  "main": "stringList.js",
+  "main": "stringList.cjs",
+  "module": "stringList.js",
+  "browser": {
+    "./stringList.cjs": "./stringList.min.cjs",
+    "./stringList.js": "./stringList.min.js"
+  },
   "types": "stringList.d.ts",
   "exports": {
     ".": {
-      "import": "./stringList.js",
-      "require": "./stringList.cjs"
+      "types": "./stringList.js",
+      "require": "./stringList.cjs",
+      "node": "./stringList.js",
+      "import": "./stringList.min.js",
+      "default": "./stringList.js"
     },
     "./strict.js": {
-      "import": "./strict.js",
-      "require": "./strict.cjs"
+      "types": "./strict.js",
+      "require": "./strict.cjs",
+      "node": "./strict.js",
+      "import": "./strict.min.js",
+      "default": "./strict.js"
     },
     "./types.js": {
-      "import": "./types/index.js",
-      "require": "./types/index.js"
+      "default": "./types/index.js"
     },
     "./stringList.js": {
-      "import": "./stringList.js",
-      "require": "./stringList.cjs"
+      "types": "./stringList.js",
+      "require": "./stringList.cjs",
+      "node": "./stringList.js",
+      "import": "./stringList.min.js",
+      "default": "./stringList.js"
     }
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
-  "packageManager": "npm@10.2.4",
   "license": "MIT",
   "scripts": {
     "test": "npm run lint:ci && npm run test:checkJs && npm run test:unit",
-    "test:unit": "NODE_ENV=test tap run && tap report --show-full-coverage",
+    "test:unit": "NODE_ENV=test tap run",
     "test:checkJs": "tsc --checkJs --project ./jsconfig.json",
     "prettier": "prettier --write \"**/*.{js,ts}\"",
     "lint": "eslint --fix \"./*.js\"",
     "lint:ci": "eslint . --ext .js",
-    "build": "npm run build:main && npm run build:strict",
-    "build:strict": "esbuild ./strict.js  --bundle --format=cjs --keep-names --outfile=strict.cjs --target=node16",
-    "build:main": "esbuild  ./stringList.js --bundle --format=cjs --keep-names --outfile=stringList.cjs --target=node16",
+    "build": "rm -f *.min.* && npm run build:main:cjs && npm run build:main:min && npm run build:main:min:cjs && npm run build:strict:cjs && npm run build:strict:min && npm run build:strict:min:cjs",
+    "build:strict:min": "esbuild ./strict.js --target=chrome86,edge89,firefox88,safari13,opera76 --bundle --format=esm --minify --outfile=strict.min.js --legal-comments=inline",
+    "build:strict:min:cjs": "esbuild ./strict.js --target=chrome86,edge89,firefox88,safari13,opera76 --bundle --format=cjs --minify --outfile=strict.min.cjs --legal-comments=inline",
+    "build:strict:cjs": "esbuild ./strict.js  --bundle --format=cjs --outfile=strict.cjs --target=node18 --minify --legal-comments=inline",
+    "build:main:min": "esbuild ./stringList.js --target=chrome86,edge89,firefox88,safari13,opera76 --bundle --format=esm --minify --outfile=stringList.min.js --legal-comments=inline",
+    "build:main:min:cjs": "esbuild ./stringList.js --target=chrome86,edge89,firefox88,safari13,opera76 --bundle --format=cjs --minify --outfile=stringList.min.cjs --legal-comments=inline",
+    "build:main:cjs": "esbuild  ./stringList.js --bundle --format=cjs --outfile=stringList.cjs --target=node18 --minify --legal-comments=inline",
     "prepare": "husky"
   },
   "author": "Vincent Baronnet",
@@ -46,7 +62,9 @@
     "url": "https://github.com/rawpixel-vincent/string-literal-list.git"
   },
   "devDependencies": {
-    "esbuild": "^0.20.1",
+    "@types/node": "latest",
+    "core-js": "latest",
+    "esbuild": "latest",
     "eslint": "latest",
     "eslint-config-prettier": "latest",
     "eslint-config-standard": "latest",
@@ -55,9 +73,5 @@
     "prettier": "latest",
     "tap": "latest",
     "typescript": "latest"
-  },
-  "dependencies": {
-    "core-js": "latest",
-    "string-ts": "^2.0.0"
   }
 }

@@ -199,40 +199,6 @@ tupleWithLowercase = ['TITLE', 'NEWS ROOM'];
 // @ts-expect-error
 tupleWithLowercase = ['News Room', 'Title'];
 
-let tupleWithSnakeCase: StringLiteralList.tuple.TupleWithCaseTransform<
-  ['titleGap', 'news room'],
-  'snakeCase',
-  []
->;
-// @ts-expect-no-error
-tupleWithSnakeCase = ['title_gap', 'news_room'];
-// @ts-expect-error
-tupleWithSnakeCase = ['titleGap', 'news room'];
-
-let tupleWithCamelCase: StringLiteralList.tuple.TupleWithCaseTransform<
-  ['title_flow', 'News_Room'],
-  'camelCase',
-  []
->;
-// @ts-expect-no-error
-tupleWithCamelCase = ['titleFlow', 'newsRoom'];
-// @ts-expect-error
-tupleWithCamelCase = ['title_flow', 'News_Room'];
-// @ts-expect-error
-tupleWithCamelCase = ['newsRoom', 'titleFlow'];
-
-let tupleWithPascalCase: StringLiteralList.tuple.TupleWithCaseTransform<
-  ['title_flow', 'news room'],
-  'pascalCase',
-  []
->;
-// @ts-expect-no-error
-tupleWithPascalCase = ['TitleFlow', 'NewsRoom'];
-// @ts-expect-error
-tupleWithPascalCase = ['title_flow', 'news room'];
-// @ts-expect-error
-tupleWithPascalCase = ['newsRoom', 'TitleFlow'];
-
 let tupleWithTrim: StringLiteralList.tuple.TupleWithTrim<
   ['  title  ', '  news room  '],
   []
