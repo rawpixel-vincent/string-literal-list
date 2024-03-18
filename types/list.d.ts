@@ -147,7 +147,7 @@ export interface IStringList<
     : never;
 
   value(val): Tuple[number];
-  mutable(): Tuple[number] & string[];
+  mutable(): (Tuple[number] & string)[];
   sort<P1 = Tuple[number], P2 = Tuple[number]>(
     compareFn?: (a: P1, b: P2) => number,
   ): MaybeReadonly<Mut, IStringList<Tuple, Mut, true>>;
@@ -434,7 +434,7 @@ export interface IStringList<
       array: Tuple[number][],
     ) => boolean,
     thisArg?: any,
-  ): Tuple[number] & string[];
+  ): (Tuple[number] & string)[];
 
   /**
    * @deprecated This method will mutate the list, Get the mutable array with `list.mutable()`
