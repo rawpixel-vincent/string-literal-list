@@ -18,6 +18,13 @@ import mutableMin from './stringList.min.js';
 
 import strictMin from './strict.min.js';
 
+/** @type {typeof import('./stringList.js')['sl']} */
+// @ts-expect-error
+const mutableMinStringListCjs = mutableMin.stringList;
+/** @type {typeof import('./strict.js')['sl']} */
+// @ts-expect-error
+const strictMinStringListCjs = strictMin.stringList;
+
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 /** @type {typeof import('./stringList.js')['sl']} */
@@ -47,11 +54,11 @@ const functions = [
   },
   {
     type: 'mutableMin',
-    stringList: mutableMin.stringList,
+    stringList: mutableMinStringListCjs,
   },
   {
     type: 'immutableMin',
-    stringList: strictMin.stringList,
+    stringList: strictMinStringListCjs,
   },
 ];
 
