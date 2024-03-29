@@ -219,14 +219,7 @@ export interface IStringList<
   // Readonly overrides
   readonly length: [Unsorted] extends [true] ? number : Tuple['length'];
   readonly [n: number]: Tuple[number] | undefined;
-  readonly enum: { [P in Tuple[number] & string]: P } & Omit<
-    {
-      [P in number | string | symbol]: P extends number | symbol
-        ? never
-        : Tuple[number] | undefined | null;
-    },
-    Tuple[number]
-  >;
+  readonly enum: { [P in Tuple[number]]: P };
 
   // Supported Methods
   at(n: number): Tuple[number] | undefined;
