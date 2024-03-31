@@ -1,9 +1,8 @@
 /// <reference path="./index.d.ts" />
-import './index.js';
 
 declare global {
-  export namespace StringLiteralList {}
-  export namespace StringLiteralList.generic {
+  namespace StringLiteralList {}
+  namespace StringLiteralList.generic {
     /**
      * Returns a tuple of the given length with the given type.
      */

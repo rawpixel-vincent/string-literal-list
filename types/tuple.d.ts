@@ -3,13 +3,8 @@
 /// <reference path='./string.d.ts' />
 
 declare global {
-  export namespace StringLiteralList {}
-  /**
-   * @name tuple
-   * @description A tuple is a an immutable list of elements that infer the position and the length of its elements.
-   * This is useful to create an array that is used as an argument for a function that requires an ordered list of parameters.
-   */
-  export namespace StringLiteralList.tuple {
+  namespace StringLiteralList {}
+  namespace StringLiteralList.tuple {
     export type GetTuplePositiveIndex<
       T extends readonly any[],
       I extends number,

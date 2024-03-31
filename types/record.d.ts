@@ -1,6 +1,7 @@
+/// <reference path="index.d.ts" />
 declare global {
-  export namespace StringLiteralList {}
-  export namespace StringLiteralList.record {
+  namespace StringLiteralList {}
+  namespace StringLiteralList.record {
     export type StringRecord<T extends string, S extends unknown> = Record<
       T,
       S

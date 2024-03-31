@@ -1,10 +1,8 @@
 /// <reference path="generic.d.ts" />
 /// <reference path="index.d.ts" />
-/// <reference path="tuple.d.ts" />
-
 declare global {
-  export namespace StringLiteralList {}
-  export namespace StringLiteralList.string {
+  namespace StringLiteralList {}
+  namespace StringLiteralList.string {
     /**
      * @credit @gustavoguichard
      * For the string manipulation types,

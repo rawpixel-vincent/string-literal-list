@@ -7,9 +7,8 @@
 import { ArrayInPlaceMutation } from '../StringLiteralList.js';
 
 declare global {
-  export namespace StringLiteralList {}
-
-  export namespace specs {
+  namespace StringLiteralList {}
+  namespace StringLiteralList.specs {
     /**
      * @description
      * These methods changes the array in place.
@@ -79,4 +78,4 @@ declare global {
   }
 }
 
-export { StringLiteralList as sl };
+export {};

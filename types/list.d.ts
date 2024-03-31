@@ -1,3 +1,9 @@
+/// <reference path="index.d.ts" />
+/// <reference path="generic.d.ts" />
+/// <reference path="string.d.ts" />
+/// <reference path="tuple.d.ts" />
+/// <reference path="record.d.ts" />
+
 declare global {
   namespace StringLiteralList {}
   namespace StringLiteralList.list {
