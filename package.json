@@ -1,6 +1,6 @@
 {
   "name": "string-literal-list",
-  "version": "1.22.0",
+  "version": "1.23.0",
   "description": "an array for string literal",
   "main": "stringList.cjs",
   "module": "stringList.js",
@@ -11,14 +11,14 @@
   "types": "stringList.d.ts",
   "exports": {
     ".": {
-      "types": "./stringList.js",
+      "types": "./stringList.d.ts",
       "require": "./stringList.cjs",
       "node": "./stringList.js",
       "import": "./stringList.min.js",
       "default": "./stringList.js"
     },
     "./strict.js": {
-      "types": "./strict.js",
+      "types": "./strict.d.ts",
       "require": "./strict.cjs",
       "node": "./strict.js",
       "import": "./strict.min.js",
@@ -28,7 +28,7 @@
       "default": "./types/index.js"
     },
     "./stringList.js": {
-      "types": "./stringList.js",
+      "types": "./stringList.d.ts",
       "require": "./stringList.cjs",
       "node": "./stringList.js",
       "import": "./stringList.min.js",

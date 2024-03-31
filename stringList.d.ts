@@ -1,9 +1,7 @@
-import { IStringList } from './types/list.js';
+export declare function stringList<
+  TT extends readonly string[] = readonly never[],
+>(...strings: TT): StringLiteralList.list.IStringList<TT, true, false>;
 
-export function stringList<TT extends readonly string[] = readonly never[]>(
+export declare function sl<TT extends readonly string[] = readonly never[]>(
   ...strings: TT
-): IStringList<TT, true, false>;
-
-export function sl<TT extends readonly string[] = readonly never[]>(
-  ...strings: TT
-): IStringList<TT, true, false>;
+): StringLiteralList.list.IStringList<TT, true, false>;
