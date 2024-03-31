@@ -7,7 +7,18 @@
 import { ArrayInPlaceMutation } from '../StringLiteralList.js';
 
 declare global {
-  export namespace StringLiteralList {}
+  export namespace StringLiteralList {
+    // @ts-ignore
+    export * as tuple from './tuple.js';
+    // @ts-ignore
+    export * as list from './list.js';
+    // @ts-ignore
+    export * as record from './record.js';
+    // @ts-ignore
+    export * as string from './string.js';
+    // @ts-ignore
+    export * as generic from './generic.js';
+  }
 
   export namespace specs {
     /**
