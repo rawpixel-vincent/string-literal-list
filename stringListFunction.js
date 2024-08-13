@@ -11,8 +11,10 @@ export function stringListMutable(...strings) {
     /* c8 ignore start */
     if (
       typeof window === 'undefined' &&
-      process?.env?.NODE_ENV !== 'production' &&
-      process?.env?.NODE_ENV !== 'test'
+      process &&
+      process.env &&
+      process.env.NODE_ENV !== 'production' &&
+      process.env.NODE_ENV !== 'test'
     ) {
       console.debug(
         `Unexpected type in stringList(${typeof invalid}). Casting all arguments to string type.`,

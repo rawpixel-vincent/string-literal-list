@@ -212,6 +212,18 @@ export class SL extends Array {
     );
   }
 
+  asMap() {
+    return new Map(super.map((e) => [e, e]));
+  }
+
+  asSet() {
+    return new Set(this);
+  }
+
+  asObject() {
+    return Object.assign({}, ...super.map((e) => ({ [e]: e })));
+  }
+
   // Methods returning the native array
   map() {
     const mut = this.mutable();

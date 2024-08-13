@@ -1787,5 +1787,53 @@ for (const { type, stringList } of functions) {
 
       t.end();
     });
+
+    tt.test('stringList: asObject()', (t) => {
+      const list = stringList('foo', 'bar', 'baz');
+      const obj = list.asObject();
+      t.match(obj, {
+        foo: 'foo',
+        bar: 'bar',
+        baz: 'baz',
+      });
+      testExpectedArrayValues(t, list, 'foo', 'bar', 'baz');
+      t.equal(obj.foo, 'foo');
+      t.equal(obj.bar, 'bar');
+      t.equal(obj.baz, 'baz');
+      t.equal(obj.fooz, undefined);
+      t.end();
+    });
+    tt.test('stringList: asMap()', (t) => {
+      const list = stringList('foo', 'bar', 'baz');
+      const map = list.asMap();
+      t.match(
+        map,
+        new Map([
+          ['foo', 'foo'],
+          ['bar', 'bar'],
+          ['baz', 'baz'],
+        ]),
+      );
+      testExpectedArrayValues(t, list, 'foo', 'bar', 'baz');
+      t.equal(map.size, 3);
+      t.equal(map.get('foo'), 'foo');
+      t.equal(map.get('bar'), 'bar');
+      t.equal(map.get('baz'), 'baz');
+      t.equal(map.get('fooz'), undefined);
+
+      t.end();
+    });
+    tt.test('stringList: asSet()', (t) => {
+      const list = stringList('foo', 'bar', 'baz');
+      const set = list.asSet();
+      t.match(set, new Set(['foo', 'bar', 'baz']));
+      testExpectedArrayValues(t, list, 'foo', 'bar', 'baz');
+      t.equal(set.size, 3);
+      t.equal(set.has('foo'), true);
+      t.equal(set.has('bar'), true);
+      t.equal(set.has('baz'), true);
+      t.equal(set.has('fooz'), false);
+      t.end();
+    });
   });
 }

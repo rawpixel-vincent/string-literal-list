@@ -28,6 +28,9 @@ The StringList class extends the Array with new methods and supercharges the arr
   - `withReplaceAll(search, replacement)`: call the String.prototype.replaceAll on all.
   - `to"Case"()` methods for case transform, uppercase, lowercase capitalize, etc...
   - `toRecordValue/toRecordType` methods to create a type of `Record<literal, type | typeof value>` with initial value and builtin or infered types.
+  - `asMap` method to create a map of the literals.
+  - `asSet` method to create a set of the literals.
+  - `asObject` method to create an object of the literals.
 
 The array order is preserved in a Tuple to infer the types when possible, some methods like toSorted will cause the new instance to be flagged as unsorted and methods like join() will return a generic string type.
 

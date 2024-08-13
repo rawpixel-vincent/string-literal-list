@@ -76,6 +76,19 @@ declare global {
         ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
         : never;
 
+      withMapPrefix<Map extends { [K in Tuple[number]]: string }>(
+        map: Map,
+      ): keyof Map extends Tuple[number]
+        ? {
+            [K in keyof Map]: `${Map[K]}${K}`;
+          }[keyof Map] extends infer W extends string
+          ? StringLiteralList.tuple.UnionToTuple<W> extends infer W extends
+              readonly string[]
+            ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
+            : never
+          : never
+        : never;
+
       withSuffix<P extends string>(
         suffix: P,
       ): P extends string
@@ -88,6 +101,18 @@ declare global {
           : never
         : never;
 
+      withMapSuffix<Map extends { [K in Tuple[number]]: string }>(
+        map: Map,
+      ): keyof Map extends Tuple[number]
+        ? {
+            [K in keyof Map]: `${K}${Map[K]}`;
+          }[keyof Map] extends infer W extends string
+          ? StringLiteralList.tuple.UnionToTuple<W> extends infer W extends
+              readonly string[]
+            ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
+            : never
+          : never
+        : never;
       // withDerivatedSuffix<S extends string>(
       //   chars: S,
       // ):
@@ -184,14 +209,12 @@ declare global {
         ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
         : this;
 
-      without<S extends string>(
+      without<S extends string = Tuple[number]>(
         ...arg: readonly (ILiterals<readonly S[]> | S)[]
-      ): StringLiteralList.tuple.TupleWithExclude<
-        Tuple,
-        S,
-        []
-      > extends infer E extends readonly string[]
-        ? MaybeReadonly<Mut, IStringList<E, Mut, Unsorted>>
+      ): StringLiteralList.tuple.TupleWithExclude<Tuple, S, []> extends infer E
+        ? E extends readonly string[]
+          ? MaybeReadonly<Mut, IStringList<E, Mut, Unsorted>>
+          : MaybeReadonly<Mut, IStringList<readonly string[], Mut, Unsorted>>
         : never;
 
       toSorted(
@@ -204,6 +227,12 @@ declare global {
       > extends infer W extends readonly string[]
         ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
         : never;
+
+      asMap(): Map<Tuple[number], Tuple[number]>;
+
+      asSet(): Set<Tuple[number]>;
+
+      asObject(): { [K in Tuple[number]]: K };
 
       /**
        * @deprecated This method does not support type inference,
