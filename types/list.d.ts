@@ -279,6 +279,14 @@ declare global {
         ? Record<Tuple[number], V>
         : StringLiteralList.record.Merge<[Record<Tuple[number], V>, ...R]>;
 
+      mapAsObject<F extends (val: Tuple[number]) => unknown>(
+        cb: F,
+      ): F extends (val: infer T extends string) => unknown
+        ? {
+            [key in T]: F extends (val: T) => infer V ? V : never;
+          }
+        : never;
+
       // Readonly overrides
       readonly length: [Unsorted] extends [true] ? number : Tuple['length'];
       readonly [n: number]: Tuple[number] | undefined;

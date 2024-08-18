@@ -1835,5 +1835,68 @@ for (const { type, stringList } of functions) {
       t.equal(set.has('fooz'), false);
       t.end();
     });
+
+    tt.test('stringList: mapAsObject()', (t) => {
+      const list = stringList('foo', 'bar', 'baz');
+      const obj = list.mapAsObject((v) => ({
+        value: '',
+        foo: {
+          bar: '',
+        },
+      }));
+      t.match(
+        obj,
+        Object.fromEntries([
+          ['foo', { value: '', foo: { bar: '' } }],
+          ['bar', { value: '', foo: { bar: '' } }],
+          ['baz', { value: '', foo: { bar: '' } }],
+        ]),
+      );
+      obj['bar'].foo.bar = 'barz';
+      t.match(
+        obj,
+        Object.fromEntries([
+          ['foo', { value: '', foo: { bar: '' } }],
+          ['bar', { value: '', foo: { bar: 'barz' } }],
+          ['baz', { value: '', foo: { bar: '' } }],
+        ]),
+      );
+      testExpectedArrayValues(t, list, 'foo', 'bar', 'baz');
+      t.end();
+    });
+    tt.test('stringList: mapAsObject()', (t) => {
+      const list = stringList('foo', 'bar', 'baz');
+      const obj = list.mapAsObject((v) =>
+        v === 'bar'
+          ? {
+              name: 'bar',
+            }
+          : {
+              value: '',
+              foo: {
+                bar: '',
+              },
+            },
+      );
+      t.match(
+        obj,
+        Object.fromEntries([
+          ['foo', { value: '', foo: { bar: '' } }],
+          ['bar', { name: 'bar' }],
+          ['baz', { value: '', foo: { bar: '' } }],
+        ]),
+      );
+      obj['bar'].foo = 'barz';
+      t.match(
+        obj,
+        Object.fromEntries([
+          ['foo', { value: '', foo: { bar: '' } }],
+          ['bar', { name: 'bar', foo: 'barz' }],
+          ['baz', { value: '', foo: { bar: '' } }],
+        ]),
+      );
+      testExpectedArrayValues(t, list, 'foo', 'bar', 'baz');
+      t.end();
+    });
   });
 }

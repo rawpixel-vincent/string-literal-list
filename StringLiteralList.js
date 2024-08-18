@@ -204,6 +204,10 @@ export class SL extends Array {
     );
   }
 
+  mapAsObject(cb) {
+    return Object.fromEntries(super.map((e) => [e, cb(e)]));
+  }
+
   toRecordType(type = 'any', initialValue = undefined, ...records) {
     return Object.assign(
       {},
