@@ -42,7 +42,7 @@
   "scripts": {
     "test": "npm run lint:ci && npm run test:checkJs && npm run test:unit",
     "test:unit": "NODE_ENV=test tap run",
-    "test:checkJs": "tsc --checkJs --project ./jsconfig.json",
+    "test:checkJs": "./node_modules/.bin/tsc --checkJs --project jsconfig.json",
     "prettier": "prettier --write \"**/*.{js,ts}\"",
     "lint": "eslint --fix \"./*.js\"",
     "lint:ci": "eslint . --ext .js",
@@ -72,6 +72,6 @@
     "husky": "latest",
     "prettier": "latest",
     "tap": "latest",
-    "typescript": "latest"
+    "typescript": "5.5.4"
   }
 }

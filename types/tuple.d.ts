@@ -15,18 +15,76 @@ declare global {
 
     export type IsStringLiteralArray<Arr extends string[] | readonly string[]> =
       string.IsStringLiteral<Arr[number]> extends true ? true : false;
-    /**
+    /*
      * Takes a union of strings and returns a tuple of them.
-     * @deprecated this doesn't infer the length and the position of the tuple. It will also drop duplicates.
+     * deprecated this doesn't infer the length and the position of the tuple. It will also drop duplicates.
      */
-    export type UnionToTuple<T extends string> =
-      generic.UnionToIntersection<
-        T extends never ? never : T extends string ? (t: T) => T : never
-      > extends (_: never) => infer W
-        ? W extends string
-          ? readonly [...UnionToTuple<Exclude<T, W>>, W]
-          : never
-        : readonly [];
+    // export type UnionToTuple<T extends string> =
+    //   generic.UnionToIntersection<
+    //     T extends never ? never : T extends string ? (t: T) => T : never
+    //   > extends (_: never) => infer W
+    //     ? W extends string
+    //       ? Exclude<T, W> extends infer TW extends string
+    //         ? generic.UnionToIntersection<
+    //             TW extends never
+    //               ? never
+    //               : TW extends string
+    //                 ? (t: TW) => TW
+    //                 : never
+    //           > extends (_: TW) => infer R
+    //           ? R extends string
+    //             ? Exclude<TW, R> extends infer TR extends string
+    //               ? generic.UnionToIntersection<
+    //                   TR extends never
+    //                     ? never
+    //                     : TR extends string
+    //                       ? (t: TR) => TR
+    //                       : never
+    //                 > extends (_: TR) => infer RR
+    //                 ? RR extends string
+    //                   ? Exclude<TR, RR> extends infer TTR extends string
+    //                     ? generic.UnionToIntersection<
+    //                         TTR extends never
+    //                           ? never
+    //                           : TTR extends string
+    //                             ? (t: TTR) => TTR
+    //                             : never
+    //                       > extends (_: TTR) => infer RRR
+    //                       ? RRR extends string
+    //                         ? Exclude<TTR, RRR> extends infer TTTR extends
+    //                             string
+    //                           ? generic.UnionToIntersection<
+    //                               TTTR extends never
+    //                                 ? never
+    //                                 : TTTR extends string
+    //                                   ? (t: TTTR) => TTTR
+    //                                   : never
+    //                             > extends (_: TTTR) => infer RRRR
+    //                             ? RRRR extends string
+    //                               ? readonly [
+    //                                   ...UnionToTuple<
+    //                                     Exclude<TTTR, W | R | RR | RRR | RRRR>
+    //                                   >,
+    //                                   RRRR,
+    //                                   RRR,
+    //                                   RR,
+    //                                   R,
+    //                                   W,
+    //                                 ]
+    //                               : never
+    //                             : readonly [RRR, RR, R, W]
+    //                           : never
+    //                         : never
+    //                       : readonly [RR, R, W]
+    //                     : never
+    //                   : never
+    //                 : readonly [TW, W]
+    //               : never
+    //             : never
+    //           : readonly [W]
+    //         : never
+    //       : readonly [T]
+    //     : readonly [];
 
     export type TupleSplit<
       T,

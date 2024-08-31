@@ -76,19 +76,6 @@ declare global {
         ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
         : never;
 
-      withMapPrefix<Map extends { [K in Tuple[number]]: string }>(
-        map: Map,
-      ): keyof Map extends Tuple[number]
-        ? {
-            [K in keyof Map]: `${Map[K]}${K}`;
-          }[keyof Map] extends infer W extends string
-          ? StringLiteralList.tuple.UnionToTuple<W> extends infer W extends
-              readonly string[]
-            ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
-            : never
-          : never
-        : never;
-
       withSuffix<P extends string>(
         suffix: P,
       ): P extends string
@@ -101,18 +88,6 @@ declare global {
           : never
         : never;
 
-      withMapSuffix<Map extends { [K in Tuple[number]]: string }>(
-        map: Map,
-      ): keyof Map extends Tuple[number]
-        ? {
-            [K in keyof Map]: `${K}${Map[K]}`;
-          }[keyof Map] extends infer W extends string
-          ? StringLiteralList.tuple.UnionToTuple<W> extends infer W extends
-              readonly string[]
-            ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
-            : never
-          : never
-        : never;
       // withDerivatedSuffix<S extends string>(
       //   chars: S,
       // ):

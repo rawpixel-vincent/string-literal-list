@@ -6,9 +6,10 @@
     "lib": ["ESNext", "DOM"],
     "moduleResolution": "nodenext",
     "resolveJsonModule": false,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "checkJs": true,
     "skipLibCheck": false,
+    "skipDefaultLibCheck": false,
     "allowJs": true,
     "traceResolution": false,
     "allowSyntheticDefaultImports": true
@@ -22,5 +23,12 @@
     "StringLiteralList.js",
     "stringListFunction.js"
   ],
-  "exclude": ["node_modules", "*.cjs", "**/*.cjs", "*.min.js", "**/*.min.js"]
+  "exclude": [
+    "node_modules/punycode/punycode.js",
+    "node_modules",
+    "*.cjs",
+    "**/*.cjs",
+    "*.min.js",
+    "**/*.min.js"
+  ]
 }
