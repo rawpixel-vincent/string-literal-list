@@ -1,5 +1,6 @@
-/// <reference path="generic.d.ts" />
-/// <reference path="index.d.ts" />
+/// <reference types="./generic.d.ts" />
+/// <reference types="./index.d.ts" />
+
 declare global {
   namespace StringLiteralList {}
   namespace StringLiteralList.string {

@@ -6,13 +6,18 @@
     "lib": ["ESNext", "DOM"],
     "moduleResolution": "nodenext",
     "resolveJsonModule": false,
-    "esModuleInterop": true,
+    "esModuleInterop": false,
     "checkJs": true,
     "skipLibCheck": false,
     "skipDefaultLibCheck": false,
     "allowJs": true,
     "traceResolution": false,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "verbatimModuleSyntax": true,
+    "disableSizeLimit": true,
+    "isolatedModules": true,
+    "removeComments": false,
+    "maxNodeModuleJsDepth": 0
   },
   "include": [
     "*.d.ts",
@@ -26,6 +31,8 @@
   "exclude": [
     "node_modules/punycode/punycode.js",
     "node_modules",
+    "node_modules/*",
+    "node_modules/**/*",
     "*.cjs",
     "**/*.cjs",
     "*.min.js",

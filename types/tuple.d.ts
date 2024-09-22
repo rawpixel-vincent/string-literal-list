@@ -1,6 +1,7 @@
-/// <reference path='./index.d.ts' />
-/// <reference path='./generic.d.ts' />
-/// <reference path='./string.d.ts' />
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/// <reference types='./index.d.ts' />
+/// <reference types='./generic.d.ts' />
+/// <reference types='./string.d.ts' />
 
 declare global {
   namespace StringLiteralList {}
@@ -323,7 +324,7 @@ declare global {
               infered: Partial<{ Tuple: readonly string[] }>;
             }>
           ? A['infered']['Tuple'] extends infer L extends readonly string[]
-            ? [...Joined, ...A['infered']['Tuple']]
+            ? [...Joined, ...L]
             : never
           : Rest extends readonly Partial<{
                 infered: Partial<{ Tuple: readonly unknown[] }>;

@@ -1,5 +1,5 @@
-/// <reference path="./types/index.d.ts" />
-/// <reference path="./types/list.d.ts" />
+/// <reference types="./types/index.d.ts" />
+/// <reference types="./types/list.d.ts" />
 
 export type ArrayInPlaceMutation = {
   push: 'push';

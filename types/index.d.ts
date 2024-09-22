@@ -1,8 +1,8 @@
-/// <reference path="./generic.d.ts" />
-/// <reference path="./string.d.ts" />
-/// <reference path="./tuple.d.ts" />
-/// <reference path="./list.d.ts" />
-/// <reference path="./record.d.ts" />
+/// <reference types="./generic.d.ts" />
+/// <reference types="./string.d.ts" />
+/// <reference types="./tuple.d.ts" />
+/// <reference types="./list.d.ts" />
+/// <reference types="./record.d.ts" />
 
 import { ArrayInPlaceMutation } from '../StringLiteralList.js';
 

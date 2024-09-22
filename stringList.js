@@ -1,5 +1,6 @@
 // @ts-check
-/// <reference path="./types/index.d.ts" />
+/// <reference types="./types/index.d.ts" />
+
 import { stringListMutable } from './stringListFunction.js';
 
 export const stringList = stringListMutable;

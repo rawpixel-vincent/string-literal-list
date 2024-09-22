@@ -1,3 +1,7 @@
+/* eslint-disable prefer-const */
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-check
 /**
  * Describe: SubSet
@@ -199,6 +203,32 @@ tupleReversed = ['e', 'd', 'c', 'b'];
 tupleReversed = ['e', 'd', 'c', 'a'];
 // @ts-expect-error
 tupleReversed = [];
+
+let stringList: StringLiteralList.list.IStringList<
+  readonly ['a', 'b', 'c', 'd', 'e', ''],
+  false,
+  false
+>;
+// @ts-expect-no-error
+let stringList1: (typeof stringList)['infered']['Tuple'];
+// @ts-expect-no-error
+stringList1 = ['a', 'b', 'c', 'd', 'e', ''];
+let stringList2: typeof stringList.enum;
+// @ts-expect-no-error
+stringList2 = {
+  a: 'a',
+  b: 'b',
+  c: 'c',
+  d: 'd',
+  e: 'e',
+  '': '',
+  not_set: '',
+  not_seta: 'a',
+  not_setb: 'b',
+  not_setc: 'c',
+  not_setd: 'd',
+  not_sete: 'e',
+};
 
 // let tupleFromUnion: StringLiteralList.tuple.UnionToTuple<'id' | 'name'>;
 // // @ts-expect-error

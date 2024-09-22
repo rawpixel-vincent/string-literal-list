@@ -1,8 +1,12 @@
-/// <reference path="index.d.ts" />
-/// <reference path="generic.d.ts" />
-/// <reference path="string.d.ts" />
-/// <reference path="tuple.d.ts" />
-/// <reference path="record.d.ts" />
+/* eslint-disable @typescript-eslint/no-unnecessary-type-constraint */
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/// <reference types="./index.d.ts" />
+/// <reference types="./generic.d.ts" />
+/// <reference types="./string.d.ts" />
+/// <reference types="./tuple.d.ts" />
+/// <reference types="./record.d.ts" />
 
 declare global {
   namespace StringLiteralList {}
@@ -258,7 +262,7 @@ declare global {
         cb: F,
       ): F extends (val: infer T extends string) => unknown
         ? {
-            [key in T]: F extends (val: T) => infer V ? V : never;
+            [key in T]: F extends (val: key) => infer V ? V : never;
           }
         : never;
 

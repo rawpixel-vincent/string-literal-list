@@ -6,37 +6,81 @@ const freezeIfImmutable = (source, target) => {
   return target;
 };
 
+const shouldWarn = () => {
+  /* c8 ignore start */
+  return (
+    typeof console === 'object' &&
+    console &&
+    typeof console.warn === 'function' &&
+    ((typeof window === 'undefined' &&
+      typeof process === 'object' &&
+      process &&
+      typeof process.env === 'object' &&
+      process.env &&
+      typeof process.env.NODE_ENV === 'string' &&
+      process.env.NODE_ENV &&
+      process.env.NODE_ENV !== 'production' &&
+      process.env.NODE_ENV !== 'test') ||
+      (typeof window === 'object' &&
+        window &&
+        '__NEXT_DATA__' in window &&
+        typeof window.__NEXT_DATA__ === 'object' &&
+        window.__NEXT_DATA__ &&
+        'runtimeConfig' in window.__NEXT_DATA__ &&
+        typeof window.__NEXT_DATA__.runtimeConfig === 'object' &&
+        window.__NEXT_DATA__.runtimeConfig &&
+        'environment' in window.__NEXT_DATA__.runtimeConfig &&
+        typeof window.__NEXT_DATA__.runtimeConfig.environment === 'string' &&
+        window.__NEXT_DATA__.runtimeConfig.environment !== 'prod'))
+  );
+  /* c8 ignore stop */
+};
+
 export class SL extends Array {
-  infered = {
-    Union: undefined,
-    Tuple: undefined,
-    Mutable: undefined,
-    Unsorted: undefined,
-  };
+  // #infered = {
+  //   Union: undefined,
+  //   Tuple: undefined,
+  //   Mutable: undefined,
+  //   Unsorted: undefined,
+  // };
 
   enum;
-  hasEmpty = false;
+
   constructor(...args) {
     const entries = [];
     const arr = [];
-    let emptyFound = false;
+
     for (const str of args.flat()) {
       if (typeof str === 'string') {
-        if (str === '') {
-          emptyFound = true;
-        }
         entries.push([str, str]);
         arr.push(str);
       }
     }
     super(...arr);
-    this.hasEmpty = emptyFound;
+
     this.enum = Object.fromEntries(entries);
 
-    if (this.hasEmpty) {
-      this.enum[''] = '';
-    }
     Object.freeze(this.enum);
+    Object.defineProperty(this, 'enum', {
+      writable: true,
+      configurable: false,
+      enumerable: false,
+    });
+  }
+
+  includes(searchElement, fromIndex = 0) {
+    if (this.length === 0) {
+      return false;
+    }
+    if (
+      fromIndex !== 0 &&
+      typeof fromIndex === 'number' &&
+      (fromIndex > 0 || fromIndex >= this.length * -1)
+    ) {
+      return super.includes(searchElement, fromIndex);
+    }
+
+    return typeof this.enum[searchElement] === 'string';
   }
 
   concat(...args) {
@@ -64,13 +108,6 @@ export class SL extends Array {
     );
   }
 
-  reverse() {
-    return freezeIfImmutable(
-      this,
-      new SL(...super.reverse.apply(this, arguments)),
-    );
-  }
-
   toSpliced() {
     return freezeIfImmutable(
       this,
@@ -85,17 +122,19 @@ export class SL extends Array {
     );
   }
 
-  without() {
-    const values = Array.from(arguments).flatMap((el) =>
-      Array.isArray(el)
-        ? el.filter((s) => typeof s === 'string')
-        : typeof el === 'string'
-          ? [el]
-          : [],
-    );
+  without(...values) {
+    const filtered = values
+      .flat()
+      .map((e) =>
+        typeof e === 'string'
+          ? e
+          : typeof e === 'number'
+            ? String(e)
+            : undefined,
+      );
     return freezeIfImmutable(
       this,
-      new SL(...this.filter((e) => !values.includes(e))),
+      new SL(...this.filter((e) => !filtered.includes(e))),
     );
   }
 
@@ -182,11 +221,11 @@ export class SL extends Array {
   }
 
   value(value) {
-    if (
-      typeof value === 'string' &&
-      (this.enum[value] || (this.hasEmpty && value === ''))
-    ) {
-      return value;
+    if (typeof value !== 'string') {
+      throw new Error(`Invalid value ${value}`);
+    }
+    if (this.enum[value] === value) {
+      return this.enum[value];
     }
     throw new Error(`Invalid value ${value}`);
   }
@@ -200,7 +239,27 @@ export class SL extends Array {
     return Object.assign(
       {},
       ...records,
-      Object.fromEntries(super.map((e) => [e, initialValue])),
+      Object.fromEntries(
+        super.map((e) => {
+          try {
+            return [
+              e,
+              typeof initialValue === 'object' && initialValue !== null
+                ? Array.isArray(initialValue)
+                  ? [...initialValue]
+                  : typeof structuredClone === 'function'
+                    ? structuredClone(initialValue)
+                    : /* c8 ignore next 1 */
+                      { ...initialValue }
+                : initialValue,
+            ];
+            /* c8 ignore next 4 */
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (error) {
+            return [e, initialValue];
+          }
+        }),
+      ),
     );
   }
 
@@ -208,11 +267,32 @@ export class SL extends Array {
     return Object.fromEntries(super.map((e) => [e, cb(e)]));
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   toRecordType(type = 'any', initialValue = undefined, ...records) {
     return Object.assign(
       {},
       ...records,
-      Object.fromEntries(super.map((e) => [e, initialValue])),
+      Object.fromEntries(
+        super.map((e) => {
+          try {
+            return [
+              e,
+              typeof initialValue === 'object' && initialValue !== null
+                ? Array.isArray(initialValue)
+                  ? [...initialValue]
+                  : typeof structuredClone === 'function'
+                    ? structuredClone(initialValue)
+                    : /* c8 ignore next 1 */
+                      { ...initialValue }
+                : initialValue,
+            ];
+            /* c8 ignore next 4 */
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (error) {
+            return [e, initialValue];
+          }
+        }),
+      ),
     );
   }
 
@@ -263,6 +343,190 @@ export class SL extends Array {
     const mut = this.mutable();
     return mut.with.apply(mut, arguments);
   }
+
+  push() {
+    /* c8 ignore start */
+    if (shouldWarn()) {
+      console.warn(
+        `Using push() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
+      );
+    }
+    /* c8 ignore stop */
+
+    if (!Object.isFrozen(this)) {
+      const s = this.mutable();
+      s.push.apply(s, arguments);
+      super.push.apply(this, arguments);
+
+      this.enum = Object.fromEntries(this.map((e) => [e, e]));
+
+      Object.freeze(this.enum);
+    } else {
+      throw new Error('Cannot set properties on a frozen object');
+    }
+
+    return this.length;
+  }
+
+  shift() {
+    /* c8 ignore start */
+    if (shouldWarn()) {
+      console.warn(
+        `Using shift() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
+      );
+    }
+    /* c8 ignore stop */
+    if (!Object.isFrozen(this)) {
+      const s = this.mutable();
+      const shifted = s.shift.apply(s, arguments);
+      super.shift.apply(this, arguments);
+
+      this.enum = Object.fromEntries(this.map((e) => [e, e]));
+
+      Object.freeze(this.enum);
+
+      return shifted;
+    } else {
+      throw new Error('Cannot set properties on a frozen object');
+    }
+  }
+
+  unshift() {
+    /* c8 ignore start */
+    if (shouldWarn()) {
+      console.warn(
+        `Using unshift() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
+      );
+    }
+    /* c8 ignore stop */
+    if (!Object.isFrozen(this)) {
+      const s = this.mutable();
+      s.unshift.apply(s, arguments);
+      super.unshift.apply(this, arguments);
+
+      this.enum = Object.fromEntries(this.map((e) => [e, e]));
+
+      Object.freeze(this.enum);
+    } else {
+      throw new Error('Cannot set properties on a frozen object');
+    }
+    return this.length;
+  }
+
+  copyWithin() {
+    /* c8 ignore start */
+    if (shouldWarn()) {
+      console.warn(
+        `Using copyWithin() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
+      );
+    }
+    /* c8 ignore stop */
+    if (!Object.isFrozen(this)) {
+      const s = this.mutable();
+      s.copyWithin.apply(s, arguments);
+      super.copyWithin.apply(this, arguments);
+
+      this.enum = Object.fromEntries(this.map((e) => [e, e]));
+
+      Object.freeze(this.enum);
+    } else {
+      throw new Error('Cannot set properties on a frozen object');
+    }
+    return this;
+  }
+
+  pop() {
+    /* c8 ignore start */
+    if (shouldWarn()) {
+      console.warn(
+        `Using pop() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
+      );
+    }
+    /* c8 ignore stop */
+
+    if (!Object.isFrozen(this)) {
+      const s = this.mutable();
+      const popped = s.pop.apply(s, arguments);
+      super.pop.apply(this, arguments);
+
+      this.enum = Object.fromEntries(this.map((e) => [e, e]));
+
+      Object.freeze(this.enum);
+
+      return popped;
+    } else {
+      throw new Error('Cannot set properties on a frozen object');
+    }
+  }
+
+  fill() {
+    /* c8 ignore start */
+    if (shouldWarn()) {
+      console.warn(
+        `Using fill() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
+      );
+    }
+    /* c8 ignore stop */
+
+    if (!Object.isFrozen(this)) {
+      const s = this.mutable();
+      s.fill.apply(s, arguments);
+      super.fill.apply(this, arguments);
+
+      this.enum = Object.fromEntries(this.map((e) => [e, e]));
+
+      Object.freeze(this.enum);
+    } else {
+      throw new Error('Cannot set properties on a frozen object');
+    }
+
+    return this;
+  }
+
+  splice() {
+    /* c8 ignore start */
+    if (shouldWarn()) {
+      console.warn(
+        `Using splice() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
+      );
+    }
+
+    /* c8 ignore stop */
+    if (!Object.isFrozen(this)) {
+      const s = this.mutable();
+      const spliced = s.splice.apply(s, arguments);
+      super.splice.apply(this, arguments);
+
+      this.enum = Object.fromEntries(this.map((e) => [e, e]));
+
+      Object.freeze(this.enum);
+
+      return spliced;
+    } else {
+      throw new Error('Cannot set properties on a frozen object');
+    }
+  }
+
+  reverse() {
+    /* c8 ignore start */
+    if (shouldWarn()) {
+      console.warn(
+        `Using reverse() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
+      );
+    }
+    /* c8 ignore stop */
+    if (!Object.isFrozen(this)) {
+      const s = this.mutable();
+      s.reverse.apply(s, arguments);
+      super.reverse.apply(this, arguments);
+      this.enum = Object.fromEntries(this.map((e) => [e, e]));
+
+      Object.freeze(this.enum);
+    } else {
+      throw new Error('Cannot set properties on a frozen object');
+    }
+    return this;
+  }
 }
 
 export const ARRAY_IN_PLACE_MUTATION = Object.freeze({
@@ -273,4 +537,5 @@ export const ARRAY_IN_PLACE_MUTATION = Object.freeze({
   pop: 'pop',
   fill: 'fill',
   splice: 'splice',
+  reverse: 'reverse',
 });
