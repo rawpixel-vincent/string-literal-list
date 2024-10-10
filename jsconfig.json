@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "rootDir": ".",
-    "module": "NodeNext",
-    "target": "ESNext",
+    "module": "Preserve",
+    "target": "ES6",
     "lib": ["ESNext", "DOM"],
-    "moduleResolution": "nodenext",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": false,
     "esModuleInterop": false,
     "checkJs": true,
@@ -17,7 +17,13 @@
     "disableSizeLimit": true,
     "isolatedModules": true,
     "removeComments": false,
-    "maxNodeModuleJsDepth": 0
+    "maxNodeModuleJsDepth": 0,
+    "disableReferencedProjectLoad": true,
+    "disableSourceOfProjectReferenceRedirect": true,
+    "extendedDiagnostics": false,
+    "diagnostics": false,
+    "assumeChangesOnlyAffectDirectDependencies": true,
+    "disableSolutionSearching": true
   },
   "include": [
     "*.d.ts",
