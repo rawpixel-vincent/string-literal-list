@@ -1,9 +1,15 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use strict';
+
+/* eslint-disable no-unused-vars */
+
 import 'core-js/actual/array/to-reversed.js';
 import 'core-js/actual/array/to-sorted.js';
 import 'core-js/actual/array/to-spliced.js';
 import 'core-js/actual/array/find-last-index.js';
+import 'core-js/actual/array/flat.js';
+import 'core-js/actual/array/find-last.js';
 import 'core-js/actual/array/flat-map.js';
 import 'core-js/actual/array/last-index-of.js';
 import 'core-js/actual/array/with.js';
@@ -79,6 +85,7 @@ for (const { type, stringList } of functions) {
       });
       st.match([...list], values);
       st.match(JSON.stringify([...list]), JSON.stringify(values));
+      st.match([...list].toString(), list.toString());
       st.match([...list.keys()], [...values.keys()]);
       st.match([...list.values()], values);
       st.match([...list.entries()], [...values.entries()]);
@@ -86,6 +93,7 @@ for (const { type, stringList } of functions) {
         st.match(value, values[i]);
         st.match(list.enum[value], value);
         st.ok(list.includes(value));
+        st.ok(list.includes(value, i));
         st.ok(list.indexOf(values[i]) !== -1);
         st.ok(list.at(i) === value);
 
@@ -93,13 +101,17 @@ for (const { type, stringList } of functions) {
 
         st.ok(list.filter((v, vi) => v === value && vi === i).length === 1);
         st.ok(list.some((v) => v === value) === true);
-        st.ok(list.every((v) => v === value) === (list.length === 1));
+        st.ok(
+          list.every((v) => v === value) ===
+            (list.filter((v) => v !== value).length === 0),
+        );
         st.ok(list.value(value) === value);
       }
 
       st.ok(list.enum[`${Math.random() * 100000}!`] === undefined);
       st.ok(list.enum[Math.random() * 100000] === undefined);
       st.throws(() => list.value(`${Math.random() * 100000}`));
+      st.throws(() => list.value(null));
 
       st.notOk(list.includes(null));
       st.ok(list.at(values.length) === undefined);
@@ -513,6 +525,10 @@ for (const { type, stringList } of functions) {
     });
 
     tt.test(type + ': without()', (t) => {
+      const l = stringList('foo', '3', 'baz').without(['foo', 3, null]);
+      testExpectedArrayValues(t, l, 'baz');
+      const l2 = stringList('foo', '3', 'baz').without('foo', 3, null);
+      testExpectedArrayValues(t, l2, 'baz');
       const list = stringList('foo', 'bar').without('bar');
       testExpectedArrayValues(t, list, 'foo');
       testEscapingFromStringList(t, list, 'foo');
@@ -662,13 +678,19 @@ for (const { type, stringList } of functions) {
     });
 
     tt.test(type + ': toReversed()', (t) => {
-      const list = stringList('foo', 'bar').toReversed();
+      const lista = stringList('foo', 'bar');
+      const list = lista.toReversed();
       testExpectedArrayValues(t, list, 'bar', 'foo');
+      testExpectedArrayValues(t, lista, 'foo', 'bar');
       testEscapingFromStringList(t, list, 'bar', 'foo');
+      testEscapingFromStringList(t, lista, 'foo', 'bar');
 
       /** @type {'bar::foo'} */
       const d = list.join('::');
       t.match(d, 'bar::foo');
+      /** @type {'foo::bar'} */
+      const da = lista.join('::');
+      t.match(da, 'foo::bar');
 
       const list2 = list.concat('doink', 'bleep').toReversed();
       testExpectedArrayValues(t, list2, 'bleep', 'doink', 'foo', 'bar');
@@ -691,15 +713,22 @@ for (const { type, stringList } of functions) {
           stringList('foo', 'bar').reverse();
         });
       } else {
-        const list = stringList('foo', 'bar').reverse();
-        testExpectedArrayValues(t, list, 'bar', 'foo');
-        testEscapingFromStringList(t, list, 'bar', 'foo');
+        const lista = stringList('foo', '', 'bar');
+        const list = lista.reverse();
+        testExpectedArrayValues(t, list, 'bar', '', 'foo');
+        testExpectedArrayValues(t, lista, 'bar', '', 'foo');
+        testEscapingFromStringList(t, list, 'bar', '', 'foo');
+        testEscapingFromStringList(t, lista, 'bar', '', 'foo');
 
-        /** @type {'bar::foo'} */
+        /** @type {'bar::::foo'} */
         const d = list.join('::');
-        t.match(d, 'bar::foo');
+        t.match(d, 'bar::::foo');
+        /** @type {'bar::::foo'} */
+        const da = lista.join('::');
+        t.match(da, 'bar::::foo');
 
-        const list2 = list
+        const list2 = stringList('foo', 'bar')
+          .reverse()
           .concat('doink', 'bleep')
           .reverse()
           .concat('du', 'du');
@@ -1001,10 +1030,7 @@ for (const { type, stringList } of functions) {
     Object.values(ARRAY_IN_PLACE_MUTATION).forEach((el) => {
       tt.test(type + `: stringList calling function list.${el}()`, (t) => {
         const list = stringList('foo', 'bar');
-        if (el !== 'pop') {
-          t.end();
-          return;
-        }
+
         if (
           type === 'immutable' ||
           type === 'immutableCjs' ||
@@ -1013,7 +1039,7 @@ for (const { type, stringList } of functions) {
           t.throws(
             () =>
               // @ts-expect-error
-              list[el](0, 0),
+              list[el](),
             `foo'.${el} should throw in ${type} mode`,
           );
         } else {
@@ -1042,6 +1068,42 @@ for (const { type, stringList } of functions) {
       const list = stringList('foo', 'bar', 'baz')
         .withPrefix('a.')
         .withSuffix('.z');
+      t.ok(list.includes('a.foo.z'));
+      t.ok([...list].includes('a.foo.z'));
+      t.ok(list.includes('a.bar.z'));
+      t.ok([...list].includes('a.bar.z'));
+      t.ok(list.includes('a.baz.z'));
+      t.ok([...list].includes('a.baz.z'));
+      t.notOk(list.includes('a.foo.z', 1));
+      t.notOk([...list].includes('a.foo.z', 1));
+      t.notOk(list.includes('a.foo.z', 2));
+      t.notOk([...list].includes('a.foo.z', 2));
+      t.notOk(list.includes('a.foo.z', 3));
+      t.notOk([...list].includes('a.foo.z', 3));
+      t.ok(list.includes('a.foo.z', 0));
+      t.ok([...list].includes('a.foo.z', 0));
+      t.ok(list.includes('a.bar.z', 1));
+      t.ok([...list].includes('a.bar.z', 1));
+      t.ok(list.includes('a.bar.z', 0));
+      t.ok([...list].includes('a.bar.z', 0));
+      t.ok(list.includes('a.baz.z', -1));
+      t.ok([...list].includes('a.baz.z', -1));
+      t.notOk(list.includes('a.bar.z', 2));
+      t.notOk([...list].includes('a.bar.z', 2));
+      t.notOk(list.includes('a.foo.z', -1));
+      t.notOk([...list].includes('a.foo.z', -1));
+      t.notOk(list.includes('a.foo.z', -2));
+      t.notOk([...list].includes('a.foo.z', -2));
+      t.ok(list.includes('a.foo.z', -3));
+      t.ok([...list].includes('a.foo.z', -3));
+      t.ok(list.includes('a.foo.z', -4));
+      t.ok([...list].includes('a.foo.z', -4));
+      t.ok(list.includes('a.foo.z', -5));
+      t.ok([...list].includes('a.foo.z', -5));
+      t.ok(list.includes('a.bar.z', -2));
+      t.ok([...list].includes('a.bar.z', -2));
+      t.notOk(list.includes('a.bar.z', -1));
+      t.notOk([...list].includes('a.bar.z', -1));
 
       t.ok(!list.includes('bar'));
       t.ok(!list.includes(values[1]));
@@ -1248,18 +1310,69 @@ for (const { type, stringList } of functions) {
         },
       });
 
+      const schemaArray = stringList('foo', 'bar', 'baz').toRecordType(
+        'string[]',
+        [],
+      );
+      t.match(schemaArray, {
+        foo: [],
+        bar: [],
+        baz: [],
+      });
+      schemaArray.foo.push(3);
+      schemaArray.bar.push('bar');
+      schemaArray.baz.push('baz');
+      t.match(schemaArray, {
+        foo: [3],
+        bar: ['bar'],
+        baz: ['baz'],
+      });
+
+      const schemaString = stringList('foo', 'bar', 'baz').toRecordType(
+        'string',
+        '',
+      );
+      t.match(schemaString, {
+        foo: '',
+        bar: '',
+        baz: '',
+      });
+
+      const schemaObject = stringList('foo', 'bar', 'baz').toRecordType(
+        'any',
+        {},
+      );
+      t.match(schemaObject, {
+        foo: {},
+        bar: {},
+        baz: {},
+      });
+      schemaObject.foo.a = 3;
+      schemaObject.bar.b = 'bar';
+      schemaObject.baz.c = 'baz';
+      t.match(schemaObject, {
+        foo: { a: 3 },
+        bar: { b: 'bar' },
+        baz: { c: 'baz' },
+      });
+
       t.end();
     });
 
     tt.test(type + `: toRecordValue()`, (t) => {
       const list = stringList('foo', 'bar', 'baz');
+      const val = [];
       /** @type {Record<'foo' | 'bar' | 'baz', any[]>|Record<typeof list['infered']['Tuple'][*], any[]>} */
-      const schema = list.toRecordValue([]);
+      const schema = list.toRecordValue(val);
       t.match(schema, {
-        foo: [],
-        bar: [],
-        baz: [],
+        foo: val,
+        bar: val,
+        baz: val,
       });
+      schema.foo.push(3);
+      t.ok(schema.foo !== val);
+      t.match(schema.foo, [3]);
+      t.match(schema.bar, val);
       schema.foo = [3];
       schema.bar = ['bar'];
       schema.baz = [];
@@ -1271,6 +1384,60 @@ for (const { type, stringList } of functions) {
       });
       // @ts-expect-error
       schema.bar = 'bar';
+
+      const val1 = {};
+      const schema1 = list.toRecordValue(val1);
+      t.ok(schema1.foo !== val1);
+      t.match(schema1, {
+        foo: {},
+        bar: {},
+        baz: {},
+      });
+      schema1.foo.a = 3;
+      t.match(schema1, {
+        foo: { a: 3 },
+        bar: {},
+        baz: {},
+      });
+
+      const schemaNumber = list.toRecordValue(0);
+      t.match(schemaNumber, {
+        foo: 0,
+        bar: 0,
+        baz: 0,
+      });
+      const schemaString = list.toRecordValue('');
+      t.match(schemaString, {
+        foo: '',
+        bar: '',
+        baz: '',
+      });
+      const schemaBoolean = list.toRecordValue(false);
+      t.match(schemaBoolean, {
+        foo: false,
+        bar: false,
+        baz: false,
+      });
+      schemaBoolean.foo = true;
+      t.match(schemaBoolean, {
+        foo: true,
+        bar: false,
+        baz: false,
+      });
+
+      const schemaUint8Array = list.toRecordValue(new Uint8Array());
+      t.match(schemaUint8Array, {
+        foo: new Uint8Array(),
+        bar: new Uint8Array(),
+        baz: new Uint8Array(),
+      });
+
+      const schemaFrozenObject = list.toRecordValue(Object.freeze({}));
+      t.match(schemaFrozenObject, {
+        foo: {},
+        bar: {},
+        baz: {},
+      });
 
       /** @type {string[]} */
       const initial2 = [];
@@ -1896,6 +2063,232 @@ for (const { type, stringList } of functions) {
         ]),
       );
       testExpectedArrayValues(t, list, 'foo', 'bar', 'baz');
+      t.end();
+    });
+
+    tt.test('stringList: push()', (t) => {
+      if (
+        type !== 'mutable' &&
+        type !== 'mutableCjs' &&
+        type !== 'mutableEsm'
+      ) {
+        t.pass('skipping test for immutable');
+        t.end();
+        return;
+      }
+      const list = stringList('foo', 'bar', 'baz');
+      list.push('doink');
+      testExpectedArrayValues(t, list, 'foo', 'bar', 'baz', 'doink');
+      t.match([...list], list.mutable());
+
+      list.push('');
+      testExpectedArrayValues(t, list, 'foo', 'bar', 'baz', 'doink', '');
+      t.match([...list], list.mutable());
+
+      t.end();
+    });
+
+    tt.test('stringList: splice()', (t) => {
+      if (
+        type !== 'mutable' &&
+        type !== 'mutableCjs' &&
+        type !== 'mutableEsm'
+      ) {
+        t.pass('skipping test for immutable');
+        t.end();
+        return;
+      }
+      const list = stringList('foo', 'bar', 'baz');
+      const list2 = list.splice(2, 1);
+      testExpectedArrayValues(t, list, 'foo', 'bar');
+      t.match(list2, ['foo', 'bar', 'baz'].splice(2, 1));
+
+      /** @type {'baz'} */
+      const d = list2.join('::');
+      t.match(d, 'baz');
+
+      const list3 = stringList('foo', '', 'bar', '').splice(0, 2);
+      t.match(list3, ['foo', '']);
+      t.match(list3, ['foo', '', 'bar', ''].splice(0, 2));
+
+      /** @type {'foo::'} */
+      const d2 = list3.join('::');
+      t.match(d2, 'foo::');
+
+      const list4 = stringList('foo', 'bar', 'baz').splice(0, 0);
+      t.match(list4, []);
+      t.match(list4, ['foo', 'bar', 'baz'].splice(0, 0));
+
+      /** @type {''} */
+      const d3 = list4.join('::');
+      t.match(d3, '');
+
+      const list5 = stringList('foo', 'bar', 'baz').splice(3, 1);
+      t.match(list5, []);
+      t.match(list5, ['foo', 'bar', 'baz'].splice(3, 1));
+
+      /** @type {''} */
+      const d4 = list5.join('::');
+      t.match(d4, '');
+
+      const list6 = stringList('foo', 'bar', 'baz').splice(-3, 1);
+      t.match(list6, ['foo']);
+      t.match(list6, ['foo', 'bar', 'baz'].splice(-3, 1));
+
+      /** @type {'foo'} */
+      const d5 = list6.join('::');
+
+      t.match(d5, 'foo');
+
+      const list7 = stringList('foo', 'bar', 'baz').splice(1);
+      t.match(list7, ['bar', 'baz']);
+      t.match(list7, ['foo', 'bar', 'baz'].splice(1));
+
+      /** @type {'bar::baz'} */
+      const d6 = list7.join('::');
+      t.match(d6, 'bar::baz');
+
+      const list8 = stringList('foo', 'bar', 'baz').splice(null);
+      t.match(list8, ['foo', 'bar', 'baz'].splice(null));
+
+      /** @type {'foo::bar::baz'} */
+      const d7 = list8.join('::');
+      t.match(d7, 'foo::bar::baz');
+
+      t.end();
+    });
+
+    tt.test('stringList: pop()', (t) => {
+      if (
+        type !== 'mutable' &&
+        type !== 'mutableCjs' &&
+        type !== 'mutableEsm'
+      ) {
+        t.pass('skipping test for immutable');
+        t.end();
+        return;
+      }
+      const list = stringList('foo', '', 'bar', 'baz', '');
+      const last = list.pop();
+      t.equal(last, '');
+      testExpectedArrayValues(t, list, 'foo', '', 'bar', 'baz');
+      t.match([...list], list.mutable());
+
+      t.end();
+    });
+
+    tt.test('stringList: shift()', (t) => {
+      if (
+        type !== 'mutable' &&
+        type !== 'mutableCjs' &&
+        type !== 'mutableEsm'
+      ) {
+        t.pass('skipping test for immutable');
+        t.end();
+        return;
+      }
+      const list = stringList('foo', 'bar', 'baz', '');
+      const first = list.shift();
+      t.equal(first, 'foo');
+      testExpectedArrayValues(t, list, 'bar', 'baz', '');
+      t.match([...list], list.mutable());
+
+      t.end();
+    });
+
+    tt.test('stringList: unshift()', (t) => {
+      if (
+        type !== 'mutable' &&
+        type !== 'mutableCjs' &&
+        type !== 'mutableEsm'
+      ) {
+        t.pass('skipping test for immutable');
+        t.end();
+        return;
+      }
+      const list = stringList('foo', 'bar', 'baz', '');
+      list.unshift('doink');
+      testExpectedArrayValues(t, list, 'doink', 'foo', 'bar', 'baz', '');
+      t.match([...list], list.mutable());
+
+      list.unshift('');
+      testExpectedArrayValues(t, list, '', 'doink', 'foo', 'bar', 'baz', '');
+      t.match([...list], list.mutable());
+
+      t.end();
+    });
+
+    tt.test('stringList: copyWithin()', (t) => {
+      if (
+        type !== 'mutable' &&
+        type !== 'mutableCjs' &&
+        type !== 'mutableEsm'
+      ) {
+        t.pass('skipping test for immutable');
+        t.end();
+        return;
+      }
+      const list = stringList('foo', 'bar', 'baz', '');
+      const list2 = list.copyWithin(1, 0);
+      const listMatch = ['foo', 'bar', 'baz', ''];
+      listMatch.copyWithin(1, 0);
+      testExpectedArrayValues(t, list, ...listMatch);
+      t.match(list2, ['foo', 'bar', 'baz', ''].copyWithin(1, 0));
+
+      /** @type {'foo::foo::bar::baz'} */
+      const d = list.join('::');
+      t.match(d, 'foo::foo::bar::baz');
+
+      const list3 = stringList('foo', 'bar', 'baz', '').copyWithin(0, 2);
+      t.match(list3, ['baz', ''].concat(['baz', ''].slice(0, 2)));
+
+      /** @type {'baz::::baz::'} */
+      const d2 = list3.join('::');
+      t.match(d2, 'baz::::baz::');
+
+      const list4 = stringList('foo', 'bar', 'baz', '').copyWithin(0, 2, 3);
+      t.match(list4, ['baz', 'bar', 'baz', ''].copyWithin(0, 2, 3));
+
+      /** @type {'baz::bar::baz::'} */
+      const d3 = list4.join('::');
+      t.match(d3, 'baz::bar::baz::');
+
+      const list5 = stringList('foo', 'bar', 'baz', '').copyWithin(0, -3, -2);
+      t.match(list5, ['foo', 'bar', 'baz', ''].copyWithin(0, -3, -2));
+
+      /** @type {'bar::bar::baz::'} */
+      const d4 = list5.join('::');
+      t.match(d4, 'bar::bar::baz::');
+
+      const list6 = stringList('foo', 'bar', 'baz', '').copyWithin(0, -2, -1);
+      t.match(list6, ['foo', 'bar', 'baz', ''].copyWithin(0, -2, -1));
+
+      /** @type {'baz::bar::baz::'} */
+      const d5 = list6.join('::');
+      t.match(d5, 'baz::bar::baz::');
+
+      t.end();
+    });
+
+    tt.test('stringList: fill()', (t) => {
+      if (
+        type !== 'mutable' &&
+        type !== 'mutableCjs' &&
+        type !== 'mutableEsm'
+      ) {
+        t.pass('skipping test for immutable');
+        t.end();
+        return;
+      }
+      const list = stringList('foo', 'bar', 'baz', '');
+      const list2 = list.fill('doink');
+      testExpectedArrayValues(t, list, 'doink', 'doink', 'doink', 'doink');
+      t.match([...list], list.mutable());
+
+      const list3 = stringList('foo', 'bar', 'baz', '').fill('', 1, 2);
+      testExpectedArrayValues(t, list3, 'foo', '', 'baz', '');
+      t.match([...list3], list3.mutable());
+
       t.end();
     });
   });

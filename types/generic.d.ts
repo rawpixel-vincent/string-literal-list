@@ -1,4 +1,5 @@
-/// <reference path="./index.d.ts" />
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/// <reference types="./index.d.ts" />
 
 declare global {
   namespace StringLiteralList {}
