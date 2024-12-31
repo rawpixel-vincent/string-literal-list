@@ -131,7 +131,7 @@ const valKnown = Math.random() > 0.5 ? 'notInTheList' : 'foo';
 // valKnown type is 'foo' | 'notInTheList'
 if (list.includes(valKnown)) {
   // valKnown type is now 'foo'
-} else if (val !== 'notInTheList') {
+} else if (valKnown !== 'notInTheList') {
   // valKnown type is now never
 } else {
   // valKnown type is 'notInTheList'
