@@ -92,28 +92,6 @@ declare global {
           : never
         : never;
 
-      // withDerivatedSuffix<S extends string>(
-      //   chars: S,
-      // ):
-      //   | T
-      //   | StringLiteralList.string.DropSuffix<
-      //       StringLiteralList.string.DropSuffix<`${T}${S}${S}`, S>,
-      //       `${S}${S}`
-      //     > extends infer W extends string
-      //   ? MaybeReadonly<Mut, IStringList<W, readonly W[], Mut, true>>
-      //   : never;
-
-      // withDerivatedPrefix<S extends string>(
-      //   chars: S,
-      // ):
-      //   | T
-      //   | StringLiteralList.string.DropPrefix<
-      //       StringLiteralList.string.DropPrefix<`${S}${S}${T}`, S>,
-      //       `${S}${S}`
-      //     > extends infer W extends string
-      //   ? MaybeReadonly<Mut, IStringList<W, readonly W[], Mut, true>>
-      //   : never;
-
       withReplace<S extends string, D extends string>(
         searchValue: S,
         replaceValue: D,
@@ -277,7 +255,10 @@ declare global {
       at(n: number): Tuple[number] | undefined;
 
       // Type override to prevent string not in type T issue
-      includes<PP = Tuple[number]>(val: PP, fromIndex?: number): boolean;
+      includes<PP = Tuple[number]>(
+        val: PP | string | null | undefined,
+        fromIndex?: number,
+      ): val is Tuple[number];
       indexOf<PP = Tuple[number]>(
         searchElement: PP,
         fromIndex?: number,

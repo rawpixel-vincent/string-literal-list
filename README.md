@@ -122,6 +122,21 @@ const bothWay = list.withPrefix('data.').withSuffix('.ext');
 /** @type {any|unknown|'notInTheList'} */
 let val;
 list.includes(val); // No type error just boolean result.
+
+if (list.includes(val)) {
+  // val type is now 'foo' | 'bar'
+}
+
+const valKnown = Math.random() > 0.5 ? 'notInTheList' : 'foo';
+// valKnown type is 'foo' | 'notInTheList'
+if (list.includes(valKnown)) {
+  // valKnown type is now 'foo'
+} else if (val !== 'notInTheList') {
+  // valKnown type is now never
+} else {
+  // valKnown type is 'notInTheList'
+}
+
 // similar types fix for indexOf, lastIndexOf, filter, some, every, findIndex and find methods.
 
 // Get a copy of the underlying array -> T[]
