@@ -6,6 +6,11 @@ const freezeIfImmutable = (source, target) => {
   return target;
 };
 
+/* c8 ignore start */
+const mutationWarning = (method) =>
+  `Using ${method}() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`;
+/* c8 ignore stop */
+
 const shouldWarn = () => {
   /* c8 ignore start */
   return (
@@ -84,10 +89,7 @@ export class SL extends Array {
   }
 
   concat(...args) {
-    return freezeIfImmutable(
-      this,
-      new SL(...super.concat.apply(this, args.flat())),
-    );
+    return freezeIfImmutable(this, new SL(...super.concat.apply(this, args.flat())));
   }
 
   concatList(list) {
@@ -95,47 +97,28 @@ export class SL extends Array {
   }
 
   toSorted() {
-    return freezeIfImmutable(
-      this,
-      new SL(...super.toSorted.apply(this, arguments)),
-    );
+    return freezeIfImmutable(this, new SL(...super.toSorted.apply(this, arguments)));
   }
 
   toReversed() {
-    return freezeIfImmutable(
-      this,
-      new SL(...super.toReversed.apply(this, arguments)),
-    );
+    return freezeIfImmutable(this, new SL(...super.toReversed.apply(this, arguments)));
   }
 
   toSpliced() {
-    return freezeIfImmutable(
-      this,
-      new SL(...super.toSpliced.apply(this, arguments)),
-    );
+    return freezeIfImmutable(this, new SL(...super.toSpliced.apply(this, arguments)));
   }
 
   slice() {
-    return freezeIfImmutable(
-      this,
-      new SL(...super.slice.apply(this, arguments)),
-    );
+    return freezeIfImmutable(this, new SL(...super.slice.apply(this, arguments)));
   }
 
   without(...values) {
     const filtered = values
       .flat()
       .map((e) =>
-        typeof e === 'string'
-          ? e
-          : typeof e === 'number'
-            ? String(e)
-            : undefined,
+        typeof e === 'string' ? e : typeof e === 'number' ? String(e) : undefined,
       );
-    return freezeIfImmutable(
-      this,
-      new SL(...this.filter((e) => !filtered.includes(e))),
-    );
+    return freezeIfImmutable(this, new SL(...this.filter((e) => !filtered.includes(e))));
   }
 
   withTrim() {
@@ -143,17 +126,11 @@ export class SL extends Array {
   }
 
   withPrefix(prefix = '') {
-    return freezeIfImmutable(
-      this,
-      new SL(...super.map((e) => `${prefix}${e}`)),
-    );
+    return freezeIfImmutable(this, new SL(...super.map((e) => `${prefix}${e}`)));
   }
 
   withSuffix(suffix = '') {
-    return freezeIfImmutable(
-      this,
-      new SL(...super.map((e) => `${e}${suffix}`)),
-    );
+    return freezeIfImmutable(this, new SL(...super.map((e) => `${e}${suffix}`)));
   }
 
   // withDerivatedSuffix(chars = '') {
@@ -199,17 +176,11 @@ export class SL extends Array {
   }
 
   toLowerCase() {
-    return freezeIfImmutable(
-      this,
-      new SL(...super.map((e) => e.toLowerCase())),
-    );
+    return freezeIfImmutable(this, new SL(...super.map((e) => e.toLowerCase())));
   }
 
   toUpperCase() {
-    return freezeIfImmutable(
-      this,
-      new SL(...super.map((e) => e.toUpperCase())),
-    );
+    return freezeIfImmutable(this, new SL(...super.map((e) => e.toUpperCase())));
   }
 
   toCapitalize() {
@@ -347,9 +318,7 @@ export class SL extends Array {
   push() {
     /* c8 ignore start */
     if (shouldWarn()) {
-      console.warn(
-        `Using push() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
-      );
+      console.warn(mutationWarning('push'));
     }
     /* c8 ignore stop */
 
@@ -371,9 +340,7 @@ export class SL extends Array {
   shift() {
     /* c8 ignore start */
     if (shouldWarn()) {
-      console.warn(
-        `Using shift() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
-      );
+      console.warn(mutationWarning('shift'));
     }
     /* c8 ignore stop */
     if (!Object.isFrozen(this)) {
@@ -394,9 +361,7 @@ export class SL extends Array {
   unshift() {
     /* c8 ignore start */
     if (shouldWarn()) {
-      console.warn(
-        `Using unshift() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
-      );
+      console.warn(mutationWarning('unshift'));
     }
     /* c8 ignore stop */
     if (!Object.isFrozen(this)) {
@@ -416,9 +381,7 @@ export class SL extends Array {
   copyWithin() {
     /* c8 ignore start */
     if (shouldWarn()) {
-      console.warn(
-        `Using copyWithin() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
-      );
+      console.warn(mutationWarning('copyWithin'));
     }
     /* c8 ignore stop */
     if (!Object.isFrozen(this)) {
@@ -438,9 +401,7 @@ export class SL extends Array {
   pop() {
     /* c8 ignore start */
     if (shouldWarn()) {
-      console.warn(
-        `Using pop() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
-      );
+      console.warn(mutationWarning('pop'));
     }
     /* c8 ignore stop */
 
@@ -462,9 +423,7 @@ export class SL extends Array {
   fill() {
     /* c8 ignore start */
     if (shouldWarn()) {
-      console.warn(
-        `Using fill() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
-      );
+      console.warn(mutationWarning('fill'));
     }
     /* c8 ignore stop */
 
@@ -486,9 +445,7 @@ export class SL extends Array {
   splice() {
     /* c8 ignore start */
     if (shouldWarn()) {
-      console.warn(
-        `Using splice() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
-      );
+      console.warn(mutationWarning('splice'));
     }
 
     /* c8 ignore stop */
@@ -510,9 +467,7 @@ export class SL extends Array {
   reverse() {
     /* c8 ignore start */
     if (shouldWarn()) {
-      console.warn(
-        `Using reverse() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`,
-      );
+      console.warn(mutationWarning('reverse'));
     }
     /* c8 ignore stop */
     if (!Object.isFrozen(this)) {

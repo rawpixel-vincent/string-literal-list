@@ -5,10 +5,7 @@
 declare global {
   namespace StringLiteralList {}
   namespace StringLiteralList.record {
-    export type StringRecord<T extends string, S extends unknown> = Record<
-      T,
-      S
-    >;
+    export type StringRecord<T extends string, S extends unknown> = Record<T, S>;
 
     export type Merge<Records extends Record<string, any>[]> = Records extends [
       infer A extends Record<string, any>,

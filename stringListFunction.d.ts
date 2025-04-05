@@ -3,12 +3,8 @@
 
 export declare function stringListMutable<
   TT extends readonly string[] = readonly never[],
->(
-  ...list: TT
-): StringLiteralList.list.IStringList<readonly [...TT], true, false>;
+>(...list: TT): StringLiteralList.list.IStringList<readonly [...TT], true, false>;
 
 export declare function stringListReadonly<
   TT extends readonly string[] = readonly never[],
->(
-  ...list: TT
-): StringLiteralList.list.IStringList<readonly [...TT], false, false>;
+>(...list: TT): StringLiteralList.list.IStringList<readonly [...TT], false, false>;

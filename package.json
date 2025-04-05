@@ -2,14 +2,12 @@
   "name": "string-literal-list",
   "version": "1.32.0",
   "description": "an array for string literal",
-  "main": "stringList.cjs",
+  "main": "stringList.js",
   "files": [
-    "stringList.cjs",
     "stringList.js",
     "stringList.d.ts",
     "stringList.min.cjs",
     "stringList.min.js",
-    "strict.cjs",
     "strict.js",
     "strict.d.ts",
     "strict.min.cjs",
@@ -33,14 +31,12 @@
   "exports": {
     ".": {
       "types": "./stringList.d.ts",
-      "require": "./stringList.cjs",
       "node": "./stringList.js",
       "import": "./stringList.min.js",
       "default": "./stringList.js"
     },
     "./strict.js": {
       "types": "./strict.d.ts",
-      "require": "./strict.cjs",
       "node": "./strict.js",
       "import": "./strict.min.js",
       "default": "./strict.js"
@@ -50,7 +46,6 @@
     },
     "./stringList.js": {
       "types": "./stringList.d.ts",
-      "require": "./stringList.cjs",
       "node": "./stringList.js",
       "import": "./stringList.min.js",
       "default": "./stringList.js"
@@ -62,18 +57,16 @@
   "license": "MIT",
   "scripts": {
     "test": "npm run lint:ci && npm run test:checkJs && npm run test:unit",
-    "test:unit": "NODE_ENV=test tap run",
+    "test:unit": "NODE_ENV=test tap rum stringList.test.js",
     "test:checkJs": "./node_modules/.bin/tsc --checkJs --project jsconfig.json",
     "prettier": "prettier --write \"**/*.{js,ts}\"",
     "lint": "eslint --fix \"./*.js\"",
     "lint:ci": "eslint . --ext .js",
-    "build": "rm -f *.min.* && npm run build:main:cjs && npm run build:main:min && npm run build:main:min:cjs && npm run build:strict:cjs && npm run build:strict:min && npm run build:strict:min:cjs",
+    "build": "rm -f *.min.* && npm run build:main:min && npm run build:main:min:cjs && npm run build:strict:min && npm run build:strict:min:cjs",
     "build:strict:min": "esbuild ./strict.js --target=chrome64,edge89,firefox88,safari13,opera76 --bundle --format=esm --minify --outfile=strict.min.js --keep-names --legal-comments=inline",
     "build:strict:min:cjs": "esbuild ./strict.js --target=chrome64,edge89,firefox88,safari13,opera76 --bundle --format=cjs --minify --outfile=strict.min.cjs --keep-names --legal-comments=inline",
-    "build:strict:cjs": "esbuild ./strict.js  --bundle --format=cjs --outfile=strict.cjs --target=node18 --minify --keep-names --legal-comments=inline",
     "build:main:min": "esbuild ./stringList.js --target=chrome64,edge89,firefox88,safari13,opera76 --bundle --format=esm --minify --outfile=stringList.min.js --keep-names --legal-comments=inline",
     "build:main:min:cjs": "esbuild ./stringList.js --target=chrome64,edge89,firefox88,safari13,opera76 --bundle --format=cjs --minify --outfile=stringList.min.cjs --keep-names --legal-comments=inline",
-    "build:main:cjs": "esbuild  ./stringList.js --bundle --format=cjs --outfile=stringList.cjs --target=node18 --minify --keep-names --legal-comments=inline",
     "prepare": "husky"
   },
   "author": "Vincent Baronnet",

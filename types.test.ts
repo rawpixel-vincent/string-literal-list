@@ -31,11 +31,7 @@ withReplace = 'name';
 // @ts-expect-error
 withReplace = '';
 
-let withReplaceAll: StringLiteralList.string.ReplaceAll<
-  'name.json.json',
-  '.json',
-  ''
->;
+let withReplaceAll: StringLiteralList.string.ReplaceAll<'name.json.json', '.json', ''>;
 // @ts-expect-error
 withReplaceAll = 'name.json.json';
 // @ts-expect-no-error
@@ -61,11 +57,7 @@ tupleImplode = ['b', 'a', 'c', 'd', 'e'];
 // @ts-expect-no-error
 tupleImplode = tuple;
 
-let prefixedTuple: StringLiteralList.tuple.TuplePrefixed<
-  typeof tuple,
-  'data.',
-  []
->;
+let prefixedTuple: StringLiteralList.tuple.TuplePrefixed<typeof tuple, 'data.', []>;
 // @ts-expect-no-error
 prefixedTuple = ['data.a', 'data.b', 'data.c', 'data.d', 'data.e'];
 // @ts-expect-error
@@ -85,11 +77,7 @@ prefixedEmptyTuple = [undefined];
 // @ts-expect-error
 prefixedEmptyTuple = [...['']];
 
-let suffixedTuple: StringLiteralList.tuple.TupleSuffixed<
-  typeof tuple,
-  '.json',
-  []
->;
+let suffixedTuple: StringLiteralList.tuple.TupleSuffixed<typeof tuple, '.json', []>;
 // @ts-expect-no-error
 suffixedTuple = ['a.json', 'b.json', 'c.json', 'd.json', 'e.json'];
 // @ts-expect-error
@@ -109,11 +97,7 @@ suffixedEmptyTuple = [undefined];
 // @ts-expect-error
 suffixedEmptyTuple = [...['']];
 
-let tupleWithout: StringLiteralList.tuple.TupleWithExclude<
-  typeof tuple,
-  'a' | 'b',
-  []
->;
+let tupleWithout: StringLiteralList.tuple.TupleWithExclude<typeof tuple, 'a' | 'b', []>;
 // @ts-expect-no-error
 tupleWithout = ['c', 'd', 'e'];
 // @ts-expect-error
@@ -133,11 +117,7 @@ tupleWithUppercase = ['A', 'B', 'C', 'D', 'E'];
 // @ts-expect-error
 tupleWithUppercase = ['a', 'b', 'c', 'd', 'e'];
 
-let tupleWithoutEmpty: StringLiteralList.tuple.TupleWithExclude<
-  ['', 'd'],
-  '',
-  []
->;
+let tupleWithoutEmpty: StringLiteralList.tuple.TupleWithExclude<['', 'd'], '', []>;
 // @ts-expect-no-error
 tupleWithoutEmpty = ['d'];
 // @ts-expect-error

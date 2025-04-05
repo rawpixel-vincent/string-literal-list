@@ -13,9 +13,7 @@ declare global {
       result extends any[] = [],
     > = result['length'] extends L ? result : TupleOf<L, T, [...result, T]>;
 
-    export type Subtract<A extends number, B extends number> = number extends
-      | A
-      | B
+    export type Subtract<A extends number, B extends number> = number extends A | B
       ? number
       : TupleOf<A> extends [...infer U, ...TupleOf<B>]
         ? U['length']
@@ -27,8 +25,9 @@ declare global {
         ? true
         : false;
 
-    export type Abs<T extends number> =
-      `${T}` extends `-${infer U extends number}` ? U : T;
+    export type Abs<T extends number> = `${T}` extends `-${infer U extends number}`
+      ? U
+      : T;
 
     /**
      * Returns true if input number type is a literal
@@ -71,10 +70,7 @@ declare global {
      */
     export type All<Arr extends boolean[]> =
       IsBooleanLiteral<Arr[number]> extends true
-        ? Arr extends [
-            infer Head extends boolean,
-            ...infer Rest extends boolean[],
-          ]
+        ? Arr extends [infer Head extends boolean, ...infer Rest extends boolean[]]
           ? Head extends true
             ? Any<Rest>
             : false // Found `false` in array

@@ -1,6 +1,4 @@
-export declare function stringList<
-  TT extends readonly string[] = readonly never[],
->(
+export declare function stringList<TT extends readonly string[] = readonly never[]>(
   ...strings: TT
 ): StringLiteralList.list.IStringList<readonly [...TT], false, false>;
 

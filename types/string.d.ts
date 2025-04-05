@@ -44,20 +44,13 @@ declare global {
 
     export type CaseTransform<
       T extends string,
-      Transform extends
-        | 'uppercase'
-        | 'lowercase'
-        | 'capitalize'
-        | 'unCapitalize',
+      Transform extends 'uppercase' | 'lowercase' | 'capitalize' | 'unCapitalize',
     > = Transform extends 'uppercase'
       ? Uppercase<T>
       : Transform extends 'lowercase'
         ? Lowercase<T>
         : Transform extends 'capitalize'
-          ? Split<T, ' '> extends [
-              infer U extends string,
-              ...infer Rest extends string[],
-            ]
+          ? Split<T, ' '> extends [infer U extends string, ...infer Rest extends string[]]
             ? U extends string
               ? [Rest['length']] extends [0]
                 ? Capitalize<U>

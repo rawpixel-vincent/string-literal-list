@@ -6,10 +6,7 @@
 declare global {
   namespace StringLiteralList {}
   namespace StringLiteralList.tuple {
-    export type GetTuplePositiveIndex<
-      T extends readonly any[],
-      I extends number,
-    > =
+    export type GetTuplePositiveIndex<T extends readonly any[], I extends number> =
       generic.IsNegative<I> extends false
         ? I
         : generic.Subtract<T['length'], generic.Abs<I>>;
@@ -97,10 +94,10 @@ declare global {
         ? TupleSplit<readonly [...R], N, readonly [...O, F]>
         : [O, T];
 
-    export type TupleExplode<
-      T,
-      Exploded extends any[] = [],
-    > = T extends readonly [infer Head, ...infer Rest]
+    export type TupleExplode<T, Exploded extends any[] = []> = T extends readonly [
+      infer Head,
+      ...infer Rest,
+    ]
       ? Head extends readonly []
         ? Exploded
         : Rest extends readonly []
@@ -121,15 +118,15 @@ declare global {
           : Imploded
       : Imploded;
 
-    export type TakeFirst<
-      T extends readonly any[],
-      N extends number,
-    > = TupleSplit<T, N>[0];
+    export type TakeFirst<T extends readonly any[], N extends number> = TupleSplit<
+      T,
+      N
+    >[0];
 
-    export type SkipFirst<
-      T extends readonly any[],
-      N extends number,
-    > = TupleSplit<T, N>[1];
+    export type SkipFirst<T extends readonly any[], N extends number> = TupleSplit<
+      T,
+      N
+    >[1];
 
     export type TupleSlice<
       T extends readonly any[],
@@ -193,11 +190,7 @@ declare global {
 
     export type TupleWithCaseTransform<
       T extends readonly string[],
-      Transform extends
-        | 'uppercase'
-        | 'lowercase'
-        | 'capitalize'
-        | 'unCapitalize',
+      Transform extends 'uppercase' | 'lowercase' | 'capitalize' | 'unCapitalize',
       Transformed extends readonly string[],
     > = T extends readonly [infer H, ...infer R]
       ? H extends string

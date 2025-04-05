@@ -11,9 +11,7 @@
 declare global {
   namespace StringLiteralList {}
   namespace StringLiteralList.list {
-    export interface ILiterals<
-      Tuple extends readonly string[] = readonly never[],
-    > {
+    export interface ILiterals<Tuple extends readonly string[] = readonly never[]> {
       /**
        * Namespace to expose the type inference.
        * The values are undefined and should not be used other than type inference.
@@ -30,9 +28,7 @@ declare global {
       };
     }
 
-    export type MaybeReadonly<IsMutable extends boolean, A> = [
-      IsMutable,
-    ] extends [true]
+    export type MaybeReadonly<IsMutable extends boolean, A> = [IsMutable] extends [true]
       ? A
       : Readonly<A>;
 
@@ -118,10 +114,8 @@ declare global {
         ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
         : never;
 
-      withTrim(): StringLiteralList.tuple.TupleWithTrim<
-        Tuple,
-        []
-      > extends infer W extends readonly string[]
+      withTrim(): StringLiteralList.tuple.TupleWithTrim<Tuple, []> extends infer W extends
+        readonly string[]
         ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
         : never;
       toLowerCase(): StringLiteralList.tuple.TupleWithCaseTransform<
@@ -159,10 +153,8 @@ declare global {
         compareFn?: (a: P1, b: P2) => number,
       ): MaybeReadonly<Mut, IStringList<Tuple, Mut, true>>;
 
-      reverse(): StringLiteralList.tuple.TupleReversed<
-        Tuple,
-        []
-      > extends infer W extends readonly string[]
+      reverse(): StringLiteralList.tuple.TupleReversed<Tuple, []> extends infer W extends
+        readonly string[]
         ? MaybeReadonly<Mut, IStringList<W, Mut, Unsorted>>
         : this;
 
@@ -204,10 +196,7 @@ declare global {
       concat<S extends readonly string[]>(
         ...arg: S
       ): [...Tuple, ...S] extends infer W extends readonly string[]
-        ? MaybeReadonly<
-            Mut,
-            IStringList<W, Mut, [Tuple] extends [[]] ? false : Unsorted>
-          >
+        ? MaybeReadonly<Mut, IStringList<W, Mut, [Tuple] extends [[]] ? false : Unsorted>>
         : never;
 
       concatList<S extends readonly string[]>(
@@ -225,9 +214,7 @@ declare global {
         type?: RT,
         initial?: RecordTypes[RT],
         ...records: R
-      ): StringLiteralList.record.Merge<
-        [Record<Tuple[number], RecordTypes[RT]>, ...R]
-      >;
+      ): StringLiteralList.record.Merge<[Record<Tuple[number], RecordTypes[RT]>, ...R]>;
 
       toRecordValue<V extends unknown = any, R extends any[] = never>(
         initial?: V,
@@ -259,14 +246,8 @@ declare global {
         val: PP | string | null | undefined,
         fromIndex?: number,
       ): val is Tuple[number];
-      indexOf<PP = Tuple[number]>(
-        searchElement: PP,
-        fromIndex?: number,
-      ): number;
-      lastIndexOf<PP = Tuple[number]>(
-        searchElement: PP,
-        fromIndex?: number,
-      ): number;
+      indexOf<PP = Tuple[number]>(searchElement: PP, fromIndex?: number): number;
+      lastIndexOf<PP = Tuple[number]>(searchElement: PP, fromIndex?: number): number;
 
       find<PP = Tuple[number] & string>(
         predictate: (
@@ -276,18 +257,10 @@ declare global {
         ) => val is PP extends Tuple[number] & string ? Tuple[number] : PP,
       ): Tuple[number];
       find(
-        predictate: (
-          val: string | undefined,
-          i: number,
-          obj: Tuple[number][],
-        ) => boolean,
+        predictate: (val: string | undefined, i: number, obj: Tuple[number][]) => boolean,
       ): Tuple[number];
       findIndex<S = Tuple[number] & string>(
-        predicate: (
-          value: S & string,
-          index: number,
-          obj: Tuple[number][],
-        ) => unknown,
+        predicate: (value: S & string, index: number, obj: Tuple[number][]) => unknown,
         thisArg?: any,
       ): number;
 
@@ -329,9 +302,7 @@ declare global {
           StringLiteralList.generic.Subtract<
             StringLiteralList.generic.Subtract<
               Tuple['length'],
-              [StringLiteralList.generic.IsNegative<Start>] extends [true]
-                ? 0
-                : Start
+              [StringLiteralList.generic.IsNegative<Start>] extends [true] ? 0 : Start
             >,
             1
           >
@@ -359,16 +330,14 @@ declare global {
           ? MaybeReadonly<Mut, IStringList<[], Mut, false>>
           : StringLiteralList.tuple.TupleSplit<
                 Tuple,
-                [StringLiteralList.generic.IsNegative<Start>] extends [true]
-                  ? 0
-                  : Start
+                [StringLiteralList.generic.IsNegative<Start>] extends [true] ? 0 : Start
               > extends readonly [infer C, infer R]
             ? C extends readonly string[]
               ? R extends readonly string[]
-                ? StringLiteralList.tuple.TupleSplit<
-                    R,
-                    DelCount
-                  > extends readonly [infer D, infer E]
+                ? StringLiteralList.tuple.TupleSplit<R, DelCount> extends readonly [
+                    infer D,
+                    infer E,
+                  ]
                   ? E extends readonly string[]
                     ? MaybeReadonly<
                         Mut,
@@ -380,11 +349,7 @@ declare global {
               : never
             : never;
 
-      toSpliced<
-        Start extends number,
-        DelCount extends number,
-        I extends string[],
-      >(
+      toSpliced<Start extends number, DelCount extends number, I extends string[]>(
         start: Start,
         deleteCount: DelCount,
         ...items: I
@@ -393,9 +358,7 @@ declare global {
           StringLiteralList.generic.Subtract<
             StringLiteralList.generic.Subtract<
               Tuple['length'],
-              [StringLiteralList.generic.IsNegative<Start>] extends [true]
-                ? 0
-                : Start
+              [StringLiteralList.generic.IsNegative<Start>] extends [true] ? 0 : Start
             >,
             1
           >
@@ -412,9 +375,7 @@ declare global {
             ? R extends readonly string[]
               ? StringLiteralList.tuple.TupleSplit<
                   R,
-                  [StringLiteralList.generic.IsNegative<DelCount>] extends [
-                    true,
-                  ]
+                  [StringLiteralList.generic.IsNegative<DelCount>] extends [true]
                     ? 0
                     : DelCount
                 > extends readonly [infer D, infer E]
@@ -423,24 +384,14 @@ declare global {
                       Mut,
                       IStringList<readonly [...C, ...I, ...E], Mut, Unsorted>
                     >
-                  : MaybeReadonly<
-                      Mut,
-                      IStringList<readonly [...C, ...I], Mut, Unsorted>
-                    >
-                : MaybeReadonly<
-                    Mut,
-                    IStringList<readonly [...I, ...C], Mut, Unsorted>
-                  >
+                  : MaybeReadonly<Mut, IStringList<readonly [...C, ...I], Mut, Unsorted>>
+                : MaybeReadonly<Mut, IStringList<readonly [...I, ...C], Mut, Unsorted>>
               : never
             : never
           : never;
 
       some<S = Tuple[number] & string>(
-        predicate: (
-          value: S & string,
-          index: number,
-          array: Tuple[number][],
-        ) => unknown,
+        predicate: (value: S & string, index: number, array: Tuple[number][]) => unknown,
         thisArg?: any,
       ): boolean;
       every<S = Tuple[number] & string>(
@@ -474,11 +425,7 @@ declare global {
         thisArg?: any,
       ): S[];
       filter(
-        predicate: (
-          value: string,
-          index: number,
-          array: Tuple[number][],
-        ) => boolean,
+        predicate: (value: string, index: number, array: Tuple[number][]) => boolean,
         thisArg?: any,
       ): (Tuple[number] & string)[];
 
@@ -543,11 +490,7 @@ declare global {
       /**
        * @deprecated This method will mutate the list, get the mutable array with `list.mutable()`
        */
-      fill<U = Tuple[number] & string>(
-        value: U,
-        start?: number,
-        end?: number,
-      ): U[];
+      fill<U = Tuple[number] & string>(value: U, start?: number, end?: number): U[];
       join<D extends string = ''>(
         delimiter?: D,
       ): [this['infered']['TooLong']] extends [true]
@@ -563,8 +506,7 @@ declare global {
                   infer B,
                 ]
               ? B extends readonly string[]
-                ? `${StringLiteralList.tuple.Join<B, D>}` extends infer C extends
-                    string
+                ? `${StringLiteralList.tuple.Join<B, D>}` extends infer C extends string
                   ? C extends ''
                     ? `${StringLiteralList.tuple.Join<A, D>}`
                     : `${StringLiteralList.tuple.Join<A, D>}${D}${C}`
