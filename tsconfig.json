@@ -3,7 +3,11 @@
     "rootDir": ".",
     "module": "Preserve",
     "target": "ES6",
-    "lib": ["ESNext", "DOM"],
+    "lib": [
+      "ES2020",
+      "ES2023.Array",
+      "DOM"
+    ],
     "moduleResolution": "Bundler",
     "resolveJsonModule": false,
     "esModuleInterop": false,
@@ -23,7 +27,8 @@
     "extendedDiagnostics": false,
     "diagnostics": false,
     "assumeChangesOnlyAffectDirectDependencies": true,
-    "disableSolutionSearching": true
+    "disableSolutionSearching": true,
+    "noEmit": true,
   },
   "include": [
     "*.d.ts",

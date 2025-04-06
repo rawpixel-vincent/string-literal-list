@@ -1,6 +1,6 @@
 {
   "name": "string-literal-list",
-  "version": "1.35.0",
+  "version": "1.36.0",
   "description": "an array for string literal",
   "main": "stringList.js",
   "files": [
@@ -23,12 +23,10 @@
     "types/string.d.ts",
     "types/tuple.d.ts"
   ],
-  "module": "stringList.js",
-  "browser": {
-    "./stringList.js": "./stringList.min.js"
-  },
+  "module": "stringList.min.js",
+  "browser": "./stringList.min.cjs",
   "types": "stringList.d.ts",
-  "exports": {
+  "exports": {  
     ".": {
       "types": "./stringList.d.ts",
       "default": "./stringList.js"
@@ -52,7 +50,7 @@
   "scripts": {
     "test": "npm run lint:ci && npm run test:checkJs && npm run test:unit",
     "test:unit": "NODE_ENV=test tap rum stringList.test.js",
-    "test:checkJs": "./node_modules/.bin/tsc --checkJs --project jsconfig.json",
+    "test:checkJs": "./node_modules/.bin/tsc --checkJs --project tsconfig.json",
     "prettier": "prettier --write \"**/*.{js,ts}\"",
     "lint": "eslint --fix \"./*.js\"",
     "lint:ci": "eslint . --ext .js",
