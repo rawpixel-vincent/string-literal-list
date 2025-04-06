@@ -1434,6 +1434,37 @@ for (const { type, stringList } of functions) {
       t.end();
     });
 
+    tt.test(type + ': happy()', (t) => {
+      const list = stringList('Foo', 'Bar');
+      testExpectedArrayValues(t, list, 'Foo', 'Bar');
+      testEscapingFromStringList(t, list, 'Foo', 'Bar');
+      const list2 = list.happy();
+      testExpectedArrayValues(t, list2, 'Foo', 'Bar');
+      testEscapingFromStringList(t, list2, 'Foo', 'Bar');
+      const list3 = list.compat();
+      testExpectedArrayValues(t, list3, 'Foo', 'Bar');
+      testEscapingFromStringList(t, list3, 'Foo', 'Bar');
+      const list4 = list2.stringList();
+      testExpectedArrayValues(t, list4, 'Foo', 'Bar');
+      testEscapingFromStringList(t, list4, 'Foo', 'Bar');
+      const list5 = list3.stringList();
+      testExpectedArrayValues(t, list5, 'Foo', 'Bar');
+      testEscapingFromStringList(t, list5, 'Foo', 'Bar');
+      const list6 = list2.concat('Baz');
+      testExpectedArrayValues(t, list6, 'Foo', 'Bar', 'Baz');
+      testEscapingFromStringList(t, list6, 'Foo', 'Bar', 'Baz');
+      const list7 = list3.concat('Baz');
+      testExpectedArrayValues(t, list7, 'Foo', 'Bar', 'Baz');
+      testEscapingFromStringList(t, list7, 'Foo', 'Bar', 'Baz');
+      const list8 = list6.stringList();
+      testExpectedArrayValues(t, list8, 'Foo', 'Bar', 'Baz');
+      testEscapingFromStringList(t, list8, 'Foo', 'Bar', 'Baz');
+      const list9 = list7.stringList();
+      testExpectedArrayValues(t, list9, 'Foo', 'Bar', 'Baz');
+      testEscapingFromStringList(t, list9, 'Foo', 'Bar', 'Baz');
+      t.end();
+    });
+
     tt.test(type + ': toLowerCase()', (t) => {
       const list = stringList('Foo', 'Bar').toLowerCase();
       testExpectedArrayValues(t, list, 'foo', 'bar');

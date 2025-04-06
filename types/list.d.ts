@@ -149,6 +149,9 @@ declare global {
 
       value(val): Tuple[number];
       mutable(): (Tuple[number] & string)[];
+      happy(): StringLiteralList.list.Compat<Tuple[number]>;
+      compat(): StringLiteralList.list.Compat<Tuple[number]>;
+
       sort<P1 = Tuple[number], P2 = Tuple[number]>(
         compareFn?: (a: P1, b: P2) => number,
       ): MaybeReadonly<Mut, IStringList<Tuple, Mut, true>>;
@@ -514,6 +517,28 @@ declare global {
                 : StringLiteralList.tuple.Join<Tuple, D>
               : string;
     }
+
+    /**
+     * @description
+     * Used to limit the interface of a stringLiteralList,
+     * so that it reduce the types complexity.
+     * This should be used for readonly Array of string constants.
+     * Using push / pop / shift / unshift / splice / sort / reverse etc.. must be avoided.
+     */
+    export type Compat<T extends string> = T[] &
+      Omit<
+        IStringList<T[], true, false>,
+        Exclude<
+          keyof StringLiteralList.list.IStringList<T[], true, false>,
+          | keyof Array<T>
+          | keyof ReadonlyArray<T>
+          | keyof Iterable<T>
+          | 'enum'
+          | 'infered'
+        >
+      > & {
+        stringList(): StringLiteralList.list.IStringList<T[], true, false>;
+      };
   }
 }
 export {};

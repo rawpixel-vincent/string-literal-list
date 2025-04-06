@@ -7,6 +7,24 @@
  * Describe: SubSet
  */
 
+import { sl } from "./strict";
+
+
+type testArrVal = 'a'|'b'|'c'
+function arrayCompat(arr: (testArrVal & string)[]) {
+  return arr;
+}
+// @ts-expect-no-error
+let arrayCompat1 = arrayCompat(['a','c']);
+let slArrayCompat1 = sl('a', 'b', 'c');
+// @ts-expect-no-error
+let arrayCompat2 = arrayCompat(slArrayCompat1);
+let withconcat = sl('a').concat('c')
+// @ts-expect-no-error
+let arrayCompat3 = arrayCompat(withconcat);
+// @ts-expect-no-error
+let arrayCompat4 = arrayCompat(withconcat.slice(0, 1));
+
 let withoutSuffix: StringLiteralList.string.DropSuffix<'name.json', '.json'>;
 // @ts-expect-error
 withoutSuffix = 'name.json';

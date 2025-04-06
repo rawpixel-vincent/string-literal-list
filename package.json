@@ -31,14 +31,10 @@
   "exports": {
     ".": {
       "types": "./stringList.d.ts",
-      "node": "./stringList.js",
-      "import": "./stringList.min.js",
       "default": "./stringList.js"
     },
     "./strict.js": {
       "types": "./strict.d.ts",
-      "node": "./strict.js",
-      "import": "./strict.min.js",
       "default": "./strict.js"
     },
     "./types.js": {
@@ -46,8 +42,6 @@
     },
     "./stringList.js": {
       "types": "./stringList.d.ts",
-      "node": "./stringList.js",
-      "import": "./stringList.min.js",
       "default": "./stringList.js"
     }
   },

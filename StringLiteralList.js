@@ -206,6 +206,18 @@ export class SL extends Array {
     return Array.from(this);
   }
 
+  compat() {
+    return new SL(...Array.from(this))
+
+  }
+  happy() {
+    return new SL(...Array.from(this))
+  }
+
+  stringList() {
+    return new SL(...Array.from(this))
+  }
+
   toRecordValue(initialValue = undefined, ...records) {
     return Object.assign(
       {},
