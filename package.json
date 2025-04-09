@@ -1,6 +1,6 @@
 {
   "name": "string-literal-list",
-  "version": "1.36.0",
+  "version": "1.37.0",
   "description": "an array for string literal",
   "main": "stringList.js",
   "files": [
@@ -41,6 +41,22 @@
     "./stringList.js": {
       "types": "./stringList.d.ts",
       "default": "./stringList.js"
+    },
+    "./stringList.min.js": {
+      "types": "./stringList.d.ts",
+      "default": "./stringList.min.js"
+    },
+    "./stringList.min.cjs": {
+      "types": "./stringList.d.ts",
+      "default": "./stringList.min.cjs"
+    },
+    "./strict.min.js": {
+      "types": "./strict.d.ts",
+      "default": "./strict.min.js"
+    },
+    "./strict.min.cjs": {
+      "types": "./strict.d.ts",
+      "default": "./strict.min.cjs"
     }
   },
   "engines": {
