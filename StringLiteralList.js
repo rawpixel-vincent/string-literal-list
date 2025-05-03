@@ -120,6 +120,14 @@ export class SL extends Array {
       );
     return freezeIfImmutable(this, new SL(...this.filter((e) => !filtered.includes(e))));
   }
+  
+  pick(...values) {
+    const filtered = values
+      .map((e) =>
+        typeof e === 'string' ? e : typeof e === 'number' ? String(e) : undefined,
+      );
+    return freezeIfImmutable(this, new SL(...this.filter((e) => filtered.includes(e))));
+  }
 
   withTrim() {
     return freezeIfImmutable(this, new SL(...super.map((e) => e.trim())));

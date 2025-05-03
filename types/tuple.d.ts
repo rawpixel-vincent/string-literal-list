@@ -233,6 +233,26 @@ declare global {
         : Transformed
       : Transformed;
 
+    export type TupleWithPick<
+      T extends readonly string[],
+      P extends string,
+      Transformed extends readonly string[],
+    > = T extends readonly [infer H, ...infer R]
+      ? H extends string
+        ? R extends readonly string[]
+          ? TupleWithPick<
+              R,
+              Exclude<P, H>,
+               readonly [H, P] extends readonly [P, T[number]] ? readonly [...Transformed, H] : Transformed
+            >
+          : readonly  [H, P] extends readonly [P, T[number]] 
+            ? readonly [...Transformed, H]
+            : Transformed
+          : Transformed
+        : Transformed
+      // : Transformed;
+           
+
     export type TupleReversed<
       T extends readonly string[],
       Reversed extends readonly string[],

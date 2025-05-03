@@ -19,7 +19,7 @@
     "allowSyntheticDefaultImports": true,
     "verbatimModuleSyntax": true,
     "disableSizeLimit": true,
-    "isolatedModules": true,
+    "isolatedModules": false,
     "removeComments": false,
     "maxNodeModuleJsDepth": 0,
     "disableReferencedProjectLoad": true,
@@ -47,6 +47,8 @@
     "*.cjs",
     "**/*.cjs",
     "*.min.js",
-    "**/*.min.js"
+    "strict.min.js",
+    "**/*.min.js",
+    "stringList.min.js"
   ]
 }

@@ -162,7 +162,10 @@ declare global {
         : this;
 
       without<S extends string = Tuple[number]>(
-        ...arg: readonly (ILiterals<readonly S[]> | S)[]
+        ...arg: readonly (
+          | ILiterals<readonly S[]>
+          | S
+        )[]
       ): StringLiteralList.tuple.TupleWithExclude<Tuple, S, []> extends infer E
         ? E extends readonly string[]
           ? MaybeReadonly<Mut, IStringList<E, Mut, Unsorted>>
@@ -200,6 +203,16 @@ declare global {
         ...arg: S
       ): [...Tuple, ...S] extends infer W extends readonly string[]
         ? MaybeReadonly<Mut, IStringList<W, Mut, [Tuple] extends [[]] ? false : Unsorted>>
+        : never;
+
+      pick<S extends string = Tuple[number]>(
+        ...arg: readonly S[]
+      ): Extract<S, Tuple[number]> extends infer PP extends string
+        ? StringLiteralList.tuple.TupleWithPick<Tuple, PP, readonly []> extends infer E
+          ? E extends readonly string[]
+            ? MaybeReadonly<Mut, IStringList<E, Mut, Unsorted>>
+            : MaybeReadonly<Mut, IStringList<readonly string[], Mut, Unsorted>>
+          : never
         : never;
 
       concatList<S extends readonly string[]>(
@@ -530,14 +543,10 @@ declare global {
         IStringList<T[], true, false>,
         Exclude<
           keyof StringLiteralList.list.IStringList<T[], true, false>,
-          | keyof Array<T>
-          | keyof ReadonlyArray<T>
-          | keyof Iterable<T>
-          | 'enum'
-          | 'infered'
+          keyof Array<T> | keyof ReadonlyArray<T> | keyof Iterable<T> | 'enum' | 'infered'
         >
       > & {
-        stringList(): StringLiteralList.list.IStringList<T[], true, false>;
+        stringList(): StringLiteralList.list.IStringList<readonly T[], true, false>;
       };
   }
 }
