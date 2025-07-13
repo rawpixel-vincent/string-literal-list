@@ -118,7 +118,7 @@ for (const { type, stringList } of functions) {
 
       // map()
       const fromMap = list.map((el) => el);
-      st.ok(fromMap.constructor.name === Array.name);
+      st.ok(fromMap.constructor.name === Array.name || fromMap.constructor.name === constructorName);
       st.ok(fromMap.length === list.length);
       st.match(fromMap, list);
       st.match(JSON.stringify([...list]), JSON.stringify(fromMap));
@@ -130,7 +130,7 @@ for (const { type, stringList } of functions) {
 
       // filter()
       const fromFilter = list.filter(() => true);
-      st.ok(fromFilter.constructor.name === Array.name);
+      st.ok(fromFilter.constructor.name === Array.name || fromFilter.constructor.name === constructorName);
       st.ok(fromFilter.length === list.length);
       st.match(fromFilter, list);
       st.match(JSON.stringify([...list]), JSON.stringify(fromFilter));

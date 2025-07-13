@@ -11,35 +11,19 @@ const mutationWarning = (method) =>
   `Using ${method}() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`;
 /* c8 ignore stop */
 
-const shouldWarn = () => {
-  /* c8 ignore start */
-  return (
-    typeof console === 'object' &&
-    console &&
-    typeof console.warn === 'function' &&
-    ((typeof window === 'undefined' &&
-      typeof process === 'object' &&
-      process &&
-      typeof process.env === 'object' &&
-      process.env &&
-      typeof process.env.NODE_ENV === 'string' &&
-      process.env.NODE_ENV &&
-      process.env.NODE_ENV !== 'production' &&
-      process.env.NODE_ENV !== 'test') ||
-      (typeof window === 'object' &&
-        window &&
-        '__NEXT_DATA__' in window &&
-        typeof window.__NEXT_DATA__ === 'object' &&
-        window.__NEXT_DATA__ &&
-        'runtimeConfig' in window.__NEXT_DATA__ &&
-        typeof window.__NEXT_DATA__.runtimeConfig === 'object' &&
-        window.__NEXT_DATA__.runtimeConfig &&
-        'environment' in window.__NEXT_DATA__.runtimeConfig &&
-        typeof window.__NEXT_DATA__.runtimeConfig.environment === 'string' &&
-        window.__NEXT_DATA__.runtimeConfig.environment !== 'prod'))
-  );
-  /* c8 ignore stop */
-};
+/* c8 ignore start */
+const shouldWarn =
+  typeof console === 'object' &&
+  typeof console.warn === 'function' &&
+  typeof window === 'undefined' &&
+  typeof process === 'object' &&
+  typeof process.env === 'object' &&
+  typeof process.env.STRING_LITERAL_LIST_DEBUG !== 'undefined' &&
+  typeof process.env.NODE_ENV === 'string' &&
+  process.env.NODE_ENV &&
+  process.env.NODE_ENV !== 'production' &&
+  process.env.NODE_ENV !== 'test';
+/* c8 ignore stop */
 
 export class SL extends Array {
   // #infered = {
@@ -51,21 +35,21 @@ export class SL extends Array {
 
   enum;
 
-  constructor(...args) {
-    const entries = [];
-    const arr = [];
-
-    for (const str of args.flat()) {
-      if (typeof str === 'string') {
-        entries.push([str, str]);
-        arr.push(str);
+  constructor(arr) {
+    super();
+    this.enum = Object.create(null);
+    if (Array.isArray(arr) && arr.length > 0) {
+      const size = 2000;
+      for (let i = 0; i < arr.length; i += size) {
+        const chunk = Array.prototype.slice
+          .call(arr, i, i + size)
+          .filter((e) => typeof e === 'string' || typeof e === 'number')
+          .map((e) => String(e));
+        Array.prototype.push.apply(this, chunk);
+        Object.assign(this.enum, Object.fromEntries(chunk.map((e) => [e, e])));
       }
     }
-    super(...arr);
 
-    this.enum = Object.fromEntries(entries);
-
-    Object.freeze(this.enum);
     Object.defineProperty(this, 'enum', {
       writable: true,
       configurable: false,
@@ -74,7 +58,11 @@ export class SL extends Array {
   }
 
   includes(searchElement, fromIndex = 0) {
-    if (this.length === 0) {
+    if (
+      this.length === 0 ||
+      fromIndex >= this.length ||
+      !Object.prototype.hasOwnProperty.call(this.enum, searchElement)
+    ) {
       return false;
     }
     if (
@@ -82,63 +70,105 @@ export class SL extends Array {
       typeof fromIndex === 'number' &&
       (fromIndex > 0 || fromIndex >= this.length * -1)
     ) {
-      return super.includes(searchElement, fromIndex);
+      return Array.prototype.includes.call(this, searchElement, fromIndex);
     }
 
-    return typeof this.enum[searchElement] === 'string';
+    return true;
   }
 
   concat(...args) {
-    return freezeIfImmutable(this, new SL(...super.concat.apply(this, args.flat())));
+    return freezeIfImmutable(
+      this,
+      new SL(Array.prototype.concat.apply(this, args.flat())),
+    );
   }
 
   concatList(list) {
-    return this.concat(...list);
+    return freezeIfImmutable(this, new SL(Array.prototype.concat.apply(this, list)));
   }
 
   toSorted() {
-    return freezeIfImmutable(this, new SL(...super.toSorted.apply(this, arguments)));
+    return freezeIfImmutable(
+      this,
+      new SL(Array.prototype.toSorted.apply(this, arguments)),
+    );
   }
 
   toReversed() {
-    return freezeIfImmutable(this, new SL(...super.toReversed.apply(this, arguments)));
+    return freezeIfImmutable(
+      this,
+      new SL(Array.prototype.toReversed.apply(this, arguments)),
+    );
   }
 
   toSpliced() {
-    return freezeIfImmutable(this, new SL(...super.toSpliced.apply(this, arguments)));
+    return freezeIfImmutable(
+      this,
+      new SL(Array.prototype.toSpliced.apply(this, arguments)),
+    );
   }
 
   slice() {
-    return freezeIfImmutable(this, new SL(...super.slice.apply(this, arguments)));
+    return freezeIfImmutable(
+      this,
+      new SL(Array.prototype.slice.apply(Array.from(this), arguments)),
+    );
   }
 
   without(...values) {
-    const filtered = values
-      .flat()
-      .map((e) =>
-        typeof e === 'string' ? e : typeof e === 'number' ? String(e) : undefined,
-      );
-    return freezeIfImmutable(this, new SL(...this.filter((e) => !filtered.includes(e))));
+    return freezeIfImmutable(
+      this,
+      new SL(
+        Array.prototype.filter.call(
+          this,
+          (e) =>
+            !values.find((v) =>
+              Array.isArray(v)
+                ? v.find((ve) => e === (typeof ve === 'number' ? String(ve) : ve)) !==
+                  undefined
+                : e === (typeof v === 'number' ? String(v) : v),
+            ),
+        ),
+      ),
+    );
   }
-  
+
   pick(...values) {
-    const filtered = values
-      .map((e) =>
-        typeof e === 'string' ? e : typeof e === 'number' ? String(e) : undefined,
-      );
-    return freezeIfImmutable(this, new SL(...this.filter((e) => filtered.includes(e))));
+    /* c8 ignore start */
+    if (values.length === 0) {
+      return this;
+    }
+    /* c8 ignore stop */
+
+    return freezeIfImmutable(
+      this,
+      new SL(
+        Array.prototype.filter.call(this, (v) =>
+          values.find((e) => v === (typeof e === 'number' ? String(e) : e)),
+        ),
+      ),
+    );
   }
 
   withTrim() {
-    return freezeIfImmutable(this, new SL(...super.map((e) => e.trim())));
+    return freezeIfImmutable(
+      this,
+      new SL(Array.prototype.map.call(this, (e) => e.trim())),
+    );
   }
 
   withPrefix(prefix = '') {
-    return freezeIfImmutable(this, new SL(...super.map((e) => `${prefix}${e}`)));
+    return freezeIfImmutable(
+      this,
+      new SL(Array.prototype.map.call(this, (e) => `${prefix}${e}`)),
+    );
   }
 
   withSuffix(suffix = '') {
-    return freezeIfImmutable(this, new SL(...super.map((e) => `${e}${suffix}`)));
+    return freezeIfImmutable(
+      this,
+      new SL(Array.prototype.map.call(this, (e) => `${e}${suffix}`)),
+    );
   }
 
   // withDerivatedSuffix(chars = '') {
@@ -172,23 +202,29 @@ export class SL extends Array {
   withReplace(string, replacement = undefined) {
     return freezeIfImmutable(
       this,
-      new SL(...super.map((e) => e.replace(string, replacement))),
+      new SL(Array.prototype.map.call(this, (e) => e.replace(string, replacement))),
     );
   }
 
   withReplaceAll(string, replacement = undefined) {
     return freezeIfImmutable(
       this,
-      new SL(...super.map((e) => e.replaceAll(string, replacement))),
+      new SL(Array.prototype.map.call(this, (e) => e.replaceAll(string, replacement))),
     );
   }
 
   toLowerCase() {
-    return freezeIfImmutable(this, new SL(...super.map((e) => e.toLowerCase())));
+    return freezeIfImmutable(
+      this,
+      new SL(Array.prototype.map.call(this, (e) => e.toLowerCase())),
+    );
   }
 
   toUpperCase() {
-    return freezeIfImmutable(this, new SL(...super.map((e) => e.toUpperCase())));
+    return freezeIfImmutable(
+      this,
+      new SL(Array.prototype.map.call(this, (e) => e.toUpperCase())),
+    );
   }
 
   toCapitalize() {
@@ -200,30 +236,30 @@ export class SL extends Array {
   }
 
   value(value) {
-    if (typeof value !== 'string') {
+    if (
+      typeof value !== 'string' ||
+      !Object.prototype.hasOwnProperty.call(this.enum, value)
+    ) {
       throw new Error(`Invalid value ${value}`);
     }
-    if (this.enum[value] === value) {
-      return this.enum[value];
-    }
-    throw new Error(`Invalid value ${value}`);
+    return this.enum[value];
   }
 
   // Get the native array
   mutable() {
-    return Array.from(this);
+    return Array.prototype.slice.call(Array.from(this));
   }
 
   compat() {
-    return new SL(...Array.from(this))
-
+    return this;
   }
+
   happy() {
-    return new SL(...Array.from(this))
+    return this;
   }
 
   stringList() {
-    return new SL(...Array.from(this))
+    return this;
   }
 
   toRecordValue(initialValue = undefined, ...records) {
@@ -231,17 +267,17 @@ export class SL extends Array {
       {},
       ...records,
       Object.fromEntries(
-        super.map((e) => {
+        super.map.call(this, (e) => {
           try {
             return [
               e,
               typeof initialValue === 'object' && initialValue !== null
                 ? Array.isArray(initialValue)
-                  ? [...initialValue]
+                  ? initialValue.slice()
                   : typeof structuredClone === 'function'
                     ? structuredClone(initialValue)
                     : /* c8 ignore next 1 */
-                      { ...initialValue }
+                      Object.assign(Object.create(null), initialValue)
                 : initialValue,
             ];
             /* c8 ignore next 4 */
@@ -255,7 +291,7 @@ export class SL extends Array {
   }
 
   mapAsObject(cb) {
-    return Object.fromEntries(super.map((e) => [e, cb(e)]));
+    return Object.fromEntries(Array.prototype.map.call(this, (e) => [e, cb(e)]));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -264,7 +300,7 @@ export class SL extends Array {
       {},
       ...records,
       Object.fromEntries(
-        super.map((e) => {
+        Array.prototype.map.call(this, (e) => {
           try {
             return [
               e,
@@ -288,68 +324,56 @@ export class SL extends Array {
   }
 
   asMap() {
-    return new Map(super.map((e) => [e, e]));
+    return new Map(Object.entries(this.enum));
   }
 
   asSet() {
-    return new Set(this);
+    return new Set(Array.from(this));
   }
 
   asObject() {
-    return Object.assign({}, ...super.map((e) => ({ [e]: e })));
+    return Object.assign({}, this.enum);
   }
 
   // Methods returning the native array
   map() {
-    const mut = this.mutable();
-    return mut.map.apply(mut, arguments);
+    return Array.prototype.map.apply(Array.from(this), arguments);
   }
 
   filter() {
-    const mut = this.mutable();
-    return mut.filter.apply(mut, arguments);
+    return Array.prototype.filter.apply(Array.from(this), arguments);
   }
 
   reduce() {
-    const mut = this.mutable();
-    return mut.reduce.apply(mut, arguments);
+    return Array.prototype.reduce.apply(Array.from(this), arguments);
   }
 
   reduceRight() {
-    const mut = this.mutable();
-    return mut.reduceRight.apply(mut, arguments);
+    return Array.prototype.reduceRight.apply(Array.from(this), arguments);
   }
 
   flat() {
-    const mut = this.mutable();
-    return mut.flat.apply(mut, arguments);
+    return Array.prototype.flat.apply(Array.from(this), arguments);
   }
 
   flatMap() {
-    const mut = this.mutable();
-    return mut.flatMap.apply(mut, arguments);
+    return Array.prototype.flatMap.apply(Array.from(this), arguments);
   }
 
   with() {
-    const mut = this.mutable();
-    return mut.with.apply(mut, arguments);
+    return Array.prototype.with.apply(Array.from(this), arguments);
   }
 
   push() {
     /* c8 ignore start */
-    if (shouldWarn()) {
+    if (shouldWarn) {
       console.warn(mutationWarning('push'));
     }
     /* c8 ignore stop */
 
     if (!Object.isFrozen(this)) {
-      const s = this.mutable();
-      s.push.apply(s, arguments);
-      super.push.apply(this, arguments);
-
-      this.enum = Object.fromEntries(this.map((e) => [e, e]));
-
-      Object.freeze(this.enum);
+      Array.prototype.push.apply(this, arguments);
+      this.enum = Object.fromEntries(Array.prototype.map.call(this, (e) => [e, e]));
     } else {
       throw new Error('Cannot set properties on a frozen object');
     }
@@ -359,18 +383,16 @@ export class SL extends Array {
 
   shift() {
     /* c8 ignore start */
-    if (shouldWarn()) {
+    if (shouldWarn) {
       console.warn(mutationWarning('shift'));
     }
     /* c8 ignore stop */
     if (!Object.isFrozen(this)) {
-      const s = this.mutable();
-      const shifted = s.shift.apply(s, arguments);
-      super.shift.apply(this, arguments);
+      const shifted = Array.prototype.shift.apply(this, arguments);
 
-      this.enum = Object.fromEntries(this.map((e) => [e, e]));
-
-      Object.freeze(this.enum);
+      this.enum = Object.fromEntries(
+        Object.entries(this.enum).filter(([e]) => e !== shifted),
+      );
 
       return shifted;
     } else {
@@ -380,18 +402,18 @@ export class SL extends Array {
 
   unshift() {
     /* c8 ignore start */
-    if (shouldWarn()) {
+    if (shouldWarn) {
       console.warn(mutationWarning('unshift'));
     }
     /* c8 ignore stop */
     if (!Object.isFrozen(this)) {
-      const s = this.mutable();
-      s.unshift.apply(s, arguments);
-      super.unshift.apply(this, arguments);
+      Array.prototype.unshift.apply(this, arguments);
 
-      this.enum = Object.fromEntries(this.map((e) => [e, e]));
-
-      Object.freeze(this.enum);
+      this.enum = Object.assign(
+        Object.create(null),
+        this.enum,
+        Object.fromEntries(Array.from(arguments).map((e) => [e, e])),
+      );
     } else {
       throw new Error('Cannot set properties on a frozen object');
     }
@@ -400,18 +422,14 @@ export class SL extends Array {
 
   copyWithin() {
     /* c8 ignore start */
-    if (shouldWarn()) {
+    if (shouldWarn) {
       console.warn(mutationWarning('copyWithin'));
     }
     /* c8 ignore stop */
     if (!Object.isFrozen(this)) {
-      const s = this.mutable();
-      s.copyWithin.apply(s, arguments);
-      super.copyWithin.apply(this, arguments);
+      Array.prototype.copyWithin.apply(this, Array.from(arguments));
 
-      this.enum = Object.fromEntries(this.map((e) => [e, e]));
-
-      Object.freeze(this.enum);
+      this.enum = Object.fromEntries(Array.prototype.map.call(this, (e) => [e, e]));
     } else {
       throw new Error('Cannot set properties on a frozen object');
     }
@@ -420,19 +438,15 @@ export class SL extends Array {
 
   pop() {
     /* c8 ignore start */
-    if (shouldWarn()) {
+    if (shouldWarn) {
       console.warn(mutationWarning('pop'));
     }
     /* c8 ignore stop */
 
     if (!Object.isFrozen(this)) {
-      const s = this.mutable();
-      const popped = s.pop.apply(s, arguments);
-      super.pop.apply(this, arguments);
+      const popped = super.pop();
 
-      this.enum = Object.fromEntries(this.map((e) => [e, e]));
-
-      Object.freeze(this.enum);
+      this.enum = Object.fromEntries(Array.prototype.map.call(this, (e) => [e, e]));
 
       return popped;
     } else {
@@ -442,19 +456,15 @@ export class SL extends Array {
 
   fill() {
     /* c8 ignore start */
-    if (shouldWarn()) {
+    if (shouldWarn) {
       console.warn(mutationWarning('fill'));
     }
     /* c8 ignore stop */
 
     if (!Object.isFrozen(this)) {
-      const s = this.mutable();
-      s.fill.apply(s, arguments);
-      super.fill.apply(this, arguments);
+      Array.prototype.fill.apply(this, arguments);
 
-      this.enum = Object.fromEntries(this.map((e) => [e, e]));
-
-      Object.freeze(this.enum);
+      this.enum = Object.fromEntries(Array.prototype.map.call(this, (e) => [e, e]));
     } else {
       throw new Error('Cannot set properties on a frozen object');
     }
@@ -464,7 +474,7 @@ export class SL extends Array {
 
   splice() {
     /* c8 ignore start */
-    if (shouldWarn()) {
+    if (shouldWarn) {
       console.warn(mutationWarning('splice'));
     }
 
@@ -474,9 +484,7 @@ export class SL extends Array {
       const spliced = s.splice.apply(s, arguments);
       super.splice.apply(this, arguments);
 
-      this.enum = Object.fromEntries(this.map((e) => [e, e]));
-
-      Object.freeze(this.enum);
+      this.enum = Object.fromEntries(Array.prototype.map.call(this, (e) => [e, e]));
 
       return spliced;
     } else {
@@ -486,17 +494,12 @@ export class SL extends Array {
 
   reverse() {
     /* c8 ignore start */
-    if (shouldWarn()) {
+    if (shouldWarn) {
       console.warn(mutationWarning('reverse'));
     }
     /* c8 ignore stop */
     if (!Object.isFrozen(this)) {
-      const s = this.mutable();
-      s.reverse.apply(s, arguments);
-      super.reverse.apply(this, arguments);
-      this.enum = Object.fromEntries(this.map((e) => [e, e]));
-
-      Object.freeze(this.enum);
+      Array.prototype.reverse.apply(this, arguments);
     } else {
       throw new Error('Cannot set properties on a frozen object');
     }
