@@ -390,9 +390,8 @@ export class SL extends Array {
     if (!Object.isFrozen(this)) {
       const shifted = Array.prototype.shift.apply(this, arguments);
 
-      this.enum = Object.fromEntries(
-        Object.entries(this.enum).filter(([e]) => e !== shifted),
-      );
+      // rebuild from remaining elements: the shifted value may be duplicated
+      this.enum = Object.fromEntries(Array.prototype.map.call(this, (e) => [e, e]));
 
       return shifted;
     } else {

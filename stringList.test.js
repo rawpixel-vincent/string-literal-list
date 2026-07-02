@@ -2149,6 +2149,13 @@ for (const { type, stringList } of functions) {
       testExpectedArrayValues(t, list, 'bar', 'baz', '');
       t.match([...list], list.mutable());
 
+      // shifting a duplicated value keeps the remaining duplicates in enum
+      const dup = stringList('foo', 'foo', 'bar');
+      t.equal(dup.shift(), 'foo');
+      testExpectedArrayValues(t, dup, 'foo', 'bar');
+      t.ok(dup.includes('foo'));
+      t.equal(dup.enum['foo'], 'foo');
+
       t.end();
     });
 
