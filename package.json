@@ -1,6 +1,6 @@
 {
   "name": "string-literal-list",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "an array for string literal",
   "main": "stringList.js",
   "files": [
@@ -26,7 +26,7 @@
   "module": "stringList.min.js",
   "browser": "./stringList.min.cjs",
   "types": "stringList.d.ts",
-  "exports": {  
+  "exports": {
     ".": {
       "types": "./stringList.d.ts",
       "default": "./stringList.js"
