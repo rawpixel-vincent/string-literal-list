@@ -14,8 +14,8 @@
     "strict.min.js",
     "stringListFunction.js",
     "stringListFunction.d.ts",
-    "stringLiteralList.js",
-    "stringLiteralList.d.ts",
+    "StringLiteralList.js",
+    "StringLiteralList.d.ts",
     "types/index.d.ts",
     "types/list.d.ts",
     "types/generic.d.ts",
@@ -36,7 +36,7 @@
       "default": "./strict.js"
     },
     "./types.js": {
-      "default": "./types/index.d.ts"
+      "types": "./types/index.d.ts"
     },
     "./stringList.js": {
       "types": "./stringList.d.ts",

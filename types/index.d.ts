@@ -4,7 +4,7 @@
 /// <reference types="./list.d.ts" />
 /// <reference types="./record.d.ts" />
 
-import { ArrayInPlaceMutation } from '../StringLiteralList.js';
+import type { ArrayInPlaceMutation } from '../StringLiteralList.js';
 
 declare global {
   namespace StringLiteralList {}
