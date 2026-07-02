@@ -105,6 +105,11 @@ for (const { type, stringList } of functions) {
       st.throws(() => list.value(null));
 
       st.notOk(list.includes(null));
+      if (values.length > 0) {
+        // objects must not match through property-key coercion
+        st.notOk(list.includes({ toString: () => values[0] }));
+        st.notOk(list.includes([values[0]]));
+      }
       st.ok(list.at(values.length) === undefined);
     };
 

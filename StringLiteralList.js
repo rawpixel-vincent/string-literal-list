@@ -58,6 +58,13 @@ export class SL extends Array {
   }
 
   includes(searchElement, fromIndex = 0) {
+    // Numbers are intentionally accepted ('5' matches 5): this is a string
+    // list and the enum key lookup coerces them, which maximizes
+    // compatibility with downstream consumers. Anything else (objects,
+    // arrays, ...) must not match through the same property-key coercion.
+    if (typeof searchElement !== 'string' && typeof searchElement !== 'number') {
+      return false;
+    }
     if (
       this.length === 0 ||
       fromIndex >= this.length ||
