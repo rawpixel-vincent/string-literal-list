@@ -6,6 +6,22 @@ const freezeIfImmutable = (source, target) => {
   return target;
 };
 
+// Normalize without()/pick() arguments (strings, numbers, nested lists)
+// into a Set for O(n+m) filtering.
+const valueSet = (values) => {
+  const set = new Set();
+  for (const v of values) {
+    if (Array.isArray(v)) {
+      for (const ve of v) {
+        set.add(typeof ve === 'number' ? String(ve) : ve);
+      }
+    } else {
+      set.add(typeof v === 'number' ? String(v) : v);
+    }
+  }
+  return set;
+};
+
 /* c8 ignore start */
 const mutationWarning = (method) =>
   `Using ${method}() method on a string list will mutate the original list in place. The code relying on this list will behave unexpectedly and may lead to unsafe execution.`;
@@ -39,14 +55,26 @@ export class SL extends Array {
     super();
     this.enum = Object.create(null);
     if (Array.isArray(arr) && arr.length > 0) {
+      // single pass; chunked push.apply to stay under the argument limit
       const size = 2000;
-      for (let i = 0; i < arr.length; i += size) {
-        const chunk = Array.prototype.slice
-          .call(arr, i, i + size)
-          .filter((e) => typeof e === 'string' || typeof e === 'number')
-          .map((e) => String(e));
+      let chunk = [];
+      for (let i = 0; i < arr.length; i++) {
+        const e = arr[i];
+        if (typeof e === 'string') {
+          chunk.push(e);
+          this.enum[e] = e;
+        } else if (typeof e === 'number') {
+          const s = String(e);
+          chunk.push(s);
+          this.enum[s] = s;
+        }
+        if (chunk.length === size) {
+          Array.prototype.push.apply(this, chunk);
+          chunk = [];
+        }
+      }
+      if (chunk.length > 0) {
         Array.prototype.push.apply(this, chunk);
-        Object.assign(this.enum, Object.fromEntries(chunk.map((e) => [e, e])));
       }
     }
 
@@ -55,6 +83,24 @@ export class SL extends Array {
       configurable: false,
       enumerable: false,
     });
+  }
+
+  /**
+   * Internal factory for derived lists whose elements are already known to
+   * be strings (produced from this list). Skips the constructor validation
+   * and builds the enum in a single pass.
+   * @param {string[]} arr
+   */
+  static fromTrusted(arr) {
+    const list = new SL();
+    const size = 2000;
+    for (let i = 0; i < arr.length; i += size) {
+      Array.prototype.push.apply(list, Array.prototype.slice.call(arr, i, i + size));
+    }
+    for (let i = 0; i < arr.length; i++) {
+      list.enum[arr[i]] = arr[i];
+    }
+    return list;
   }
 
   includes(searchElement, fromIndex = 0) {
@@ -97,14 +143,14 @@ export class SL extends Array {
   toSorted() {
     return freezeIfImmutable(
       this,
-      new SL(Array.prototype.toSorted.apply(this, arguments)),
+      SL.fromTrusted(Array.prototype.toSorted.apply(this, arguments)),
     );
   }
 
   toReversed() {
     return freezeIfImmutable(
       this,
-      new SL(Array.prototype.toReversed.apply(this, arguments)),
+      SL.fromTrusted(Array.prototype.toReversed.apply(this, arguments)),
     );
   }
 
@@ -118,25 +164,15 @@ export class SL extends Array {
   slice() {
     return freezeIfImmutable(
       this,
-      new SL(Array.prototype.slice.apply(Array.from(this), arguments)),
+      SL.fromTrusted(Array.prototype.slice.apply(Array.from(this), arguments)),
     );
   }
 
   without(...values) {
+    const excluded = valueSet(values);
     return freezeIfImmutable(
       this,
-      new SL(
-        Array.prototype.filter.call(
-          this,
-          (e) =>
-            !values.find((v) =>
-              Array.isArray(v)
-                ? v.find((ve) => e === (typeof ve === 'number' ? String(ve) : ve)) !==
-                  undefined
-                : e === (typeof v === 'number' ? String(v) : v),
-            ),
-        ),
-      ),
+      SL.fromTrusted(Array.prototype.filter.call(this, (e) => !excluded.has(e))),
     );
   }
 
@@ -147,34 +183,31 @@ export class SL extends Array {
     }
     /* c8 ignore stop */
 
+    const kept = valueSet(values);
     return freezeIfImmutable(
       this,
-      new SL(
-        Array.prototype.filter.call(this, (v) =>
-          values.find((e) => v === (typeof e === 'number' ? String(e) : e)),
-        ),
-      ),
+      SL.fromTrusted(Array.prototype.filter.call(this, (e) => kept.has(e))),
     );
   }
 
   withTrim() {
     return freezeIfImmutable(
       this,
-      new SL(Array.prototype.map.call(this, (e) => e.trim())),
+      SL.fromTrusted(Array.prototype.map.call(this, (e) => e.trim())),
     );
   }
 
   withPrefix(prefix = '') {
     return freezeIfImmutable(
       this,
-      new SL(Array.prototype.map.call(this, (e) => `${prefix}${e}`)),
+      SL.fromTrusted(Array.prototype.map.call(this, (e) => `${prefix}${e}`)),
     );
   }
 
   withSuffix(suffix = '') {
     return freezeIfImmutable(
       this,
-      new SL(Array.prototype.map.call(this, (e) => `${e}${suffix}`)),
+      SL.fromTrusted(Array.prototype.map.call(this, (e) => `${e}${suffix}`)),
     );
   }
 
@@ -209,28 +242,32 @@ export class SL extends Array {
   withReplace(string, replacement = undefined) {
     return freezeIfImmutable(
       this,
-      new SL(Array.prototype.map.call(this, (e) => e.replace(string, replacement))),
+      SL.fromTrusted(
+        Array.prototype.map.call(this, (e) => e.replace(string, replacement)),
+      ),
     );
   }
 
   withReplaceAll(string, replacement = undefined) {
     return freezeIfImmutable(
       this,
-      new SL(Array.prototype.map.call(this, (e) => e.replaceAll(string, replacement))),
+      SL.fromTrusted(
+        Array.prototype.map.call(this, (e) => e.replaceAll(string, replacement)),
+      ),
     );
   }
 
   toLowerCase() {
     return freezeIfImmutable(
       this,
-      new SL(Array.prototype.map.call(this, (e) => e.toLowerCase())),
+      SL.fromTrusted(Array.prototype.map.call(this, (e) => e.toLowerCase())),
     );
   }
 
   toUpperCase() {
     return freezeIfImmutable(
       this,
-      new SL(Array.prototype.map.call(this, (e) => e.toUpperCase())),
+      SL.fromTrusted(Array.prototype.map.call(this, (e) => e.toUpperCase())),
     );
   }
 
@@ -380,7 +417,10 @@ export class SL extends Array {
 
     if (!Object.isFrozen(this)) {
       Array.prototype.push.apply(this, arguments);
-      this.enum = Object.fromEntries(Array.prototype.map.call(this, (e) => [e, e]));
+      // incremental: a full rebuild makes push O(n) and loops O(n²)
+      for (let i = 0; i < arguments.length; i++) {
+        this.enum[arguments[i]] = arguments[i];
+      }
     } else {
       throw new Error('Cannot set properties on a frozen object');
     }
@@ -415,11 +455,9 @@ export class SL extends Array {
     if (!Object.isFrozen(this)) {
       Array.prototype.unshift.apply(this, arguments);
 
-      this.enum = Object.assign(
-        Object.create(null),
-        this.enum,
-        Object.fromEntries(Array.from(arguments).map((e) => [e, e])),
-      );
+      for (let i = 0; i < arguments.length; i++) {
+        this.enum[arguments[i]] = arguments[i];
+      }
     } else {
       throw new Error('Cannot set properties on a frozen object');
     }

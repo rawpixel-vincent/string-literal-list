@@ -2127,6 +2127,19 @@ for (const { type, stringList } of functions) {
       t.end();
     });
 
+    tt.test('stringList: large array construction', (t) => {
+      // exercises the chunked push path (> 2000 elements per chunk)
+      const many = Array.from({ length: 4500 }, (_, i) => `key_${i}`);
+      const list = stringList(many);
+      t.equal(list.length, 4500);
+      t.ok(list.includes('key_0'));
+      t.ok(list.includes('key_2000'));
+      t.ok(list.includes('key_4499'));
+      t.equal(list.enum['key_4499'], 'key_4499');
+      t.notOk(list.includes('key_4500'));
+      t.end();
+    });
+
     tt.test('stringList: pop()', (t) => {
       if (type !== 'mutable' && type !== 'mutableCjs' && type !== 'mutableEsm') {
         t.pass('skipping test for immutable');
