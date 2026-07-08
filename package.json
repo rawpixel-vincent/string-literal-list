@@ -1,6 +1,6 @@
 {
   "name": "string-literal-list",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "an array for string literal",
   "main": "stringList.js",
   "files": [
